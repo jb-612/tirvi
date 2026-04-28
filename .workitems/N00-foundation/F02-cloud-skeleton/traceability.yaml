@@ -1,0 +1,187 @@
+# Traceability index — graph-DB-compatible (ACM schema).
+# F02 is lite mode: scaffolding feature; sibling BC to F01's dev-platform.
+
+feature_id: F02-cloud-skeleton
+status: approved
+mode: lite
+approved_at: 2026-04-29
+
+# Source-document references
+hld_refs:
+  - "HLD-§7/DeploymentTopology"
+  - "HLD-§3.2/BackendAPI"
+  - "HLD-§3.3/Worker"
+  - "HLD-§3.4/StorageLayout"
+  - "HLD-§7.5/CostPosture"
+prd_refs: []  # scaffolding — N/A
+adr_refs:
+  - ADR-012
+
+# Bounded context + aggregates owned by this feature
+bounded_context: cloud-platform
+aggregates:
+  - aggregate:cloud-platform/CloudInfra
+
+# Graph nodes
+acm_nodes:
+  feature: feature:F02-cloud-skeleton
+  bounded_contexts:
+    - bc:cloud-platform
+  aggregates:
+    - aggregate:cloud-platform/CloudInfra
+  specs:
+    - spec:F02-cloud-skeleton/DE-01  # TerraformLayout
+    - spec:F02-cloud-skeleton/DE-02  # CloudRunServices
+    - spec:F02-cloud-skeleton/DE-03  # CloudTasksQueues
+    - spec:F02-cloud-skeleton/DE-04  # GcsBucket
+    - spec:F02-cloud-skeleton/DE-05  # SecretManagerWiring
+    - spec:F02-cloud-skeleton/DE-06  # IamLeastPrivilege
+  decisions:
+    - adr:012
+  user_stories:
+    - story:F02-cloud-skeleton/US-01
+    - story:F02-cloud-skeleton/US-02
+    - story:F02-cloud-skeleton/US-03
+    - story:F02-cloud-skeleton/US-04
+  acceptance_criteria:
+    - criterion:F02-cloud-skeleton/US-01/AC-01
+    - criterion:F02-cloud-skeleton/US-01/AC-02
+    - criterion:F02-cloud-skeleton/US-01/AC-03
+    - criterion:F02-cloud-skeleton/US-02/AC-04
+    - criterion:F02-cloud-skeleton/US-02/AC-05
+    - criterion:F02-cloud-skeleton/US-02/AC-06
+    - criterion:F02-cloud-skeleton/US-03/AC-07
+    - criterion:F02-cloud-skeleton/US-03/AC-08
+    - criterion:F02-cloud-skeleton/US-03/AC-09
+    - criterion:F02-cloud-skeleton/US-04/AC-10
+    - criterion:F02-cloud-skeleton/US-04/AC-11
+  tasks:
+    - task:F02-cloud-skeleton/T-01
+    - task:F02-cloud-skeleton/T-02
+    - task:F02-cloud-skeleton/T-03
+    - task:F02-cloud-skeleton/T-04
+    - task:F02-cloud-skeleton/T-05
+    - task:F02-cloud-skeleton/T-06
+    - task:F02-cloud-skeleton/T-07
+    - task:F02-cloud-skeleton/T-08
+    - task:F02-cloud-skeleton/T-09
+  diagrams:
+    - diagram:F02-cloud-skeleton/gcp-topology
+    - diagram:F02-cloud-skeleton/data-flow
+
+# Edges — typed relationships ingested into the graph DB
+acm_edges:
+  # Feature composition
+  - {from: feature:F02-cloud-skeleton, to: spec:F02-cloud-skeleton/DE-01, type: CONTAINS}
+  - {from: feature:F02-cloud-skeleton, to: spec:F02-cloud-skeleton/DE-02, type: CONTAINS}
+  - {from: feature:F02-cloud-skeleton, to: spec:F02-cloud-skeleton/DE-03, type: CONTAINS}
+  - {from: feature:F02-cloud-skeleton, to: spec:F02-cloud-skeleton/DE-04, type: CONTAINS}
+  - {from: feature:F02-cloud-skeleton, to: spec:F02-cloud-skeleton/DE-05, type: CONTAINS}
+  - {from: feature:F02-cloud-skeleton, to: spec:F02-cloud-skeleton/DE-06, type: CONTAINS}
+
+  # Bounded-context locality
+  - {from: spec:F02-cloud-skeleton/DE-01, to: bc:cloud-platform, type: BELONGS_TO}
+  - {from: spec:F02-cloud-skeleton/DE-02, to: bc:cloud-platform, type: BELONGS_TO}
+  - {from: spec:F02-cloud-skeleton/DE-03, to: bc:cloud-platform, type: BELONGS_TO}
+  - {from: spec:F02-cloud-skeleton/DE-04, to: bc:cloud-platform, type: BELONGS_TO}
+  - {from: spec:F02-cloud-skeleton/DE-05, to: bc:cloud-platform, type: BELONGS_TO}
+  - {from: spec:F02-cloud-skeleton/DE-06, to: bc:cloud-platform, type: BELONGS_TO}
+  - {from: aggregate:cloud-platform/CloudInfra, to: bc:cloud-platform, type: BELONGS_TO}
+  - {from: bc:cloud-platform, to: aggregate:cloud-platform/CloudInfra, type: CONTAINS}
+
+  # HLD trace
+  - {from: spec:F02-cloud-skeleton/DE-01, to: HLD-§7/DeploymentTopology, type: TRACED_TO}
+  - {from: spec:F02-cloud-skeleton/DE-02, to: HLD-§3.2/BackendAPI, type: TRACED_TO}
+  - {from: spec:F02-cloud-skeleton/DE-02, to: HLD-§3.3/Worker, type: TRACED_TO}
+  - {from: spec:F02-cloud-skeleton/DE-03, to: HLD-§7/DeploymentTopology, type: TRACED_TO}
+  - {from: spec:F02-cloud-skeleton/DE-04, to: HLD-§3.4/StorageLayout, type: TRACED_TO}
+  - {from: spec:F02-cloud-skeleton/DE-05, to: HLD-§7/DeploymentTopology, type: TRACED_TO}
+  - {from: spec:F02-cloud-skeleton/DE-06, to: HLD-§7/DeploymentTopology, type: TRACED_TO}
+  - {from: adr:012, to: HLD-§7/DeploymentTopology, type: TRACED_TO}
+  - {from: adr:012, to: HLD-§3.2/BackendAPI, type: TRACED_TO}
+  - {from: adr:012, to: HLD-§3.3/Worker, type: TRACED_TO}
+
+  # Decision influence
+  - {from: spec:F02-cloud-skeleton/DE-02, to: adr:012, type: INFLUENCED_BY}
+
+  # Story → criterion
+  - {from: story:F02-cloud-skeleton/US-01, to: criterion:F02-cloud-skeleton/US-01/AC-01, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-01, to: criterion:F02-cloud-skeleton/US-01/AC-02, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-01, to: criterion:F02-cloud-skeleton/US-01/AC-03, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-02, to: criterion:F02-cloud-skeleton/US-02/AC-04, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-02, to: criterion:F02-cloud-skeleton/US-02/AC-05, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-02, to: criterion:F02-cloud-skeleton/US-02/AC-06, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-03, to: criterion:F02-cloud-skeleton/US-03/AC-07, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-03, to: criterion:F02-cloud-skeleton/US-03/AC-08, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-03, to: criterion:F02-cloud-skeleton/US-03/AC-09, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-04, to: criterion:F02-cloud-skeleton/US-04/AC-10, type: HAS_CRITERION}
+  - {from: story:F02-cloud-skeleton/US-04, to: criterion:F02-cloud-skeleton/US-04/AC-11, type: HAS_CRITERION}
+
+  # Story → spec verification
+  - {from: story:F02-cloud-skeleton/US-01, to: spec:F02-cloud-skeleton/DE-01, type: VERIFIED_BY}
+  - {from: story:F02-cloud-skeleton/US-02, to: spec:F02-cloud-skeleton/DE-02, type: VERIFIED_BY}
+  - {from: story:F02-cloud-skeleton/US-03, to: spec:F02-cloud-skeleton/DE-06, type: VERIFIED_BY}
+  - {from: story:F02-cloud-skeleton/US-03, to: spec:F02-cloud-skeleton/DE-05, type: VERIFIED_BY}
+  - {from: story:F02-cloud-skeleton/US-04, to: spec:F02-cloud-skeleton/DE-01, type: VERIFIED_BY}
+
+  # Task → spec implementation
+  - {from: task:F02-cloud-skeleton/T-01, to: spec:F02-cloud-skeleton/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-02, to: spec:F02-cloud-skeleton/DE-02, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-03, to: spec:F02-cloud-skeleton/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-04, to: spec:F02-cloud-skeleton/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-05, to: spec:F02-cloud-skeleton/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-06, to: spec:F02-cloud-skeleton/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-07, to: spec:F02-cloud-skeleton/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-08, to: spec:F02-cloud-skeleton/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:F02-cloud-skeleton/T-09, to: spec:F02-cloud-skeleton/DE-01, type: IMPLEMENTED_BY}
+
+  # Diagram → spec/ADR
+  - {from: diagram:F02-cloud-skeleton/gcp-topology, to: spec:F02-cloud-skeleton/DE-02, type: EXPLAINS}
+  - {from: diagram:F02-cloud-skeleton/gcp-topology, to: spec:F02-cloud-skeleton/DE-03, type: EXPLAINS}
+  - {from: diagram:F02-cloud-skeleton/gcp-topology, to: spec:F02-cloud-skeleton/DE-04, type: EXPLAINS}
+  - {from: diagram:F02-cloud-skeleton/gcp-topology, to: spec:F02-cloud-skeleton/DE-05, type: EXPLAINS}
+  - {from: diagram:F02-cloud-skeleton/gcp-topology, to: spec:F02-cloud-skeleton/DE-06, type: EXPLAINS}
+  - {from: diagram:F02-cloud-skeleton/data-flow, to: spec:F02-cloud-skeleton/DE-02, type: EXPLAINS}
+  - {from: diagram:F02-cloud-skeleton/data-flow, to: spec:F02-cloud-skeleton/DE-03, type: EXPLAINS}
+  - {from: diagram:F02-cloud-skeleton/data-flow, to: spec:F02-cloud-skeleton/DE-04, type: EXPLAINS}
+
+  # Cross-feature dependency on F01 (image shape)
+  - {from: feature:F02-cloud-skeleton, to: feature:F01-docker-compose, type: TRACED_TO}
+
+# Per-element traces
+de_to_hld:
+  DE-01: HLD-§7/DeploymentTopology
+  DE-02: HLD-§3.2/BackendAPI
+  DE-03: HLD-§7/DeploymentTopology
+  DE-04: HLD-§3.4/StorageLayout
+  DE-05: HLD-§7/DeploymentTopology
+  DE-06: HLD-§7/DeploymentTopology
+
+story_to_prd: {}  # scaffolding — N/A
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-04
+  T-05: DE-05
+  T-06: DE-06
+  T-07: DE-01
+  T-08: DE-01
+  T-09: DE-01
+
+ac_to_story:
+  AC-01: US-01
+  AC-02: US-01
+  AC-03: US-01
+  AC-04: US-02
+  AC-05: US-02
+  AC-06: US-02
+  AC-07: US-03
+  AC-08: US-03
+  AC-09: US-03
+  AC-10: US-04
+  AC-11: US-04
+
+decision_to_spec:
+  ADR-012: [DE-02]

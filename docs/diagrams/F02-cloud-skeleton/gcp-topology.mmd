@@ -1,0 +1,31 @@
+%% F02 GCP topology — services, queues, bucket, secrets, IAM bindings
+%% Generated for: spec:F02-cloud-skeleton/DE-02 (CloudRunServices)
+%%                spec:F02-cloud-skeleton/DE-03 (CloudTasksQueues)
+%%                spec:F02-cloud-skeleton/DE-04 (GcsBucket)
+%%                spec:F02-cloud-skeleton/DE-05 (SecretManagerWiring)
+%%                spec:F02-cloud-skeleton/DE-06 (IamLeastPrivilege)
+flowchart LR
+  Browser["Browser\nNext.js (Cloud Run or static CDN)"]
+  API["tirvi-api\nCloud Run service\nscale-to-zero, min=0\n--cpu-boost"]
+  Worker["tirvi-worker\nCloud Run service\nsame image\nmin=1 (business hrs)"]
+  Bucket["gs://tirvi-env\nCloud Storage Standard\nlifecycle: 24h on pdfs/, 30d on audio/"]
+  Tasks["Cloud Tasks\nqueues: ocr, normalize,\nnlp, plan, synthesize"]
+  Secrets["Secret Manager\nDocAI / TTS / Azure keys"]
+  Logs["Cloud Logging\n(no PII)"]
+  ApiSA(("api SA\nleast-priv"))
+  WorkerSA(("worker SA\nleast-priv"))
+
+  Browser -->|"HTTPS"| API
+  API -->|"signed URL"| Bucket
+  API -->|"enqueue (HTTP)"| Tasks
+  Tasks -->|"HTTP push w/ OIDC"| Worker
+  Worker -->|"r/w pages, plans, audio"| Bucket
+  API -->|"r/o secrets"| Secrets
+  Worker -->|"r/o secrets"| Secrets
+  API -.uses.-> ApiSA
+  Worker -.uses.-> WorkerSA
+  ApiSA -.->|"objectAdmin scoped"| Bucket
+  WorkerSA -.->|"objectAdmin scoped"| Bucket
+  ApiSA -.->|"tasks.enqueuer"| Tasks
+  API -.logs.- Logs
+  Worker -.logs.- Logs

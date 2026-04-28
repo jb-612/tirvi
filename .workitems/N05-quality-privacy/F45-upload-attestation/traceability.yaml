@@ -1,0 +1,27 @@
+# Traceability index — ACM-graph-compatible.
+# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+
+feature_id: TBD
+status: scaffolded
+
+# Source-document references
+hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
+prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
+adr_refs: []        # e.g. ["ADR-001"]
+
+# ACM nodes
+acm_nodes:
+  feature: feature:TBD
+  specs: []         # spec:<feature_id>/DE-NN
+  user_stories: []  # story:<feature_id>/US-NN
+  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
+  tasks: []         # task:<feature_id>/T-NN
+
+# ACM edges
+acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+
+# Per-element traces (denormalized for quick lookup)
+de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
+story_to_prd: {}    # US-NN -> PRD §X.Y
+task_to_de: {}      # T-NN -> DE-NN
+ac_to_story: {}     # AC-NN -> US-NN

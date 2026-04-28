@@ -17,6 +17,29 @@ Sequential pipeline with full traceability:
 
 Reverse lookup: task → design_element → HLD assumption.
 
+## Simplicity Modes
+
+Match ceremony to feature.
+
+**Lite mode** (skip meeting room + R1/R2; solo design + self-review + HITL).
+Run when ALL hold:
+- `feature_type: scaffolding`, or trivial `domain` with no new ports / no
+  new bounded context / no cross-cutting state
+- ≤ 8 atomic tasks for `domain`/`integration`/`ui` features, or ≤ 12 for
+  pure `scaffolding` (mechanical work — Dockerfiles, compose YAML, stub
+  code, fixtures — shouldn't trip ceremonial overhead at the same count
+  as logic-bearing tasks)
+- ≤ 1 material design decision
+- All HLD/PRD/ADR refs single-rooted
+
+**Full mode** runs every stage. Use when any of: ≥ 2 bounded contexts
+touched, > 8 tasks, ≥ 2 material decisions, type is `domain` /
+`integration` / `ui`. If in doubt, run full.
+
+Lite features still produce: design.md, user_stories.md, tasks.md,
+traceability.yaml, ≥ 1 diagram, and 0–1 ADR. Diagrams and ADRs are
+NOT skippable — they're how decisions and shapes survive into the graph.
+
 ## Source Documents
 
 | Document | Path | Role |
@@ -46,26 +69,43 @@ Reverse lookup: task → design_element → HLD assumption.
 
 Sub-section precision required for HLD refs.
 
-## ACM Node Architecture
+## Graph Schema (ACM-compatible)
 
-Pipeline artifacts map to the ACM knowledge graph:
+`traceability.yaml` is the per-feature index ingested into the project's
+graph database. Its purpose: expose the taxonomy that lets later stages —
+TDD code-writer, ACM analyses, change-impact queries — correlate classes,
+functions, and tests back to bounded contexts and aggregates.
 
-| Artifact | ACM Node Type | ACM ID Format |
-|----------|---------------|---------------|
+**Node types:**
+
+| Artifact | Node type | ID format |
+|----------|-----------|-----------|
+| Bounded context | `BoundedContext` | `bc:<context-name>` |
+| Aggregate | `Aggregate` | `aggregate:<bc>/<name>` |
 | Feature | `Feature` | `feature:$ARGUMENTS` |
 | Design element | `Spec` | `spec:$ARGUMENTS/DE-NN` |
+| ADR | `Decision` | `adr:<NNN>` |
 | User story | `UserStory` | `story:$ARGUMENTS/US-NN` |
 | Acceptance criterion | `AcceptanceCriterion` | `criterion:$ARGUMENTS/US-NN/AC-NN` |
-| Task | `Feature` (sub) | `task:$ARGUMENTS/T-NN` |
+| Task | `Task` | `task:$ARGUMENTS/T-NN` |
+| Diagram | `Diagram` | `diagram:$ARGUMENTS/<name>` |
 
-| Relation | ACM Edge Type |
-|----------|---------------|
-| Design element → HLD section | `TRACED_TO` |
-| User story → PRD section | `TRACED_TO` |
-| Task → Design element | `IMPLEMENTED_BY` |
-| Criterion → User story | `HAS_CRITERION` |
-| Feature → Design element | `CONTAINS` |
-| User story → Design element | `VERIFIED_BY` |
+**Edge types:**
+
+| Edge | From → To | Meaning |
+|------|-----------|---------|
+| `TRACED_TO` | Spec/Story/ADR → HLD/PRD ref | Source-document anchor |
+| `IMPLEMENTED_BY` | Task → Spec | Code lineage |
+| `HAS_CRITERION` | Story → AC | Story decomposition |
+| `CONTAINS` | Feature → Spec, BC → Aggregate | Composition |
+| `VERIFIED_BY` | Story → Spec | Capability satisfies story |
+| `INFLUENCED_BY` | Spec → ADR | Decision shapes design |
+| `EXPLAINS` | Diagram → Spec/ADR | Visual aid |
+| `BELONGS_TO` | Spec/Aggregate → BC | Bounded-context locality |
+
+Keep IDs stable. Treat the YAML as the contract. The TDD code-writer reads
+it to know which bounded context a test or class lives in and which
+aggregate it must respect.
 
 ## Stage 1: Scaffold
 
@@ -94,6 +134,37 @@ design.md includes:
 - Standard: overview, dependencies, interfaces, approach, decisions, risks
 
 For `scaffolding`: set `feature_type: scaffolding`, note "HLD scope: N/A".
+
+**Decision capture.** While writing design.md, list every material decision
+in the **Decisions** section as `D-NN: short-name → ADR-NNN` (allocate ADR
+numbers from `docs/ADR/INDEX.md` or the ADR backlog in PLAN.md). Decisions
+that are purely mechanical (already covered by HLD without alternatives)
+stay inline notes — not entries.
+
+## Stage 2.5: ADR Authoring
+
+For every `D-NN → ADR-NNN` in design.md, write an ADR file:
+
+```
+docs/ADR/ADR-NNN-<bounded-context>-<short-name>.md
+```
+
+MADR-ish format: **Status** (Proposed | Accepted | Superseded), **Context**
+(HLD ref + problem framing), **Decision** (the choice in one sentence),
+**Consequences** (positive + negative), **Alternatives** (≥ 1, with
+rejection reason), **References** (HLD section, related ADRs, research
+docs, prior art).
+
+**Multi-ADR rule.** Split when ANY:
+- Feature decides things across ≥ 2 bounded contexts → one ADR per BC
+  (e.g., `ADR-014-tts-routing.md` and `ADR-015-tts-cost-policy.md`)
+- A draft ADR exceeds ~80 lines → split into focused decisions
+- A decision affects an aggregate that already owns prior ADRs → keep new
+  ADR scoped to the same aggregate to preserve graph locality
+
+ADRs are graph nodes (`adr:NNN`) with `INFLUENCED_BY` edges from the specs
+they shape and `TRACED_TO` edges to HLD sections. Update
+`docs/ADR/INDEX.md` to reflect the new ADR's status and refs.
 
 ## Stage 3 + Stage 4 (PARALLEL)
 
@@ -157,11 +228,56 @@ Present finalized stories to user. Meeting-room/ preserved as audit trail.
 
 **Post-approval:**
 - Finalize user_stories.md from synthesis
-- Update traceability.yaml: story → PRD ref mappings + ACM edges
+- Update traceability.yaml: story → PRD ref mappings + graph edges
 
-### Stage 4: Diagrams
+**Story depth.** Each story carries:
+- **Persona**: name + role (student / coordinator / parent / dev) +
+  collaboration level (`solo`, `paired`, `coordinator-mediated`,
+  `async-batch`)
+- **Acceptance criteria** split into happy-path AC and ≥ 1 edge-case AC
+- **Notes**: precedent in legacy / competitor product, error-recovery path,
+  accessibility implications, security/privacy implications
 
-Auto-invoke `@diagram-builder`. Unchanged.
+**Multi-file split.** If `user_stories.md` would exceed 100 lines OR the
+feature spans ≥ 2 bounded contexts, split:
+
+```
+user_stories/
+  index.md              # navigation + per-context summaries (≤ 50 lines)
+  01-<bounded-context>.md   # one BC's stories  (each ≤ 100 lines)
+  02-<bounded-context>.md
+```
+
+The pipeline reads `user_stories/index.md` if present, else `user_stories.md`,
+else `user_stories/*.md` in lexical order.
+
+### Stage 4: Diagrams (parallel with Stage 3)
+
+Auto-invoke `@diagram-builder`. Produce ≥ 1 diagram per feature, stored at:
+
+```
+docs/diagrams/<feature_id>/<diagram-name>.mmd
+```
+
+Render to SVG on commit. Each diagram is referenced from design.md or an
+ADR by relative path.
+
+**Diagram catalog by feature type:**
+
+| Type | Always | Add when |
+|------|--------|----------|
+| `scaffolding` | Topology or sequence | Cross-process boot order |
+| `domain` | DDD aggregate + workflow | ERD if new persistence; UML class if ≥ 3 collaborators |
+| `ui` | User-flow + component tree | State-machine if interactive |
+| `integration` | Data-flow + sequence | Workflow if multi-stage retry |
+
+Diagrams are graph nodes (`diagram:<feature_id>/<name>`) with `EXPLAINS`
+edges to the specs/ADRs they illustrate.
+
+**Mermaid constraints** (also enforced by `@diagram-builder`): plain
+`flowchart LR/TD` / `sequenceDiagram` / `erDiagram` / `classDiagram`; no
+`subgraph` / `classDef` for Jishu-style print; quote labels with
+punctuation; `\n` for line breaks; never inline HTML.
 
 ## Stage 4b: HLD Ref Validation (automated gate)
 
@@ -265,14 +381,17 @@ Conventional commit. Meeting-room/ committed as audit trail.
 
 ## Validation Checklist
 
-- [ ] 4 files populated (design, stories, tasks, traceability)
-- [ ] Frontmatter complete (feature_type, hld_refs/prd_refs)
+- [ ] 4 core files populated (design, stories, tasks, traceability)
+- [ ] Frontmatter complete (feature_type, hld_refs/prd_refs, adr_refs)
 - [ ] domain: HLD trace (every DE → HLD ref)
 - [ ] domain/ui: PRD trace (every story → PRD section)
 - [ ] Task trace: every task → DE → HLD chain
-- [ ] traceability.yaml: ACM nodes and edges complete
-- [ ] Meeting room: consensus or HITL-resolved
-- [ ] R1 + R2 passed, Critical resolved
+- [ ] traceability.yaml: nodes (incl. BC + Aggregate) and edges complete
+- [ ] ≥ 1 diagram authored under `docs/diagrams/<feature_id>/`
+- [ ] All material decisions have ADR files in `docs/ADR/` and an
+      `INFLUENCED_BY` edge from their Spec
+- [ ] Lite mode: self-review pass; full mode: Meeting Room consensus +
+      R1 + R2 passed, Critical resolved
 - [ ] User approved at Stage 10
 
 ## Cross-References

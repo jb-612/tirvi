@@ -1,0 +1,25 @@
+%% F01 boot order — what starts when, healthcheck ordering, profile-gated services
+%% Generated for: spec:F01-docker-compose/DE-01 (ComposeStack)
+sequenceDiagram
+  participant U as docker compose up
+  participant S as storage
+  participant A as api
+  participant W as worker
+  participant Web as web
+  participant M as models (--profile models)
+
+  U->>S: start fake-gcs-server
+  S-->>U: healthy on :4443
+  U->>A: start FastAPI --reload (depends_on storage)
+  A-->>U: GET /healthz 200 on :8000
+  par parallel boot
+    U->>W: start worker (depends_on api)
+    W-->>U: ready
+  and
+    U->>Web: start Next.js dev (depends_on api)
+    Web-->>U: listening on :3000
+  end
+  opt --profile models
+    U->>M: start FastAPI sidecar
+    M-->>U: weights loaded (30-60s) on :8001
+  end

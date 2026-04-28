@@ -1,0 +1,23 @@
+%% F01 dev stack topology — services, ports, dependencies
+%% Generated for: spec:F01-docker-compose/DE-01 (ComposeStack)
+%%                spec:F01-docker-compose/DE-02 (ProfileGuards)
+%%                spec:F01-docker-compose/DE-03 (GcpOverlay)
+flowchart LR
+  Dev["Developer\nlocalhost"]
+  Web["web\nNext.js dev\n(hot reload)"]
+  API["api\nFastAPI --reload\n(hot reload)"]
+  Worker["worker\nsame image\nin-proc queue"]
+  Models["models\nFastAPI sidecar\n--profile models"]
+  Storage["storage\nfake-gcs-server"]
+
+  Dev -->|"3000"| Web
+  Dev -->|"8000"| API
+  Dev -->|"8001 (opt)"| Models
+  Dev -->|"4443"| Storage
+
+  Web -->|"REST"| API
+  API -->|"enqueue"| Worker
+  API -->|"GCS API"| Storage
+  Worker -->|"GCS API"| Storage
+  Worker -->|"/morph /disambiguate"| Models
+  API -->|"/morph /disambiguate (when active)"| Models

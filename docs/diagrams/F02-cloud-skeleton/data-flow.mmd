@@ -1,0 +1,27 @@
+%% F02 data flow — happy-path upload → process → playback (per HLD §9)
+%% Generated for: spec:F02-cloud-skeleton/DE-02, DE-03, DE-04
+sequenceDiagram
+  participant U as Browser
+  participant A as tirvi-api (Cloud Run)
+  participant G as Cloud Storage
+  participant T as Cloud Tasks
+  participant W as tirvi-worker (Cloud Run)
+
+  U->>A: POST /uploads (request signed URL)
+  A-->>U: signed PUT URL (15-min TTL)
+  U->>G: PUT pdf to pdfs/{doc_id}.pdf
+  U->>A: POST /documents (object key)
+  A->>G: write manifests/{doc_id}.json (status=uploaded)
+  A->>T: enqueue ocr task
+  A-->>U: 202 Accepted
+
+  T->>W: HTTP push (ocr) with OIDC
+  W->>G: read pdf, write pages/{n}.ocr.json
+  W->>T: enqueue normalize
+  Note over T,W: pipeline continues:\nnormalize → nlp → plan → synthesize\n(idempotent, resumable, fan-out per page)
+  W->>G: write audio/{block_hash}.mp3 + .timings.json
+
+  U->>A: GET /documents/{id}/audio/{block_id}
+  A->>G: signed read URL (5-min TTL)
+  A-->>U: signed URL
+  U->>G: GET audio (cache hit ~$0.0001/page)
