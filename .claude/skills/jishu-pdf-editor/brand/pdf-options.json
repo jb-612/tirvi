@@ -1,0 +1,8 @@
+{
+  "format": "A4",
+  "margin": { "top": "22mm", "right": "18mm", "bottom": "22mm", "left": "18mm" },
+  "printBackground": true,
+  "displayHeaderFooter": true,
+  "headerTemplate": "<div style=\"width:100%; padding: 8mm 18mm 0 18mm; font-family: 'Manrope', Helvetica, Arial, sans-serif; font-size: 8pt; color: #6b5d4f; -webkit-print-color-adjust: exact; display:flex; justify-content:space-between; align-items:center;\"><span style=\"display:inline-flex; align-items:center; gap:8px;\"><span style=\"font-family: 'Newsreader', Georgia, serif; font-style: italic; font-weight:500; color:#2B211A; font-size:11pt; letter-spacing:-0.5px;\">Jishu</span><span style=\"display:inline-block; width:5px; height:5px; border-radius:50%; background:#C35A3A;\"></span><span style=\"color:#7B6E5E; padding-left:8px; border-left:1px solid rgba(43,33,26,0.12);\">Document title goes here</span></span><span style=\"font-family:'JetBrains Mono', monospace; font-size: 7.5pt; letter-spacing: 0.16em; text-transform: uppercase; color:#9d8e7d;\">v1.0</span></div>",
+  "footerTemplate": "<div style=\"width:100%; padding: 0 18mm 8mm 18mm; font-family: 'JetBrains Mono', monospace; font-size: 8pt; color: #9d8e7d; display:flex; justify-content:space-between; -webkit-print-color-adjust: exact;\"><span>jishutech.io</span><span>Page <span class=\"pageNumber\"></span> / <span class=\"totalPages\"></span></span></div>"
+}

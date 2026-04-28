@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /Users/jbellish/VSProjects/tirvi/dist/assets /Users/jbellish/VSProjects/tirvi/dist/build)",
+      "Bash(cp /Users/jbellish/VSProjects/tirvi/.claude/skills/jishu-pdf-editor/brand/colors_and_type.css /Users/jbellish/VSProjects/tirvi/dist/assets/)",
+      "Bash(mkdir -p /tmp/pdf-audit)",
+      "Bash(rm -f /tmp/pdf-audit/*)",
+      "Bash(pdftoppm -png -r 90 /Users/jbellish/VSProjects/tirvi/dist/build/tirvi-market-brief.pdf /tmp/pdf-audit/p)",
+      "Read(//tmp/**)"
+    ]
+  }
+}

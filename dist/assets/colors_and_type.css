@@ -1,0 +1,50 @@
+/* ==========================================================================
+   Jishu PDF Editor — brand tokens
+   Copy this file into any project that needs the Jishu look. Token names
+   match the canonical design system. Never recolor by hand; either reuse
+   a token or oklch()-interpolate between two existing tokens.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Paper / surface — warm off-whites */
+  --paper:       #F4ECE0;
+  --paper-deep:  #EAE0D0;
+  --paper-soft:  #FAF4EB;
+  --paper-ink:   #E0D4C0;
+
+  /* Ink — warm brown-blacks, never #000 */
+  --ink:         #2B211A;
+  --ink-90:      rgba(43, 33, 26, 0.90);
+  --ink-60:      rgba(43, 33, 26, 0.60);
+  --ink-40:      rgba(43, 33, 26, 0.40);
+  --ink-24:      rgba(43, 33, 26, 0.24);
+  --ink-12:      rgba(43, 33, 26, 0.12);
+  --ink-06:      rgba(43, 33, 26, 0.06);
+
+  /* Clay — primary brand accent (terracotta) */
+  --clay:        #C35A3A;
+  --clay-deep:   #A64828;
+  --clay-soft:   #E8A88F;
+  --clay-wash:   #F6E0D4;
+
+  /* Secondary warms */
+  --ochre:       #C98B3A;
+  --ochre-deep:  #A06E22;
+  --ochre-wash:  #F4E6CC;
+  --sage:        #7B8A6F;
+  --sage-wash:   #DDE3D4;
+  --olive-deep:  #4F5A3E;
+
+  /* Status (warm-shifted) */
+  --success:     #5C7C4F;
+  --warning:     #A06E22;
+  --danger:      #B53D28;
+  --info:        #4E6B78;
+
+  /* Type families */
+  --font-display: 'Newsreader', 'Iowan Old Style', Cambria, Georgia, serif;
+  --font-body:    'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}

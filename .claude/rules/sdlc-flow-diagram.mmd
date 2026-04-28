@@ -1,0 +1,110 @@
+%%{ init: { "theme": "base", "themeVariables": { "fontSize": "14px" } } }%%
+flowchart TD
+    %% ── Entry points (pre-trunk routers) ──
+    USER([User request])
+    EP_IDEA["@ideation<br/>1-page memo<br/>(no review)"]
+    EP_RESEARCH["@research / @deep-research<br/>feeds ADR/HLD/PRD revisions"]
+    EP_HOTFIX["@hotfix<br/>short design cycle<br/>(2-reviewer light check)"]
+    EP_DOCS["@documentation<br/>(docs-only change)"]
+    EP_QA["@general-question<br/>info only, no artifact"]
+    EP_FULL["@design-pipeline<br/>(full 11-stage)"]
+
+    USER --> EP_IDEA
+    USER --> EP_RESEARCH
+    USER --> EP_HOTFIX
+    USER --> EP_DOCS
+    USER --> EP_QA
+    USER --> EP_FULL
+
+    EP_IDEA -. "promote" .-> EP_RESEARCH
+    EP_IDEA -. "promote" .-> EP_FULL
+    EP_RESEARCH -. "feeds" .-> EP_FULL
+    EP_QA -. "save-as-idea" .-> EP_IDEA
+    EP_HOTFIX -. "escalate" .-> EP_FULL
+
+    %% ── Step 1 ──
+    S1[Step 1: Workplan]
+    EP_FULL --> S1
+    EP_HOTFIX ==> S3_TASKS
+    EP_DOCS ==> S4
+
+    %% ── Step 2: Design ──
+    S2[Step 2: Design]
+    S2_DP["@design-pipeline<br/>design.md, stories, tasks.md"]
+    S2_DR["@design-review<br/>2 rounds + adversary"]
+    S2_TB["@task-breakdown<br/>atomic decomposition"]
+    S2_TD["@test-design<br/>STD.md + traceability.yaml"]
+    S2_FT{Feature type?}
+    S2_MR_YES["@test-mock-registry<br/>generate fakes NOW"]
+    S2_MR_DEFER["defer @test-mock-registry<br/>to step 3"]
+    S2_HITL{{HITL: User Gate}}
+
+    S1 --> S2
+    S2 --> S2_DP --> S2_DR --> S2_TB
+    S2_TB --> S2_TD
+    S2_TD --> S2_FT
+    S2_FT -- "Consumer<br/>(ports exist)" --> S2_MR_YES --> S2_HITL
+    S2_FT -- "Foundational<br/>(building ports)" --> S2_MR_DEFER --> S2_HITL
+
+    %% ── Step 3: TDD Build ──
+    S3[Step 3: TDD Build]
+    S2_HITL --> S3
+
+    %% Foundational sub-flow
+    S3_PORTS["/tdd: port-writing tasks<br/>T01-T03 RED-GREEN-REFACTOR"]
+    S3_MR_MID["@test-mock-registry<br/>generate fakes from new ports"]
+    S3_TASKS["/tdd: adapter + service tasks<br/>T04+ RED-GREEN-REFACTOR"]
+
+    S3 --> S3_FT_CHECK{Fakes deferred<br/>from step 2?}
+    S3_FT_CHECK -- Yes --> S3_PORTS --> S3_MR_MID --> S3_TASKS
+    S3_FT_CHECK -- "No (fakes ready)" --> S3_TASKS
+
+    %% Three parallel tracks
+    S3_TRACK_A["Track A: Unit Tests<br/>/tdd per task (sequential)<br/>3-agent separation"]
+    S3_TRACK_B["Track B: Functional Tests<br/>@test-functional<br/>FUNC / SMOKE / REG from STD"]
+    S3_TRACK_C["Track C: Integration Tests<br/>@integration-test<br/>cross-boundary (after both sides)"]
+    S3_E2E["E2E: [ANCHOR] only<br/>deferred until infra exists"]
+
+    S3_TASKS --> S3_TRACK_A
+    S3_TASKS --> S3_TRACK_B
+    S3_TRACK_A --> S3_TRACK_C
+    S3_TRACK_B --> S3_TRACK_C
+    S3_TRACK_C --> S3_E2E
+
+    %% ── Step 4-8 ──
+    S4[Step 4: Code Review<br/>@code-review]
+    S5[Step 5: Feature Completion<br/>@testing / make gate<br/>12 quality gates]
+    S6[Step 6: Commit]
+    S7[Step 7: DevOps]
+    S8[Step 8: Closure]
+
+    S3_E2E --> S4 --> S5 --> S6 --> S7 --> S8
+
+    %% ── HITL gates ──
+    S5_HITL{{HITL: Phase Gate<br/>if all features done}}
+    S6_HITL{{HITL: Protected Path}}
+    S7_HITL{{HITL: DevOps Invocation}}
+    S3_HITL{{HITL: TDD Mode Selection<br/>per task}}
+
+    S3_TASKS -.- S3_HITL
+    S5 -.- S5_HITL
+    S6 -.- S6_HITL
+    S7 -.- S7_HITL
+
+    %% ── Styling ──
+    classDef step fill:#2563eb,color:#fff,stroke:#1d4ed8
+    classDef skill fill:#059669,color:#fff,stroke:#047857
+    classDef hitl fill:#dc2626,color:#fff,stroke:#b91c1c
+    classDef decision fill:#d97706,color:#fff,stroke:#b45309
+    classDef deferred fill:#6b7280,color:#fff,stroke:#4b5563
+    classDef track fill:#7c3aed,color:#fff,stroke:#6d28d9
+
+    classDef entry fill:#0ea5e9,color:#fff,stroke:#0284c7
+
+    class S1,S2,S3,S4,S5,S6,S7,S8 step
+    class S2_DP,S2_DR,S2_TB,S2_TD,S2_MR_YES,S3_PORTS,S3_MR_MID,S3_TASKS,S3_TRACK_A,S3_TRACK_B,S3_TRACK_C skill
+    class S2_HITL,S5_HITL,S6_HITL,S7_HITL,S3_HITL hitl
+    class S2_FT,S3_FT_CHECK decision
+    class S2_MR_DEFER,S3_E2E deferred
+    class S3_TRACK_A,S3_TRACK_B,S3_TRACK_C track
+    class USER,EP_IDEA,EP_RESEARCH,EP_HOTFIX,EP_DOCS,EP_QA,EP_FULL entry
