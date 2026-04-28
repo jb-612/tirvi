@@ -1,0 +1,31 @@
+# Schema: dependency-map.yaml
+# Purpose: Machine-readable dependency graph between all design objects —
+#          epics, features, personas, business objects, bounded contexts,
+#          aggregates, business rules, domain events, external systems,
+#          functional tests, behavioural tests, and inferred future classes.
+# Location: docs/business-design/ontology/dependency-map.yaml
+
+version: 1
+
+# Supported object types for source.type and target.type:
+#   epic | feature | persona | business_object | bounded_context | aggregate
+#   business_rule | domain_event | external_system | functional_test
+#   behavioural_test | future_class | future_function | future_service
+
+dependencies:
+  - id:             # e.g., DEP-001
+    source:
+      type:         # see supported types above
+      id:           # object ID from business-taxonomy.yaml or test-ontology.yaml
+      name:
+    target:
+      type:
+      id:
+      name:
+    relationship:   # e.g., "requires", "triggers", "extends", "validates", "owned_by", "exposes"
+    rationale:      # why this dependency exists
+    strength:       # weak | medium | strong
+    direction:      # one_way | bidirectional
+    risk_if_broken: # what breaks if this dependency is severed or misaligned
+    related_files:
+      - path:       # repo-relative path to the file where this dependency is expressed

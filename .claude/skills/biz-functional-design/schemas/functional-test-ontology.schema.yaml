@@ -1,0 +1,55 @@
+# Schema: functional-test-ontology.yaml
+# Purpose: Correlates every functional and behavioural test to its stories,
+#          features, business objects, bounded contexts, aggregates, and
+#          inferred future implementation objects (classes, functions, services).
+#          Acts as the pre-implementation contract layer for TDD.
+# Location: docs/business-design/ontology/functional-test-ontology.yaml
+
+version: 1
+
+functional_tests:
+  - id:             # e.g., FT-001
+    name:
+    feature_id:     # e.g., E01-F01
+    epic_id:        # e.g., E01
+    test_file:      # relative path to functional-test-plan.md
+    test_type: functional
+    related_stories:
+      - story_id:
+    related_business_objects:
+      - object_id:  # from business-taxonomy.yaml business_objects
+    related_contexts:
+      - context_id: # from business-taxonomy.yaml bounded_contexts
+    related_aggregates:
+      - aggregate_id:
+    expected_future_implementation:
+      classes:
+        - name:
+          responsibility:
+      functions:
+        - name:
+          responsibility:
+      services:
+        - name:
+          responsibility:
+    priority:       # critical | high | medium | low
+    risk_covered:   # what business risk this test guards against
+    status:         # drafted | reviewed | revised | accepted
+
+behavioural_tests:
+  - id:             # e.g., BT-001
+    name:
+    feature_id:
+    epic_id:
+    test_file:      # relative path to behavioural-test-plan.md
+    test_type: behavioural
+    related_personas:
+      - persona_id:
+    related_collaboration_objects:
+      - object_id:  # from business-taxonomy.yaml collaboration_objects
+    related_stories:
+      - story_id:
+    behaviour_pattern: # e.g., "hesitation", "retry", "abandoned_flow", "misuse", "recovery"
+    priority:
+    risk_covered:
+    status:         # drafted | reviewed | revised | accepted

@@ -1,0 +1,101 @@
+# Schema: business-taxonomy.yaml
+# Purpose: Canonical ontology linking epics, features, stories, DDD objects,
+#          personas, and collaboration actors. Updated after each feature.
+# Location: docs/business-design/ontology/business-taxonomy.yaml
+
+version: 1
+
+source_documents:
+  - id:           # e.g., src-001
+    name:         # e.g., "tirvi PRD v1"
+    type:         # prd | market_research | competitive_analysis | architecture | codebase | epic_list | other
+    path:         # repo-relative path
+    confidence:   # high | medium | low
+
+epics:
+  - id:           # e.g., E01
+    name:
+    description:
+    features:
+      - id:       # e.g., E01-F01
+        name:
+        bounded_context:
+        business_capability:
+        personas:
+          - id:
+            name:
+            role:
+        stories:
+          - id:   # e.g., E01-F01-S01
+            title:
+            file: # relative path to .stories.md
+        dependencies:
+          upstream:
+            - object_id:
+          downstream:
+            - object_id:
+
+domains:
+  - id:           # e.g., D01
+    name:
+    subdomains:
+      - id:       # e.g., D01-SD01
+        name:
+        type:     # core | supporting | generic
+        bounded_contexts:
+          - id:   # e.g., BC01
+            name:
+            aggregates:
+              - id:   # e.g., AGG01
+                name:
+                entities:
+                  - id:
+                    name:
+                value_objects:
+                  - id:
+                    name:
+                domain_events:
+                  - id:
+                    name:
+                commands:
+                  - id:
+                    name:
+                queries:
+                  - id:
+                    name:
+
+business_objects:
+  - id:           # e.g., BO01
+    name:
+    type:         # entity | value_object | aggregate_root | domain_event | command | query | policy | rule
+    description:
+    owned_by_context:
+    related_features:
+      - feature_id:
+    related_stories:
+      - story_id:
+    dependencies:
+      - object_id:
+
+collaboration_objects:
+  - id:           # e.g., CO01
+    name:
+    type:         # human | system | agent | external_party
+    responsibilities:
+      -
+    interacts_with:
+      - object_id:
+
+assumptions:
+  - id:           # e.g., ASM01
+    description:
+    source:       # which source document this was inferred from, or "inferred"
+    confidence:   # high | medium | low
+    validation_needed: true | false
+
+open_questions:
+  - id:           # e.g., OQ01
+    question:
+    related_epic:
+    related_feature:
+    severity:     # blocking | important | informational
