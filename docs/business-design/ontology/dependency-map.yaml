@@ -176,4 +176,325 @@ dependencies:
     related_files:
       - path: docs/research/tirvi-validation-and-mvp-scoping.md
 
-  # Per-feature edges appended below as features are processed.
+  # --- Per-feature edges (added during Stage 5 final pass) ---
+
+  - id: DEP-017
+    source: { type: feature, id: E00-F01, name: Single-Docker compose }
+    target: { type: feature, id: E00-F03, name: Adapter ports + fakes }
+    relationship: requires
+    rationale: lite-profile mocked API depends on fake registry.
+    strength: medium
+    direction: one_way
+    risk_if_broken: frontend dev cannot run without weights.
+    related_files:
+      - path: docs/business-design/epics/E00-foundation/stories/E00-F01-single-docker-compose.stories.md
+
+  - id: DEP-018
+    source: { type: feature, id: E00-F04, name: CI gates }
+    target: { type: feature, id: E10-F02, name: Quality gates CI }
+    relationship: extends
+    rationale: pipeline gates layered on top of base CI.
+    strength: medium
+    direction: one_way
+    risk_if_broken: regression undetected.
+    related_files:
+      - path: docs/business-design/epics/E00-foundation/stories/E00-F04-cicd-quality-gates.stories.md
+
+  - id: DEP-019
+    source: { type: feature, id: E02-F04, name: Block segmentation }
+    target: { type: feature, id: E02-F05, name: Question / answer numbering }
+    relationship: requires
+    rationale: numbering tagger consumes block boundaries.
+    strength: strong
+    direction: one_way
+    risk_if_broken: navigation broken.
+    related_files:
+      - path: docs/business-design/epics/E02-ocr-pipeline/stories/E02-F05-question-answer-numbering.stories.md
+
+  - id: DEP-020
+    source: { type: feature, id: E02-F04, name: Block segmentation }
+    target: { type: feature, id: E03-F05, name: Math template }
+    relationship: triggers
+    rationale: math regions detected upstream feed math template.
+    strength: strong
+    direction: one_way
+    risk_if_broken: math read flat.
+    related_files:
+      - path: docs/business-design/epics/E03-normalization/stories/E03-F05-math-template.stories.md
+
+  - id: DEP-021
+    source: { type: feature, id: E03-F03, name: Acronym lexicon }
+    target: { type: feature, id: E11-F05, name: Feedback capture }
+    relationship: validates
+    rationale: feedback corrections drive lexicon updates.
+    strength: medium
+    direction: bidirectional
+    risk_if_broken: lexicon stagnates.
+    related_files:
+      - path: docs/business-design/epics/E11-privacy-legal/stories/E11-F05-feedback-capture.stories.md
+
+  - id: DEP-022
+    source: { type: feature, id: E03-F04, name: Mixed language detection }
+    target: { type: feature, id: E07-F03, name: Azure adapter }
+    relationship: requires
+    rationale: Azure inline `<lang>` route depends on lang span detection.
+    strength: strong
+    direction: one_way
+    risk_if_broken: mispronunciation on mixed content.
+    related_files:
+      - path: docs/business-design/epics/E03-normalization/stories/E03-F04-mixed-language-detection.stories.md
+
+  - id: DEP-023
+    source: { type: feature, id: E04-F01, name: DictaBERT primary }
+    target: { type: feature, id: E04-F02, name: AlephBERT/YAP fallback }
+    relationship: extends
+    rationale: fallback adapter when primary fails repeatedly.
+    strength: strong
+    direction: one_way
+    risk_if_broken: NLP outage stalls pipeline.
+    related_files:
+      - path: docs/business-design/epics/E04-nlp-disambiguation/stories/E04-F02-alephbert-yap-fallback.stories.md
+
+  - id: DEP-024
+    source: { type: feature, id: E05-F03, name: Homograph lexicon }
+    target: { type: feature, id: E05-F01, name: Dicta-Nakdan }
+    relationship: extends
+    rationale: lexicon override applies after Nakdan output.
+    strength: strong
+    direction: one_way
+    risk_if_broken: known-bad cases regress.
+    related_files:
+      - path: docs/business-design/epics/E05-pronunciation/stories/E05-F03-homograph-lexicon.stories.md
+
+  - id: DEP-025
+    source: { type: feature, id: E05-F04, name: Confidence aggregator }
+    target: { type: feature, id: E10-F05, name: Cost telemetry }
+    relationship: validates
+    rationale: low-confidence rate metric feeds telemetry.
+    strength: medium
+    direction: one_way
+    risk_if_broken: drift undetected.
+    related_files:
+      - path: docs/business-design/epics/E05-pronunciation/stories/E05-F04-disambiguation-confidence.stories.md
+
+  - id: DEP-026
+    source: { type: feature, id: E06-F02, name: SSML shaping }
+    target: { type: feature, id: E07-F02, name: Chirp 3 HD adapter }
+    relationship: extends
+    rationale: plan emits plain-text variant when voice does not support SSML.
+    strength: strong
+    direction: one_way
+    risk_if_broken: invalid input to Chirp.
+    related_files:
+      - path: docs/business-design/epics/E06-reading-plan/stories/E06-F02-ssml-shaping.stories.md
+
+  - id: DEP-027
+    source: { type: feature, id: E07-F04, name: Voice routing }
+    target: { type: feature, id: E07-F01, name: Wavenet adapter }
+    relationship: requires
+    rationale: routing dispatches to active TTS adapters.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: failover broken.
+    related_files:
+      - path: docs/business-design/epics/E07-tts-adapters/stories/E07-F04-voice-selection-policy.stories.md
+
+  - id: DEP-028
+    source: { type: feature, id: E08-F02, name: WhisperX fallback }
+    target: { type: feature, id: E08-F01, name: WordTimingProvider }
+    relationship: extends
+    rationale: fallback adapter used when TTS marks unreliable.
+    strength: strong
+    direction: one_way
+    risk_if_broken: highlight desync.
+    related_files:
+      - path: docs/business-design/epics/E08-word-timing-cache/stories/E08-F02-whisperx-hebrew-adapter.stories.md
+
+  - id: DEP-029
+    source: { type: feature, id: E08-F04, name: Sentence-level cache }
+    target: { type: feature, id: E08-F03, name: Block-level cache }
+    relationship: extends
+    rationale: sentence cache layered on block cache for cross-doc reuse.
+    strength: strong
+    direction: one_way
+    risk_if_broken: cost target missed.
+    related_files:
+      - path: docs/business-design/epics/E08-word-timing-cache/stories/E08-F04-sentence-level-cache-key.stories.md
+
+  - id: DEP-030
+    source: { type: feature, id: E09-F02, name: Per-block affordances }
+    target: { type: feature, id: E02-F05, name: Question / answer numbering }
+    relationship: requires
+    rationale: affordances reference canonical question numbers.
+    strength: strong
+    direction: one_way
+    risk_if_broken: broken navigation.
+    related_files:
+      - path: docs/business-design/epics/E09-player-ui/stories/E09-F02-per-block-affordances.stories.md
+
+  - id: DEP-031
+    source: { type: feature, id: E09-F03, name: Word-sync highlight }
+    target: { type: feature, id: E08-F01, name: WordTimingProvider }
+    relationship: requires
+    rationale: highlight consumes per-word timing JSON.
+    strength: strong
+    direction: one_way
+    risk_if_broken: no highlight.
+    related_files:
+      - path: docs/business-design/epics/E09-player-ui/stories/E09-F03-word-sync-highlight.stories.md
+
+  - id: DEP-032
+    source: { type: feature, id: E09-F04, name: Controls }
+    target: { type: feature, id: E09-F03, name: Word-sync highlight }
+    relationship: requires
+    rationale: speed slider rescales highlight timing.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: highlight drifts at non-1× speed.
+    related_files:
+      - path: docs/business-design/epics/E09-player-ui/stories/E09-F04-controls.stories.md
+
+  - id: DEP-033
+    source: { type: feature, id: E09-F05, name: Spell on long-press }
+    target: { type: feature, id: E08-F03, name: Audio cache }
+    relationship: validates
+    rationale: per-word spell audio uses same cache infrastructure.
+    strength: medium
+    direction: one_way
+    risk_if_broken: spell uncached → cost spike.
+    related_files:
+      - path: docs/business-design/epics/E09-player-ui/stories/E09-F05-spell-on-long-press.stories.md
+
+  - id: DEP-034
+    source: { type: feature, id: E09-F06, name: WCAG conformance }
+    target: { type: feature, id: E09-F01, name: Side-by-side viewer }
+    relationship: validates
+    rationale: a11y CI reads every player surface.
+    strength: strong
+    direction: one_way
+    risk_if_broken: regression.
+    related_files:
+      - path: docs/business-design/epics/E09-player-ui/stories/E09-F06-wcag-conformance.stories.md
+
+  - id: DEP-035
+    source: { type: feature, id: E10-F03, name: MOS study }
+    target: { type: feature, id: E07-F04, name: Voice routing }
+    relationship: validates
+    rationale: MOS results drive voice defaults.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: defaults not evidence-backed.
+    related_files:
+      - path: docs/business-design/epics/E10-quality-validation/stories/E10-F03-blind-mos-study.stories.md
+
+  - id: DEP-036
+    source: { type: feature, id: E10-F04, name: Latency profiling }
+    target: { type: feature, id: E00-F02, name: Cloud skeleton }
+    relationship: validates
+    rationale: prod min-instances=1 + cpu-boost flagged in TF.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: TTFA misses target.
+    related_files:
+      - path: docs/business-design/epics/E10-quality-validation/stories/E10-F04-latency-profiling.stories.md
+
+  - id: DEP-037
+    source: { type: feature, id: E11-F02, name: DPIA + parental consent }
+    target: { type: feature, id: E11-F04, name: No-PII logging }
+    relationship: requires
+    rationale: consent records require strict logging hygiene.
+    strength: strong
+    direction: one_way
+    risk_if_broken: regulatory exposure.
+    related_files:
+      - path: docs/business-design/epics/E11-privacy-legal/stories/E11-F02-dpia-parental-consent.stories.md
+
+  - id: DEP-038
+    source: { type: feature, id: E11-F03, name: Upload attestation }
+    target: { type: feature, id: E01-F04, name: Delete cascade }
+    relationship: requires
+    rationale: DMCA cascade reuses delete machinery.
+    strength: strong
+    direction: one_way
+    risk_if_broken: takedown unreliable.
+    related_files:
+      - path: docs/business-design/epics/E11-privacy-legal/stories/E11-F03-upload-attestation.stories.md
+
+  - id: DEP-039
+    source: { type: feature, id: E11-F05, name: Feedback capture }
+    target: { type: feature, id: E03-F03, name: Acronym lexicon }
+    relationship: triggers
+    rationale: feedback informs lexicon PRs.
+    strength: medium
+    direction: one_way
+    risk_if_broken: lexicon stagnates.
+    related_files:
+      - path: docs/business-design/epics/E11-privacy-legal/stories/E11-F05-feedback-capture.stories.md
+
+  - id: DEP-040
+    source: { type: feature, id: E11-F05, name: Feedback capture }
+    target: { type: feature, id: E05-F03, name: Homograph lexicon }
+    relationship: triggers
+    rationale: feedback also feeds homograph lexicon.
+    strength: medium
+    direction: one_way
+    risk_if_broken: regress on top-500 cases.
+    related_files:
+      - path: docs/business-design/epics/E11-privacy-legal/stories/E11-F05-feedback-capture.stories.md
+
+  # --- Edges to inferable future implementation objects ---
+
+  - id: DEP-041
+    source: { type: feature, id: E02-F03, name: OCRResult contract }
+    target: { type: future_class, id: FUT-OCRResult, name: tirvi.extraction.OCRResult }
+    relationship: exposes
+    rationale: schema-version-pinned value object expected during TDD.
+    strength: strong
+    direction: one_way
+    risk_if_broken: adapter drift.
+    related_files:
+      - path: docs/business-design/epics/E02-ocr-pipeline/stories/E02-F03-ocr-result-contract.stories.md
+
+  - id: DEP-042
+    source: { type: feature, id: E04-F03, name: NLPResult schema }
+    target: { type: future_class, id: FUT-NLPResult, name: tirvi.hebrew_nlp.NLPResult }
+    relationship: exposes
+    rationale: pinned per-token POS / morph / lemma container.
+    strength: strong
+    direction: one_way
+    risk_if_broken: schema drift.
+    related_files:
+      - path: docs/business-design/epics/E04-nlp-disambiguation/stories/E04-F03-per-token-pos-morph.stories.md
+
+  - id: DEP-043
+    source: { type: feature, id: E08-F01, name: WordTimingProvider }
+    target: { type: future_service, id: FUT-WordTimingProvider, name: tirvi.audio_delivery.WordTimingProvider }
+    relationship: exposes
+    rationale: port + dual-adapter expected during TDD.
+    strength: strong
+    direction: one_way
+    risk_if_broken: highlight contract loose.
+    related_files:
+      - path: docs/business-design/epics/E08-word-timing-cache/stories/E08-F01-word-timing-provider.stories.md
+
+  - id: DEP-044
+    source: { type: feature, id: E08-F03, name: Audio cache }
+    target: { type: future_function, id: FUT-blockHash, name: tirvi.audio_delivery.compute_block_hash }
+    relationship: exposes
+    rationale: deterministic cache key function with provider+version.
+    strength: strong
+    direction: one_way
+    risk_if_broken: cache poisoning.
+    related_files:
+      - path: docs/business-design/epics/E08-word-timing-cache/stories/E08-F03-content-hash-audio-cache.stories.md
+
+  - id: DEP-045
+    source: { type: feature, id: E11-F04, name: No-PII logging }
+    target: { type: future_function, id: FUT-logScrubber, name: tirvi.privacy_compliance.scrub_log_record }
+    relationship: exposes
+    rationale: scrubber expected at every log emit.
+    strength: strong
+    direction: one_way
+    risk_if_broken: PII leakage.
+    related_files:
+      - path: docs/business-design/epics/E11-privacy-legal/stories/E11-F04-no-pii-logging-audit.stories.md
