@@ -27,14 +27,12 @@
 | 16 | Adversarial review complete | ✅ | `review/global-adversarial-review.md` (12 challenges, all revised by original reviewer) |
 | 17 | Autoresearch loop reached consensus | ✅ | 2 iterations; consensus "complete with deferred issues" |
 | 18 | Critical and High findings fixed | ✅ for what's in scope | 5 Critical: 2 fixed in-skill, 3 deferred with rows; 4 High: 3 fixed, 1 deferred |
-| 19 | Deferred findings have rows / issues | ⚠️ | 12 rows in `deferred-findings.md`; gh issue creation skipped pending user PR review (instructions documented in deferred-findings.md) |
+| 19 | Deferred findings have rows / issues | ✅ | 12 rows in `deferred-findings.md`; GitHub issues #2–#13 created with `design-deferred` + `severity:*` labels |
 | 20 | Final synthesis written | ✅ | `review/global-review-synthesis.md` + `severity-ranked-fix-list.md` + `deferred-findings.md` |
 
-**Status: Complete with deferred issues.** All 20 criteria are addressed;
-criterion 19 is partially honored per the skill's documented "if
-unauthenticated, write to file" fallback. (gh was authenticated mid-run
-for the push only; issue creation step was deliberately not auto-run so
-the user could review the PR first.)
+**Status: Complete with deferred issues.** All 20 criteria fully satisfied.
+GitHub issues #2–#13 cover the 12 deferred findings; each has explicit
+re-evaluation triggers and owners.
 
 ## Output Inventory
 
@@ -93,12 +91,22 @@ added.
 - Medium: 7 (schema-v-OCR, schema-v-NLP, translit bench, voice rotation
   ops rehearsal, block taxonomy v1.1, coref MVP scope, coordinator bulk v1)
 
-Issue creation note: `gh` is installed and `gh auth status` shows
-`✓ Logged in as jb-612` with `gist`, `read:org`, `repo` scopes. Issue
-creation was skipped pending user PR review per their instruction
-("save it to github in non destructive way, as new PR, and I'll evaluate
-the merge later from claude code"). The dispatch loop in
-`deferred-findings.md` is ready to run once the PR is approved.
+GitHub issues created (`gh` authenticated as `jb-612`):
+
+| ID | Issue |
+|----|------|
+| D-AUDIO-CACHE-LEGAL | [#2](https://github.com/jb-612/tirvi/issues/2) |
+| D-PRD-MOS-LANGUAGE-REWRITE | [#3](https://github.com/jb-612/tirvi/issues/3) |
+| D-OCR-BENCH-RUN | [#4](https://github.com/jb-612/tirvi/issues/4) |
+| D-MOS-PANEL-EXPAND-V1 | [#5](https://github.com/jb-612/tirvi/issues/5) |
+| D-LIFECYCLE-AUDIO-LEGAL-FOLLOWUP | [#6](https://github.com/jb-612/tirvi/issues/6) |
+| D-SCHEMA-V-OCR | [#7](https://github.com/jb-612/tirvi/issues/7) |
+| D-SCHEMA-V-NLP | [#8](https://github.com/jb-612/tirvi/issues/8) |
+| D-TRANSLIT-BENCH | [#9](https://github.com/jb-612/tirvi/issues/9) |
+| D-VOICE-ROTATION-PLAYBOOK | [#10](https://github.com/jb-612/tirvi/issues/10) |
+| D-BLOCK-TAXONOMY-V1 | [#11](https://github.com/jb-612/tirvi/issues/11) |
+| D-COREF-MVP-SCOPE | [#12](https://github.com/jb-612/tirvi/issues/12) |
+| D-COORD-BULK-V1 | [#13](https://github.com/jb-612/tirvi/issues/13) |
 
 ## PLAN.md Cross-Walk (E## → F##)
 
