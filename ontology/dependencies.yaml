@@ -530,3 +530,13 @@ dependencies:
     risk_if_broken: TTS reads undecorated Hebrew with wrong vowels.
     related_files:
       - path: .workitems/N02-hebrew-interpretation/F19-dicta-nakdan/design.md
+  - id: DEP-049
+    source: { type: feature, id: N02/F20, name: Phonikud G2P adapter }
+    target: { type: port, id: PORT-04, name: tirvi.ports.G2PBackend }
+    relationship: realizes
+    rationale: F20 supplies the concrete G2P adapter for the locked F03 port.
+    strength: strong
+    direction: one_way
+    risk_if_broken: SSML lacks stress and IPA hints — TTS prosody flat.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F20-phonikud-g2p/design.md

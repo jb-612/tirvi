@@ -101,6 +101,13 @@ modules:
     bounded_context: pronunciation
     source_path: tirvi/adapters/nakdan/
     status: designed
+  - id: MOD-N02-F20
+    name: tirvi.adapters.phonikud
+    description: Phonikud G2P adapter package (loader, IPA + stress, shape)
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    source_path: tirvi/adapters/phonikud/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -225,6 +232,14 @@ adapters:
     port_ref: PORT-03
     source_path: tirvi/adapters/nakdan/__init__.py
     status: designed
+  - id: ADP-N02-F20-phonikud
+    name: PhonikudG2PAdapter
+    description: Phonikud G2P adapter (in-process loader, IPA + stress, vocal-shva passthrough)
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    port_ref: PORT-04
+    source_path: tirvi/adapters/phonikud/__init__.py
+    status: designed
 
 # Classes / structs — result-object value types.
 classes:
@@ -345,6 +360,13 @@ adr_decisions:
     feature_refs: [N02/F19]
     bounded_context: pronunciation
     source_path: docs/ADR/ADR-021-pronunciation-nakdan-loading-topology.md
+    status: proposed
+  - id: adr:022
+    name: Phonikud loaded in-process for POC; matching ADR-020/021 pattern
+    description: Lazy in-process Phonikud import + lru_cache; sidecar deferred behind same G2PBackend port
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-022-pronunciation-phonikud-loading-topology.md
     status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
@@ -643,4 +665,41 @@ tasks:
     feature_refs: [N02/F19]
     spec_refs: [spec:N02/F19/DE-06]
     test_path: tests/unit/test_nakdan_adapter.py
+    status: designed
+  # --- N02/F20 Phonikud G2P adapter ---
+  - id: task:N02/F20/T-01
+    name: phonikud-loader
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-01]
+    test_path: tests/unit/test_phonikud_loader.py
+    status: designed
+  - id: task:N02/F20/T-02
+    name: phonikud-ipa-stress
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-02]
+    test_path: tests/unit/test_phonikud_inference.py
+    status: designed
+  - id: task:N02/F20/T-03
+    name: vocal-shva-passthrough
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-03]
+    test_path: tests/unit/test_vocal_shva.py
+    status: designed
+  - id: task:N02/F20/T-04
+    name: g2p-skip-filter
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-04]
+    test_path: tests/unit/test_g2p_skip_filter.py
+    status: designed
+  - id: task:N02/F20/T-05
+    name: pronunciation-hint-shape
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-05]
+    test_path: tests/unit/test_pronunciation_hint.py
+    status: designed
+  - id: task:N02/F20/T-06
+    name: phonikud-adapter-contract
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-06]
+    test_path: tests/unit/test_phonikud_adapter.py
     status: designed

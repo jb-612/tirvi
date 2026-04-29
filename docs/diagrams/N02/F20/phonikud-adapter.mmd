@@ -1,0 +1,15 @@
+flowchart LR
+    DR["DiacritizationResult\nfrom F19 (NFD nikud)"]
+    LOAD["DE-01\nload_phonikud\n(in-process, ADR-022)"]
+    SKIP["DE-04\ntoken-skip filter\n(NUM / EN / punct)"]
+    INF["DE-02\nPhonikud G2P\nIPA + stress"]
+    SHVA["DE-03\nvocal-shva passthrough"]
+    HINT["DE-05\nPronunciationHint\n(ipa, stress, shva)"]
+    RES["G2PResult\nprovider=phonikud"]
+    DR --> SKIP
+    SKIP -->|skip| RES
+    SKIP -->|g2p| INF
+    LOAD -.-> INF
+    INF --> SHVA
+    SHVA --> HINT
+    HINT --> RES
