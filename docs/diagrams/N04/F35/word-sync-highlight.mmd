@@ -1,0 +1,14 @@
+flowchart LR
+    HTML["DE-01\nstatic HTML\n+ audio + img + .marker"]
+    LOAD["DE-02\nfetch audio.json + page.json"]
+    AUD["audio currentTime"]
+    RAF["DE-03\nrAF loop"]
+    LOOK["DE-04\nbinary search\nstart_s <= t < end_s"]
+    POS["DE-05\npositionMarker(bbox)"]
+    A11Y["DE-06\nprefers-reduced-motion\n+ WCAG contrast"]
+    HTML --> LOAD
+    LOAD --> RAF
+    AUD --> RAF
+    RAF --> LOOK
+    LOOK --> POS
+    POS --> A11Y

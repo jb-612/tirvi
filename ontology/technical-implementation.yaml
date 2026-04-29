@@ -136,6 +136,13 @@ modules:
     bounded_context: audio_delivery
     source_path: tirvi/adapters/tts_marks/
     status: designed
+  - id: MOD-N04-F35
+    name: tirvi.player
+    description: vanilla HTML/JS player surface for POC (audio + word-sync highlight)
+    feature_refs: [N04/F35, N04/F36]
+    bounded_context: audio_delivery
+    source_path: tirvi/player/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -411,6 +418,13 @@ adr_decisions:
     feature_refs: [N02/F20]
     bounded_context: pronunciation
     source_path: docs/ADR/ADR-022-pronunciation-phonikud-loading-topology.md
+    status: proposed
+  - id: adr:023
+    name: POC player ships as vanilla HTML; Next.js deferred to MVP
+    description: Static HTML + 3 small JS modules for the demo; HLD §3.1 Next.js stack lifts to MVP
+    feature_refs: [N04/F35, N04/F36]
+    bounded_context: player
+    source_path: docs/ADR/ADR-023-player-vanilla-html-poc.md
     status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
@@ -882,4 +896,41 @@ tasks:
     feature_refs: [N03/F30]
     spec_refs: [spec:N03/F30/DE-05, spec:N03/F30/DE-06]
     test_path: tests/unit/test_word_timing_provider.py
+    status: designed
+  # --- N04/F35 Word-sync highlight (vanilla HTML POC) ---
+  - id: task:N04/F35/T-01
+    name: player-html-scaffold
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-01]
+    test_path: tests/unit/test_player_html.py
+    status: designed
+  - id: task:N04/F35/T-02
+    name: timings-page-loader
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-02]
+    test_path: tests/unit/test_timings_loader.py
+    status: designed
+  - id: task:N04/F35/T-03
+    name: raf-loop
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-03]
+    test_path: tests/unit/test_raf_loop.py
+    status: designed
+  - id: task:N04/F35/T-04
+    name: active-word-lookup
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-04]
+    test_path: tests/unit/test_lookup_word.py
+    status: designed
+  - id: task:N04/F35/T-05
+    name: marker-positioning
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-05]
+    test_path: tests/unit/test_marker_position.py
+    status: designed
+  - id: task:N04/F35/T-06
+    name: a11y-reduced-motion-and-contrast
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-06]
+    test_path: tests/unit/test_a11y_player.py
     status: designed
