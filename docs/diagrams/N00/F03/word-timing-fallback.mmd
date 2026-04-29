@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant pipeline as Worker pipeline
+    participant wtp as WordTimingProvider
+    participant tts_a as TTSEmittedTimingAdapter
+    participant fa_a as ForcedAlignmentAdapter
+
+    pipeline->>wtp: get_timings(tts_result, transcript)
+    wtp->>tts_a: extract_marks(tts_result)
+    alt marks valid
+        tts_a-->>wtp: WordTimingResult source=tts-marks
+        wtp-->>pipeline: WordTimingResult source=tts-marks
+    else marks absent or truncated
+        tts_a-->>wtp: MarkExtractionError
+        wtp->>fa_a: align(audio_bytes, transcript)
+        fa_a-->>wtp: WordTimingResult source=forced-alignment
+        note over wtp: emit metric timing_source=forced-alignment
+        wtp-->>pipeline: WordTimingResult source=forced-alignment
+    end

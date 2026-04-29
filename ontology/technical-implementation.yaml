@@ -5,35 +5,202 @@
 # Populated incrementally as @sw-designpipeline runs per-feature design and
 # task breakdown. Each task records its target module/class as a node here;
 # each ADR authored gets an `adr-decision` node.
-#
-# Empty arrays in this file are EXPECTED at the start of the refactor
-# (PR 2). They populate as features migrate (PR 4+).
 
 version: 1
 
-# Modules — coarse-grained code groupings (e.g., a Go package, a Dart feature).
-modules: []  # MOD-NN: id, name, description, feature_refs, bounded_context, source_path, status
+# Modules — coarse-grained code groupings.
+modules:
+  - id: MOD-01
+    name: tirvi
+    description: top-level Python package — pipeline domain code, ports, results, fakes
+    feature_refs: [N00/F03]
+    bounded_context: platform
+    source_path: tirvi/
+    status: designed
+  - id: MOD-02
+    name: tirvi.ports
+    description: hexagonal port Protocols (vendor-agnostic interfaces)
+    feature_refs: [N00/F03]
+    bounded_context: platform
+    source_path: tirvi/ports.py
+    status: designed
+  - id: MOD-03
+    name: tirvi.results
+    description: rich result-object value types (frozen dataclasses)
+    feature_refs: [N00/F03]
+    bounded_context: platform
+    source_path: tirvi/results.py
+    status: designed
+  - id: MOD-04
+    name: tirvi.fakes
+    description: in-memory deterministic fake adapters (test doubles)
+    feature_refs: [N00/F03]
+    bounded_context: platform
+    source_path: tirvi/fakes/
+    status: designed
+  - id: MOD-05
+    name: tirvi.contracts
+    description: shared adapter contract test harness
+    feature_refs: [N00/F03]
+    bounded_context: platform
+    source_path: tirvi/contracts.py
+    status: designed
 
-# Services — runtime processes / Cloud Run endpoints / sidecar containers.
-services: []  # SVC-NN: id, name, description, feature_refs, bounded_context, source_path, status
+# Services — runtime processes (none introduced by F03).
+services: []
 
-# Ports — abstract interfaces (DDD ports, hex-arch boundaries).
-ports: []  # PORT-NN: id, name, description, feature_refs, bounded_context, source_path, status
+# Ports — abstract interfaces.
+ports:
+  - id: PORT-01
+    name: OCRBackend
+    description: extracts Hebrew text + layout from PDF bytes; returns OCRResult
+    feature_refs: [N00/F03]
+    bounded_context: extraction
+    source_path: tirvi/ports.py
+    status: designed
+  - id: PORT-02
+    name: NLPBackend
+    description: tokenize + POS-tag + lemmatize Hebrew text; returns NLPResult
+    feature_refs: [N00/F03]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/ports.py
+    status: designed
+  - id: PORT-03
+    name: DiacritizerBackend
+    description: add ניקוד to undecorated Hebrew tokens; returns DiacritizationResult
+    feature_refs: [N00/F03]
+    bounded_context: pronunciation
+    source_path: tirvi/ports.py
+    status: designed
+  - id: PORT-04
+    name: G2PBackend
+    description: emit IPA + stress for diacritized tokens; returns G2PResult
+    feature_refs: [N00/F03]
+    bounded_context: pronunciation
+    source_path: tirvi/ports.py
+    status: designed
+  - id: PORT-05
+    name: TTSBackend
+    description: synthesize audio from SSML; returns TTSResult with optional word_marks
+    feature_refs: [N00/F03]
+    bounded_context: speech_synthesis
+    source_path: tirvi/ports.py
+    status: designed
+  - id: PORT-06
+    name: WordTimingProvider
+    description: per-word timing from TTS marks or forced alignment; returns WordTimingResult
+    feature_refs: [N00/F03]
+    bounded_context: audio_delivery
+    source_path: tirvi/ports.py
+    status: designed
 
-# Adapters — concrete implementations of ports (e.g., GCS storage adapter).
-adapters: []  # ADP-NN: id, name, description, feature_refs, bounded_context, port_ref, source_path, status
+# Adapters — concrete implementations (fakes only in F03).
+adapters:
+  - id: ADP-01
+    name: OCRBackendFake
+    description: in-memory deterministic OCR fake (fixture-driven)
+    feature_refs: [N00/F03]
+    bounded_context: extraction
+    port_ref: PORT-01
+    source_path: tirvi/fakes/ocr.py
+    status: designed
+  - id: ADP-02
+    name: NLPBackendFake
+    description: in-memory deterministic NLP fake (fixture-driven)
+    feature_refs: [N00/F03]
+    bounded_context: hebrew_nlp
+    port_ref: PORT-02
+    source_path: tirvi/fakes/nlp.py
+    status: designed
+  - id: ADP-03
+    name: DiacritizerBackendFake
+    description: in-memory deterministic diacritizer fake (fixture-driven)
+    feature_refs: [N00/F03]
+    bounded_context: pronunciation
+    port_ref: PORT-03
+    source_path: tirvi/fakes/diacritizer.py
+    status: designed
+  - id: ADP-04
+    name: G2PBackendFake
+    description: in-memory deterministic G2P fake (fixture-driven)
+    feature_refs: [N00/F03]
+    bounded_context: pronunciation
+    port_ref: PORT-04
+    source_path: tirvi/fakes/g2p.py
+    status: designed
+  - id: ADP-05
+    name: TTSBackendFake
+    description: in-memory deterministic TTS fake (fixture-driven, marks present + absent variants)
+    feature_refs: [N00/F03]
+    bounded_context: speech_synthesis
+    port_ref: PORT-05
+    source_path: tirvi/fakes/tts.py
+    status: designed
+  - id: ADP-06
+    name: WordTimingProviderFake
+    description: in-memory fake exercising both tts-marks and forced-alignment paths
+    feature_refs: [N00/F03]
+    bounded_context: audio_delivery
+    port_ref: PORT-06
+    source_path: tirvi/fakes/word_timing.py
+    status: designed
 
-# Classes / structs — cohesive types within modules.
-classes: []  # CLS-NN: id, name, description, feature_refs, module_ref, source_path, status
+# Classes / structs — result-object value types.
+classes:
+  - id: CLS-01
+    name: OCRResult
+    description: per-page bboxes + words + conf + lang_hints + provider
+    feature_refs: [N00/F03]
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
+  - id: CLS-02
+    name: NLPResult
+    description: per-token POS + lemma + morph + provider
+    feature_refs: [N00/F03]
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
+  - id: CLS-03
+    name: DiacritizationResult
+    description: vocalized form + confidence + provider
+    feature_refs: [N00/F03]
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
+  - id: CLS-04
+    name: G2PResult
+    description: IPA + stress + vocal-shva per token + provider
+    feature_refs: [N00/F03]
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
+  - id: CLS-05
+    name: TTSResult
+    description: audio bytes + codec + voice_meta + word_marks (optional) + provider
+    feature_refs: [N00/F03]
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
+  - id: CLS-06
+    name: WordTimingResult
+    description: per-word timing + source ∈ {tts-marks, forced-alignment} + provider
+    feature_refs: [N00/F03]
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
 
-# Functions — top-level callable units worth tracking as graph nodes.
-# Most code-layer functions are auto-discovered by ACM's code ingest;
-# this list captures functions that need explicit cross-references
-# (e.g., entry points, scheduled jobs).
-functions: []  # FN-NN: id, name, description, feature_refs, module_ref, source_path, status
+# Functions — explicit cross-references (most auto-discovered).
+functions:
+  - id: FN-01
+    name: assert_adapter_contract
+    description: shared contract test harness; asserts adapter conforms to port + returns rich result
+    feature_refs: [N00/F03]
+    module_ref: MOD-05
+    source_path: tirvi/contracts.py
+    status: designed
 
-# ADR decisions — first-class graph nodes referenced by traceability.yaml.
-# Mirrors docs/ADR/INDEX.md but lives here for graph queries.
+# ADR decisions — first-class graph nodes.
 adr_decisions:
   - id: adr:013
     name: SDLC harness — biz / sw design split + ACM ingestion
@@ -42,3 +209,74 @@ adr_decisions:
     bounded_context: sdlc
     source_path: docs/ADR/ADR-013-sdlc-biz-sw-design-split.md
     status: proposed
+  - id: adr:014
+    name: Result-object schema versioning — contract tests over numeric versions
+    description: Frozen dataclasses pinned by shared contract test; no schema_version field
+    feature_refs: [N00/F03]
+    bounded_context: platform
+    source_path: docs/ADR/ADR-014-platform-result-schema-versioning.md
+    status: proposed
+  - id: adr:015
+    name: WordTimingProvider fallback policy — automatic on schema mismatch
+    description: Provider auto-falls-back to forced alignment on missing/truncated marks; env-var opt-out
+    feature_refs: [N00/F03, N03/F30, N03/F31]
+    bounded_context: audio_delivery
+    source_path: docs/ADR/ADR-015-audio-word-timing-fallback-policy.md
+    status: proposed
+
+# Tasks — atomic work items; status updated to implemented by TDD phase.
+tasks:
+  - id: task:N00/F03/T-01
+    name: scaffold-tirvi-package
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-01]
+    test_path: tests/unit/test_package_structure.py
+    status: designed
+  - id: task:N00/F03/T-02
+    name: result-dataclasses-ocr-nlp-g2p-tts
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-01]
+    test_path: tests/unit/test_results.py
+    status: designed
+  - id: task:N00/F03/T-03
+    name: word-timing-result-literal-source
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-01, spec:N00/F03/DE-03]
+    test_path: tests/unit/test_results.py
+    status: designed
+  - id: task:N00/F03/T-04
+    name: port-protocols-six-backends
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-02]
+    test_path: tests/unit/test_ports.py
+    status: designed
+  - id: task:N00/F03/T-05
+    name: word-timing-provider-coordinator
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-03]
+    test_path: tests/unit/test_word_timing_provider.py
+    status: designed
+  - id: task:N00/F03/T-06
+    name: fake-registry-ocr-nlp-diacritizer-g2p
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-04]
+    test_path: tests/unit/test_fakes.py
+    status: designed
+  - id: task:N00/F03/T-07
+    name: fake-registry-tts-word-timing
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-04]
+    test_path: tests/unit/test_fakes.py
+    status: designed
+  - id: task:N00/F03/T-08
+    name: assert-adapter-contract
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-05]
+    test_path: tests/unit/test_contracts.py
+    status: designed
+  - id: task:N00/F03/T-09
+    name: vendor-import-boundary-lint
+    feature_refs: [N00/F03]
+    spec_refs: [spec:N00/F03/DE-06]
+    test_path: tests/unit/test_import_boundary.py
+    status: designed

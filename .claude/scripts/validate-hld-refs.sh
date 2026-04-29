@@ -43,16 +43,17 @@ if [ -z "$REFS" ]; then
 fi
 
 # Heading conventions accepted in hld.md:
-#   * Top-level:    `# HLD N. Title`                 (matches `HLD §N`)
-#   * Sub-section:  `## N.M — Title`  or  `## N.M. Title`  (matches `HLD §N.M`)
-#   * Deep nest:    `### N.M.K — Title`              (matches `HLD §N.M.K`)
+#   * axon-neo style: `# HLD N. Title`              (matches `HLD §N`)
+#   * tirvi style:    `## N. Title`                 (matches `HLD §N`)
+#   * Sub-section:    `## N.M — Title`  or  `## N.M. Title`  (matches `HLD §N.M`)
+#   * Deep nest:      `### N.M.K — Title`           (matches `HLD §N.M.K`)
 FAIL_COUNT=0
 while IFS= read -r REF; do
   SECTION=$(printf '%s\n' "$REF" | sed -E 's/^HLD §//')
   case "$SECTION" in
     *.*.*) PATTERN="^### $SECTION[[:space:].]" ;;
     *.*)   PATTERN="^## $SECTION[[:space:].—]" ;;
-    *)     PATTERN="^# HLD $SECTION\.?[[:space:]]" ;;
+    *)     PATTERN="^(# HLD $SECTION\.?[[:space:]]|## $SECTION[[:space:].])" ;;
   esac
   if grep -qE "$PATTERN" "$HLD_PATH"; then
     printf 'PASS  %s\n' "$REF"

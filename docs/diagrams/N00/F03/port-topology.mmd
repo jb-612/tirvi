@@ -1,0 +1,40 @@
+flowchart LR
+    worker["Worker\npipeline"]
+
+    P1["OCRBackend"]
+    P2["NLPBackend"]
+    P3["DiacritizerBackend"]
+    P4["G2PBackend"]
+    P5["TTSBackend"]
+    P6["WordTimingProvider"]
+
+    R1["OCRResult"]
+    R2["NLPResult"]
+    R3["DiacritizationResult"]
+    R4["G2PResult"]
+    R5["TTSResult"]
+    R6["WordTimingResult"]
+
+    A1["TesseractAdapter\n(F08)"]
+    A2["DictaBERTAdapter\n(F17)"]
+    A3["NakdanAdapter\n(F19)"]
+    A4["PhonkudAdapter\n(F20)"]
+    A5["WavenetAdapter\n(F26)"]
+    A6["TimingAdapters\n(F30)"]
+
+    Fakes["*Fake adapters\n(F03 - this feature)"]
+
+    worker --> P1 & P2 & P3 & P4 & P5 & P6
+    P1 --> R1
+    P2 --> R2
+    P3 --> R3
+    P4 --> R4
+    P5 --> R5
+    P6 --> R6
+    A1 -.->|implements| P1
+    A2 -.->|implements| P2
+    A3 -.->|implements| P3
+    A4 -.->|implements| P4
+    A5 -.->|implements| P5
+    A6 -.->|implements| P6
+    Fakes -.->|implements all ports| P1 & P2 & P3 & P4 & P5 & P6
