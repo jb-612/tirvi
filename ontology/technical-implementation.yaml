@@ -122,6 +122,13 @@ modules:
     bounded_context: speech_synthesis
     source_path: tirvi/ssml/
     status: designed
+  - id: MOD-N03-F26
+    name: tirvi.adapters.wavenet
+    description: Google Cloud TTS Wavenet adapter (v1beta1 client, marks, drafts/ writer)
+    feature_refs: [N03/F26]
+    bounded_context: speech_synthesis
+    source_path: tirvi/adapters/wavenet/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -253,6 +260,14 @@ adapters:
     bounded_context: pronunciation
     port_ref: PORT-04
     source_path: tirvi/adapters/phonikud/__init__.py
+    status: designed
+  - id: ADP-N03-F26-wavenet
+    name: WavenetTTSAdapter
+    description: Google Cloud TTS v1beta1 adapter for he-IL-Wavenet-D with mark timepoints
+    feature_refs: [N03/F26]
+    bounded_context: speech_synthesis
+    port_ref: PORT-05
+    source_path: tirvi/adapters/wavenet/__init__.py
     status: designed
 
 # Classes / structs — result-object value types.
@@ -784,4 +799,41 @@ tasks:
     feature_refs: [N02/F23]
     spec_refs: [spec:N02/F23/DE-05, spec:N02/F23/DE-06]
     test_path: tests/unit/test_ssml_shape.py
+    status: designed
+  # --- N03/F26 Google Wavenet adapter ---
+  - id: task:N03/F26/T-01
+    name: wavenet-client-wrapper
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-01]
+    test_path: tests/unit/test_wavenet_client.py
+    status: designed
+  - id: task:N03/F26/T-02
+    name: wavenet-synthesize-with-marks
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-02]
+    test_path: tests/unit/test_wavenet_synthesize.py
+    status: designed
+  - id: task:N03/F26/T-03
+    name: tts-result-assembly
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-03]
+    test_path: tests/unit/test_tts_result_assembly.py
+    status: designed
+  - id: task:N03/F26/T-04
+    name: mark-truncation-detector
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-04]
+    test_path: tests/unit/test_mark_truncation.py
+    status: designed
+  - id: task:N03/F26/T-05
+    name: drafts-dir-writer
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-05]
+    test_path: tests/unit/test_drafts_dir_write.py
+    status: designed
+  - id: task:N03/F26/T-06
+    name: wavenet-adapter-contract
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-06]
+    test_path: tests/unit/test_wavenet_adapter.py
     status: designed
