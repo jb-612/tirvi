@@ -75,18 +75,22 @@ mechanism exists.
    per-feature `traceability.yaml` is the feature-level slice. Both feed
    ACM.
 
-3. **ACM ingestion uses the existing CLI**, not a new bespoke script.
-   PR 2 adds a thin wrapper script `scripts/acm-ingest.sh` that sets the
-   right env vars (`ACM_GRAPH_NAME=tirvi`, `ACM_DOC_DIRS=docs,ontology,
-   .workitems`, `ACM_SOURCE_DIRS=cmd,pkg,internal,flutter_app/lib`) and
-   calls `uv run acm --root . --project tirvi ingest --full`. It does
-   NOT reimplement parsing or graph loading.
+3. **ACM ingestion is a cross-project operation**, run from the ACM
+   checkout against tirvi as the target codebase (`--root /path/to/tirvi`).
+   The `acm` CLI is not installed in tirvi's uv env — it lives with the
+   ACM project. `scripts/acm-ingest.sh` in tirvi is therefore a
+   documentation helper that prints the canonical invocation; it does
+   not (and cannot) run the CLI from tirvi. This pattern matches the
+   `acm_help` documented invocation form
+   (`uv run acm --root /project --project MyProject ingest --full`).
 
-4. **Ingest cadence**: run as a `make gate` step (post-test, pre-commit
-   advisory). Not a hard pre-commit hook because ACM ingestion takes
-   tens of seconds and a failed ACM ingest should not block code commits.
-   It runs whenever the developer wants the graph current. CI re-runs
-   it after merge.
+4. **Ingest cadence**: run manually from the ACM checkout when the
+   developer wants the graph current. NOT wired as a `make gate` step
+   because tirvi has no local CLI to invoke. CI cadence is the ACM
+   project's responsibility (or a separate scheduled job). The biz/sw
+   split refactor itself does not depend on continuous ingestion —
+   the file-system artefacts in `ontology/` and `.workitems/*/traceability.yaml`
+   are valid sources of truth even when the graph is stale.
 
 5. **Node-id namespace alignment**: existing template uses
    `feature:<id>`, `spec:<id>/DE-NN`, `story:<id>/US-NN`,

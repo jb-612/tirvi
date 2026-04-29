@@ -64,17 +64,23 @@ template are preserved; new types added by this refactor:
 ## ACM ingestion
 
 This folder + `.workitems/<N>/<F>/traceability.yaml` files are loaded
-into FalkorDB via the existing ACM CLI:
+into FalkorDB via the existing ACM CLI. **The ingestion is run from
+your ACM project checkout**, with `--root` pointing at tirvi as the
+target codebase. The `acm` CLI is not installed in tirvi's uv env (and
+should not be) — it lives with the ACM project.
+
+From your ACM checkout (e.g., `~/code/acm-mcp/`):
 
 ```bash
 ACM_GRAPH_NAME=tirvi \
 ACM_DOC_DIRS="docs,ontology,.workitems" \
 ACM_SOURCE_DIRS="cmd,pkg,internal,flutter_app/lib" \
-  uv run acm --root . --project tirvi ingest --full
+  uv run acm --root /path/to/tirvi --project tirvi ingest --full
 ```
 
-Convenience wrapper: `scripts/acm-ingest.sh`. Validation:
-`scripts/validate-ontology.sh` (run before ingest).
+`scripts/acm-ingest.sh` in this repo is a documentation helper — it
+prints the command above with `--root` set to your tirvi checkout
+path. Validation: `scripts/validate-ontology.sh` (run before ingest).
 
 After ingestion, query via `mcp__acm__*` MCP tools:
 - `acm_search(pattern, project="tirvi")`
