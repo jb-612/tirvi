@@ -23,6 +23,7 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-014 | Result-object schema versioning (contract tests over numeric versions) | Proposed | platform | F03 |
 | ADR-015 | WordTimingProvider fallback policy (automatic on schema mismatch) | Proposed | audio_delivery | F03, F30, F31 |
 | ADR-016 | Tesseract deskew preprocessor lives inside the adapter | Proposed | ingest | F08 |
+| ADR-017 | OCRResult fixture builder uses YAML, not a Python DSL | Proposed | platform | F10 |
 
 ## Conventions
 

@@ -52,6 +52,13 @@ modules:
     bounded_context: extraction
     source_path: tirvi/adapters/tesseract/
     status: designed
+  - id: MOD-N01-F10
+    name: tirvi.fixtures.ocr
+    description: YAML-driven OCRResult fixture builder for downstream test seeding
+    feature_refs: [N01/F10]
+    bounded_context: platform
+    source_path: tirvi/fixtures/ocr.py
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -246,6 +253,13 @@ adr_decisions:
     bounded_context: ingest
     source_path: docs/ADR/ADR-016-ingest-tesseract-deskew-location.md
     status: proposed
+  - id: adr:017
+    name: OCRResult fixture builder uses YAML, not a Python DSL
+    description: YAML templates loaded by OCRResultBuilder.from_yaml; lives under tests/fixtures/ocr/
+    feature_refs: [N01/F10]
+    bounded_context: platform
+    source_path: docs/ADR/ADR-017-platform-ocr-fixture-builder-format.md
+    status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
 tasks:
@@ -339,4 +353,35 @@ tasks:
     feature_refs: [N01/F08]
     spec_refs: [spec:N01/F08/DE-06]
     test_path: tests/unit/test_tesseract_adapter.py
+    status: designed
+  # --- N01/F10 OCRResult contract ---
+  - id: task:N01/F10/T-01
+    name: per-word-semantic-fields
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-01]
+    test_path: tests/unit/test_ocr_result_fields.py
+    status: designed
+  - id: task:N01/F10/T-02
+    name: page-level-lang-hints
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-02]
+    test_path: tests/unit/test_ocr_result_fields.py
+    status: designed
+  - id: task:N01/F10/T-03
+    name: yaml-fixture-builder
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-03]
+    test_path: tests/unit/test_ocr_fixture_builder.py
+    status: designed
+  - id: task:N01/F10/T-04
+    name: v1-invariant-assertion
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-04]
+    test_path: tests/unit/test_ocr_v1_invariants.py
+    status: designed
+  - id: task:N01/F10/T-05
+    name: provider-version-metadata
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-05]
+    test_path: tests/unit/test_ocr_result_fields.py
     status: designed

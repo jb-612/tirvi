@@ -1,0 +1,12 @@
+flowchart TD
+    R["OCRResult\nprovider: str\ntext: str\nconfidence: float | None"]
+    LH["lang_hints: list[str]\n(page-level union)"]
+    B["blocks[]: OCRBlock\nbbox + metadata\nprovider_version (DE-05)"]
+    W["words[]: OCRWord\nbbox: BBox\nconfidence: float | None\nlang_hint: he | en | None"]
+    BLD["OCRResultBuilder.from_yaml(path)\n(DE-03, ADR-017)"]
+    INV["assert_ocr_result_v1\n(DE-04)"]
+    R --> LH
+    R --> B
+    B --> W
+    BLD --> R
+    R --> INV
