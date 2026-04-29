@@ -1,0 +1,22 @@
+flowchart LR
+    BLK["F11 blocks\n(heading / paragraph / question_stem)"]
+    SP["F14 NormalizedText spans"]
+    NLP["F18 NLPResult\n(POS, lemma, morph)"]
+    DIA["F19 DiacritizationResult\n(NFD nikud)"]
+    G2P["F20 G2PResult\n(IPA, stress)"]
+    BLD["DE-02 build_plan"]
+    PROV["DE-03 provenance dict\nper PlanToken field"]
+    SKIP["DE-05 empty-block skip"]
+    INV["DE-04 assert_plan_v1"]
+    SER["DE-06 deterministic JSON"]
+    PLAN["ReadingPlan\nblocks + tokens + ssml=''"]
+    BLK --> BLD
+    SP --> BLD
+    NLP --> BLD
+    DIA --> BLD
+    G2P --> BLD
+    BLD --> PROV
+    PROV --> SKIP
+    SKIP --> INV
+    INV --> SER
+    SER --> PLAN

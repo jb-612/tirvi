@@ -108,6 +108,13 @@ modules:
     bounded_context: pronunciation
     source_path: tirvi/adapters/phonikud/
     status: designed
+  - id: MOD-N02-F22
+    name: tirvi.plan
+    description: reading-plan assembler combining blocks + NLP + diacritization + G2P
+    feature_refs: [N02/F22]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/plan/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -702,4 +709,41 @@ tasks:
     feature_refs: [N02/F20]
     spec_refs: [spec:N02/F20/DE-06]
     test_path: tests/unit/test_phonikud_adapter.py
+    status: designed
+  # --- N02/F22 Reading-plan output ---
+  - id: task:N02/F22/T-01
+    name: plan-value-types
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-01]
+    test_path: tests/unit/test_plan_value_types.py
+    status: designed
+  - id: task:N02/F22/T-02
+    name: build-plan-combinator
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-02]
+    test_path: tests/unit/test_build_plan.py
+    status: designed
+  - id: task:N02/F22/T-03
+    name: per-token-provenance
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-03]
+    test_path: tests/unit/test_plan_provenance.py
+    status: designed
+  - id: task:N02/F22/T-04
+    name: plan-invariants
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-04]
+    test_path: tests/unit/test_plan_invariants.py
+    status: designed
+  - id: task:N02/F22/T-05
+    name: empty-block-skip
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-05]
+    test_path: tests/unit/test_empty_block_skip.py
+    status: designed
+  - id: task:N02/F22/T-06
+    name: deterministic-json-serialization
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-06]
+    test_path: tests/unit/test_plan_serialization.py
     status: designed
