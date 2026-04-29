@@ -1,14 +1,387 @@
 # Functional Test Ontology — tirvi
-# Updated incrementally per feature.
+# Correlates every functional + behavioural test to its stories, features,
+# business objects, bounded contexts, and inferable future implementation
+# objects. Acts as the pre-implementation contract for TDD.
+#
 # Schema: .claude/skills/biz-functional-design/schemas/functional-test-ontology.schema.yaml
+#
+# IDs:
+#   FT-001..FT-315  functional tests (per stage in test plan files)
+#   BT-001..BT-208  behavioural tests
+#
+# This is an indexed manifest. Full per-feature plans live in:
+#   docs/business-design/epics/<epic>/tests/<feature>.functional-test-plan.md
+#   docs/business-design/epics/<epic>/tests/<feature>.behavioural-test-plan.md
+#
+# Cross-walk to PLAN.md (N00–N05 / F01–F47) lives in
+# business-taxonomy.yaml under `plan_md_cross_walk`.
 
 version: 1
 
-# Functional + behavioural tests are added as each feature lands its
-# test plans. Each entry correlates a test ID to its story IDs, business
-# objects, bounded context, aggregate, and inferred future implementation
-# objects (classes / functions / services). The future-impl section is
-# *expected scope*, not a class diagram — it tells TDD what to look for.
+# Per-feature test ID ranges — quick index from feature → tests.
+test_ranges:
+  - { feature_id: E00-F01, ft: [FT-001, FT-005], bt: [BT-001, BT-004] }
+  - { feature_id: E00-F02, ft: [FT-006, FT-010], bt: [BT-005, BT-008] }
+  - { feature_id: E00-F03, ft: [FT-011, FT-016], bt: [BT-009, BT-012] }
+  - { feature_id: E00-F04, ft: [FT-017, FT-022], bt: [BT-013, BT-016] }
+  - { feature_id: E00-F05, ft: [FT-023, FT-027], bt: [BT-017, BT-020] }
+  - { feature_id: E01-F01, ft: [FT-028, FT-033], bt: [BT-021, BT-024] }
+  - { feature_id: E01-F02, ft: [FT-034, FT-038], bt: [BT-025, BT-027] }
+  - { feature_id: E01-F03, ft: [FT-039, FT-043], bt: [BT-028, BT-031] }
+  - { feature_id: E01-F04, ft: [FT-044, FT-049], bt: [BT-032, BT-035] }
+  - { feature_id: E01-F05, ft: [FT-050, FT-055], bt: [BT-036, BT-039] }
+  - { feature_id: E02-F01, ft: [FT-056, FT-062], bt: [BT-040, BT-043] }
+  - { feature_id: E02-F02, ft: [FT-063, FT-068], bt: [BT-044, BT-047] }
+  - { feature_id: E02-F03, ft: [FT-069, FT-073], bt: [BT-048, BT-050] }
+  - { feature_id: E02-F04, ft: [FT-074, FT-080], bt: [BT-051, BT-054] }
+  - { feature_id: E02-F05, ft: [FT-081, FT-087], bt: [BT-055, BT-058] }
+  - { feature_id: E02-F06, ft: [FT-088, FT-093], bt: [BT-059, BT-062] }
+  - { feature_id: E03-F01, ft: [FT-094, FT-098], bt: [BT-063, BT-066] }
+  - { feature_id: E03-F02, ft: [FT-099, FT-105], bt: [BT-067, BT-070] }
+  - { feature_id: E03-F03, ft: [FT-106, FT-111], bt: [BT-071, BT-074] }
+  - { feature_id: E03-F04, ft: [FT-112, FT-116], bt: [BT-075, BT-078] }
+  - { feature_id: E03-F05, ft: [FT-117, FT-123], bt: [BT-079, BT-082] }
+  - { feature_id: E04-F01, ft: [FT-124, FT-130], bt: [BT-083, BT-086] }
+  - { feature_id: E04-F02, ft: [FT-131, FT-135], bt: [BT-087, BT-090] }
+  - { feature_id: E04-F03, ft: [FT-136, FT-140], bt: [BT-091, BT-093] }
+  - { feature_id: E04-F04, ft: [FT-141, FT-145], bt: [BT-094, BT-096] }
+  - { feature_id: E05-F01, ft: [FT-146, FT-151], bt: [BT-097, BT-100] }
+  - { feature_id: E05-F02, ft: [FT-152, FT-157], bt: [BT-101, BT-104] }
+  - { feature_id: E05-F03, ft: [FT-158, FT-162], bt: [BT-105, BT-108] }
+  - { feature_id: E05-F04, ft: [FT-163, FT-167], bt: [BT-109, BT-112] }
+  - { feature_id: E06-F01, ft: [FT-168, FT-173], bt: [BT-113, BT-116] }
+  - { feature_id: E06-F02, ft: [FT-174, FT-178], bt: [BT-117, BT-120] }
+  - { feature_id: E06-F03, ft: [FT-179, FT-183], bt: [BT-121, BT-124] }
+  - { feature_id: E06-F04, ft: [FT-184, FT-187], bt: [BT-125, BT-127] }
+  - { feature_id: E06-F05, ft: [FT-188, FT-192], bt: [BT-128, BT-130] }
+  - { feature_id: E07-F01, ft: [FT-193, FT-198], bt: [BT-131, BT-134] }
+  - { feature_id: E07-F02, ft: [FT-199, FT-202], bt: [BT-135, BT-137] }
+  - { feature_id: E07-F03, ft: [FT-203, FT-207], bt: [BT-138, BT-141] }
+  - { feature_id: E07-F04, ft: [FT-208, FT-212], bt: [BT-142, BT-145] }
+  - { feature_id: E08-F01, ft: [FT-213, FT-218], bt: [BT-146, BT-148] }
+  - { feature_id: E08-F02, ft: [FT-219, FT-222], bt: [BT-149, BT-151] }
+  - { feature_id: E08-F03, ft: [FT-223, FT-228], bt: [BT-152, BT-154] }
+  - { feature_id: E08-F04, ft: [FT-229, FT-232], bt: [BT-155, BT-157] }
+  - { feature_id: E09-F01, ft: [FT-233, FT-238], bt: [BT-158, BT-160] }
+  - { feature_id: E09-F02, ft: [FT-239, FT-243], bt: [BT-161, BT-164] }
+  - { feature_id: E09-F03, ft: [FT-244, FT-248], bt: [BT-165, BT-167] }
+  - { feature_id: E09-F04, ft: [FT-249, FT-253], bt: [BT-168, BT-171] }
+  - { feature_id: E09-F05, ft: [FT-254, FT-258], bt: [BT-172, BT-174] }
+  - { feature_id: E09-F06, ft: [FT-259, FT-264], bt: [BT-175, BT-177] }
+  - { feature_id: E10-F01, ft: [FT-265, FT-269], bt: [BT-178, BT-181] }
+  - { feature_id: E10-F02, ft: [FT-270, FT-275], bt: [BT-182, BT-184] }
+  - { feature_id: E10-F03, ft: [FT-276, FT-280], bt: [BT-185, BT-187] }
+  - { feature_id: E10-F04, ft: [FT-281, FT-286], bt: [BT-188, BT-190] }
+  - { feature_id: E10-F05, ft: [FT-287, FT-291], bt: [BT-191, BT-193] }
+  - { feature_id: E11-F01, ft: [FT-292, FT-296], bt: [BT-194, BT-196] }
+  - { feature_id: E11-F02, ft: [FT-297, FT-301], bt: [BT-197, BT-199] }
+  - { feature_id: E11-F03, ft: [FT-302, FT-306], bt: [BT-200, BT-202] }
+  - { feature_id: E11-F04, ft: [FT-307, FT-310], bt: [BT-203, BT-205] }
+  - { feature_id: E11-F05, ft: [FT-311, FT-315], bt: [BT-206, BT-208] }
 
-functional_tests: []   # appended per feature
-behavioural_tests: []  # appended per feature
+# Critical-path tests called out explicitly with full schema entries.
+# Full enumeration of all 315+208 entries is preserved in the test plan files;
+# this index lists the ones that gate MVP per Stage 9-12 review consensus.
+
+functional_tests:
+  - id: FT-029
+    name: Resume from byte offset (50 MB resumable upload)
+    feature_id: E01-F01
+    epic_id: E01
+    test_file: docs/business-design/epics/E01-document-ingest/tests/E01-F01-signed-url-upload.functional-test-plan.md
+    test_type: functional
+    related_stories: [E01-F01-S01]
+    related_business_objects: [BO01, BO02]
+    related_contexts: [BC02]
+    related_aggregates: [BO01]
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.document_ingest.UploadSession, responsibility: track byte offset + TTL }
+      functions:
+        - { name: tirvi.document_ingest.create_resumable_upload_url, responsibility: signed URL handout }
+      services:
+        - { name: tirvi.document_ingest.UploadService, responsibility: orchestrate signed-URL handout + manifest write }
+    priority: critical
+    risk_covered: dyslexic student abandonment on failed upload (PRD §6.1)
+    status: drafted
+
+  - id: FT-034
+    name: Concurrent stage writers preserved by precondition
+    feature_id: E01-F02
+    epic_id: E01
+    test_file: docs/business-design/epics/E01-document-ingest/tests/E01-F02-manifest-conditional-writes.functional-test-plan.md
+    test_type: functional
+    related_stories: [E01-F02-S01]
+    related_business_objects: [BO03, BO05]
+    related_contexts: [BC02]
+    related_aggregates: [BO03]
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.document_ingest.Manifest, responsibility: typed read model }
+      functions:
+        - { name: tirvi.document_ingest.put_manifest_with_precondition, responsibility: GCS x-goog-if-generation-match write }
+      services: []
+    priority: critical
+    risk_covered: lost OCR / NLP results in fan-in (HLD §9)
+    status: drafted
+
+  - id: FT-079
+    name: Block-segmentation recall ≥ 95% questions / ≥ 90% answers on bench
+    feature_id: E02-F04
+    epic_id: E02
+    test_file: docs/business-design/epics/E02-ocr-pipeline/tests/E02-F04-block-segmentation.functional-test-plan.md
+    test_type: functional
+    related_stories: [E02-F04-S01]
+    related_business_objects: [BO09, BO10, BO11, BO12]
+    related_contexts: [BC07]
+    related_aggregates: [BO10]
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.extraction.Block, responsibility: typed block with bbox + child word refs }
+      functions:
+        - { name: tirvi.extraction.segment_blocks, responsibility: heuristic block detector }
+      services: []
+    priority: critical
+    risk_covered: PRD §10 ≥95% question-stem recall
+    status: drafted
+
+  - id: FT-127
+    name: DictaBERT homograph disambiguation by context
+    feature_id: E04-F01
+    epic_id: E04
+    test_file: docs/business-design/epics/E04-nlp-disambiguation/tests/E04-F01-dictabert-adapter.functional-test-plan.md
+    test_type: functional
+    related_stories: [E04-F01-S02]
+    related_business_objects: [BO19, BO20]
+    related_contexts: [BC04]
+    related_aggregates: [BO19]
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.hebrew_nlp.NLPResult, responsibility: per-token POS + lemma + morph + conf }
+      functions:
+        - { name: tirvi.hebrew_nlp.disambiguate, responsibility: pick top sense candidate with margin }
+      services:
+        - { name: tirvi.hebrew_nlp.NLPBackend, responsibility: port hosting DictaBERT + AlephBERT/YAP adapters }
+    priority: critical
+    risk_covered: PRD §10 ≥85% homograph correctness
+    status: drafted
+
+  - id: FT-150
+    name: Diacritization word-level accuracy ≥ 85% on bench
+    feature_id: E05-F01
+    epic_id: E05
+    test_file: docs/business-design/epics/E05-pronunciation/tests/E05-F01-dicta-nakdan-adapter.functional-test-plan.md
+    test_type: functional
+    related_stories: [E05-F01-S01]
+    related_business_objects: [BO22, BO15]
+    related_contexts: [BC05]
+    related_aggregates: [BO22]
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.pronunciation.DiacritizationResult, responsibility: vocalized form + conf }
+      functions:
+        - { name: tirvi.pronunciation.diacritize, responsibility: Nakdan + lexicon override }
+      services:
+        - { name: tirvi.pronunciation.DiacritizerBackend, responsibility: port over Dicta-Nakdan }
+    priority: critical
+    risk_covered: PRD §10 pronunciation accuracy floor
+    status: drafted
+
+  - id: FT-194
+    name: TTS marks truncated → manifest flag + fallback alignment
+    feature_id: E07-F01
+    epic_id: E07
+    test_file: docs/business-design/epics/E07-tts-adapters/tests/E07-F01-google-wavenet-adapter.functional-test-plan.md
+    test_type: functional
+    related_stories: [E07-F01-S01]
+    related_business_objects: [BO29, BO30, BO32]
+    related_contexts: [BC08, BC09]
+    related_aggregates: [BO29]
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.speech_synthesis.TTSResult, responsibility: audio + voice_meta + word_marks }
+      functions:
+        - { name: tirvi.speech_synthesis.synthesize_with_marks, responsibility: SSML+marks emission }
+      services:
+        - { name: tirvi.speech_synthesis.TTSBackend, responsibility: port over Wavenet / Chirp / Azure }
+    priority: critical
+    risk_covered: ASM03 — Hebrew SSML <mark> reliability unverified
+    status: drafted
+
+  - id: FT-244
+    name: Word-sync highlight error ≤ 80 ms at 1× playback
+    feature_id: E09-F03
+    epic_id: E09
+    test_file: docs/business-design/epics/E09-player-ui/tests/E09-F03-word-sync-highlight.functional-test-plan.md
+    test_type: functional
+    related_stories: [E09-F03-S01]
+    related_business_objects: [BO32, BO37]
+    related_contexts: [BC10, BC09]
+    related_aggregates: []
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.player.HighlightController, responsibility: subscribe to currentTime; toggle word class }
+      functions:
+        - { name: tirvi.player.bind_audio_timeline, responsibility: rescale timing on speed change }
+      services: []
+    priority: critical
+    risk_covered: ASM10 alignment error budget
+    status: drafted
+
+  - id: FT-261
+    name: Live region announces playback state for screen readers
+    feature_id: E09-F06
+    epic_id: E09
+    test_file: docs/business-design/epics/E09-player-ui/tests/E09-F06-wcag-conformance.functional-test-plan.md
+    test_type: functional
+    related_stories: [E09-F06-S02]
+    related_business_objects: [BO39]
+    related_contexts: [BC10]
+    related_aggregates: []
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.player.AriaLiveAnnouncer, responsibility: state-change announcements }
+      functions: []
+      services: []
+    priority: critical
+    risk_covered: PRD §7.1 WCAG 2.2 AA
+    status: drafted
+
+  - id: FT-292
+    name: Lifecycle drift detected daily on confidential prefixes
+    feature_id: E11-F01
+    epic_id: E11
+    test_file: docs/business-design/epics/E11-privacy-legal/tests/E11-F01-24h-ttl-automation.functional-test-plan.md
+    test_type: functional
+    related_stories: [E11-F01-S01]
+    related_business_objects: [BO06]
+    related_contexts: [BC11]
+    related_aggregates: []
+    expected_future_implementation:
+      classes:
+        - { name: tirvi.privacy_compliance.RetentionPolicy, responsibility: policy value object }
+      functions:
+        - { name: tirvi.privacy_compliance.detect_lifecycle_drift, responsibility: scheduled diff vs TF state }
+      services: []
+    priority: critical
+    risk_covered: R7 PPL Amendment 13 storage limitation
+    status: drafted
+
+  - id: FT-309
+    name: Lint catches log emission of document text
+    feature_id: E11-F04
+    epic_id: E11
+    test_file: docs/business-design/epics/E11-privacy-legal/tests/E11-F04-no-pii-logging-audit.functional-test-plan.md
+    test_type: functional
+    related_stories: [E11-F04-S01]
+    related_business_objects: [BO45]
+    related_contexts: [BC11]
+    related_aggregates: []
+    expected_future_implementation:
+      classes: []
+      functions:
+        - { name: tirvi.privacy_compliance.scrub_log_record, responsibility: drop or hash PII fields }
+      services: []
+    priority: critical
+    risk_covered: PRD §8 — logs must not contain document content
+    status: drafted
+
+# Behavioural tests — critical paths only.
+behavioural_tests:
+  - id: BT-021
+    name: Privacy hesitation before first upload
+    feature_id: E01-F01
+    epic_id: E01
+    test_file: docs/business-design/epics/E01-document-ingest/tests/E01-F01-signed-url-upload.behavioural-test-plan.md
+    test_type: behavioural
+    related_personas: [P01, P03]
+    related_collaboration_objects: [CO07]
+    related_stories: [E01-F01-S01]
+    behaviour_pattern: hesitation
+    priority: high
+    risk_covered: dyslexic student / parent abandonment due to privacy concern
+    status: drafted
+
+  - id: BT-040
+    name: Student abandons after seeing garbled RTL on a page
+    feature_id: E02-F01
+    epic_id: E02
+    test_file: docs/business-design/epics/E02-ocr-pipeline/tests/E02-F01-tesseract-adapter.behavioural-test-plan.md
+    test_type: behavioural
+    related_personas: [P01]
+    related_collaboration_objects: [CO01]
+    related_stories: [E02-F01-S01]
+    behaviour_pattern: abandoned_flow
+    priority: high
+    risk_covered: PRD §6.2 + R8 latency-quality interplay
+    status: drafted
+
+  - id: BT-097
+    name: Student reports wrong vocalization (homograph)
+    feature_id: E05-F01
+    epic_id: E05
+    test_file: docs/business-design/epics/E05-pronunciation/tests/E05-F01-dicta-nakdan-adapter.behavioural-test-plan.md
+    test_type: behavioural
+    related_personas: [P01]
+    related_collaboration_objects: [CO03]
+    related_stories: [E05-F01-S01]
+    behaviour_pattern: error_correction
+    priority: high
+    risk_covered: feedback path closes the lexicon loop (R3)
+    status: drafted
+
+  - id: BT-131
+    name: Student notices highlight desync mid-block
+    feature_id: E07-F01
+    epic_id: E07
+    test_file: docs/business-design/epics/E07-tts-adapters/tests/E07-F01-google-wavenet-adapter.behavioural-test-plan.md
+    test_type: behavioural
+    related_personas: [P01]
+    related_collaboration_objects: [CO05, CO06]
+    related_stories: [E07-F01-S01]
+    behaviour_pattern: error_correction
+    priority: high
+    risk_covered: ASM03 + ASM10 alignment failure mode
+    status: drafted
+
+  - id: BT-175
+    name: Student with screen reader completes task end-to-end
+    feature_id: E09-F06
+    epic_id: E09
+    test_file: docs/business-design/epics/E09-player-ui/tests/E09-F06-wcag-conformance.behavioural-test-plan.md
+    test_type: behavioural
+    related_personas: [P01]
+    related_collaboration_objects: []
+    related_stories: [E09-F06-S02]
+    behaviour_pattern: collaboration_assistive_tech
+    priority: critical
+    risk_covered: PRD §7.1 WCAG 2.2 AA
+    status: drafted
+
+  - id: BT-185
+    name: MOS panel participant fatigue mid-session
+    feature_id: E10-F03
+    epic_id: E10
+    test_file: docs/business-design/epics/E10-quality-validation/tests/E10-F03-blind-mos-study.behavioural-test-plan.md
+    test_type: behavioural
+    related_personas: [P05, P12]
+    related_collaboration_objects: [CO12]
+    related_stories: [E10-F03-S01]
+    behaviour_pattern: hesitation
+    priority: high
+    risk_covered: small panel + bias risk (R2)
+    status: drafted
+
+  - id: BT-197
+    name: Parent receives consent email; signs in 5 min
+    feature_id: E11-F02
+    epic_id: E11
+    test_file: docs/business-design/epics/E11-privacy-legal/tests/E11-F02-dpia-parental-consent.behavioural-test-plan.md
+    test_type: behavioural
+    related_personas: [P03]
+    related_collaboration_objects: []
+    related_stories: [E11-F02-S01]
+    behaviour_pattern: approval_delays
+    priority: critical
+    risk_covered: R6 PPL Amendment 13 minors' consent
+    status: drafted

@@ -111,11 +111,418 @@ personas:
     role: system actor (no auth)
     collaboration_level: solo
 
-# Epics and features. Stories arrays populated incrementally.
-epics: []  # appended per feature; final form lives in this file at end of run.
+# PLAN.md cross-walk
+# This skill labelled epics E00–E11 (research §10) BEFORE the canonical
+# .workitems/PLAN.md (N00–N05 phases, F01–F47 features) was visible.
+# The mapping below is the source of truth for downstream tooling.
 
-# Business objects (entities, value objects, events, commands, queries, policies, rules).
-business_objects: []  # appended per feature.
+plan_md_cross_walk:
+  - skill_epic: E00-foundation
+    plan_phase: N00-foundation
+    skill_features: [E00-F01, E00-F02, E00-F03, E00-F04, E00-F05]
+    plan_features: [F01-docker-compose, F02-cloud-skeleton, F03-adapter-ports, F04-ci-cd-gates]
+    notes: skill split dev-resource-floor as F05; plan folds it into F01.
+  - skill_epic: E01-document-ingest
+    plan_phase: N01-ingest-ocr (subset)
+    skill_features: [E01-F01, E01-F02, E01-F03, E01-F04, E01-F05]
+    plan_features: [F05-upload-flow, F06-document-manifest, F07-document-status]
+    notes: plan keeps delete-with-cascade implicit in F46-no-pii-logging + F43-ttl-automation.
+  - skill_epic: E02-ocr-pipeline
+    plan_phase: N01-ingest-ocr (subset)
+    skill_features: [E02-F01, E02-F02, E02-F03, E02-F04, E02-F05, E02-F06]
+    plan_features: [F08-tesseract-adapter, F09-document-ai-adapter, F10-ocr-result-contract, F11-block-segmentation, F12-question-tagging, F13-ocr-benchmark]
+  - skill_epic: E03-normalization
+    plan_phase: N02-hebrew-interpretation (subset)
+    skill_features: [E03-F01, E03-F02, E03-F03, E03-F04, E03-F05]
+    plan_features: [F14-normalization-pass, F15-acronym-lexicon, F16-mixed-lang-detection, F25-content-templates]
+    notes: plan groups numbers/dates inside F14 instead of as a separate feature.
+  - skill_epic: E04-nlp-disambiguation
+    plan_phase: N02-hebrew-interpretation (subset)
+    skill_features: [E04-F01, E04-F02, E04-F03, E04-F04]
+    plan_features: [F17-dictabert-adapter, F18-disambiguation]
+    notes: plan does not call out AlephBERT/YAP fallback or HebPipe coref as MVP features.
+  - skill_epic: E05-pronunciation
+    plan_phase: N02-hebrew-interpretation (subset)
+    skill_features: [E05-F01, E05-F02, E05-F03, E05-F04]
+    plan_features: [F19-dicta-nakdan, F20-phonikud-g2p, F21-homograph-overrides]
+  - skill_epic: E06-reading-plan
+    plan_phase: N02-hebrew-interpretation (subset)
+    skill_features: [E06-F01, E06-F02, E06-F03, E06-F04, E06-F05]
+    plan_features: [F22-reading-plan-output, F23-ssml-shaping, F24-lang-switch-policy, F25-content-templates]
+  - skill_epic: E07-tts-adapters
+    plan_phase: N03-audio-sync (subset)
+    skill_features: [E07-F01, E07-F02, E07-F03, E07-F04]
+    plan_features: [F26-google-wavenet-adapter, F27-google-chirp3-adapter, F28-azure-tts-adapter, F29-voice-routing-policy]
+  - skill_epic: E08-word-timing-cache
+    plan_phase: N03-audio-sync (subset)
+    skill_features: [E08-F01, E08-F02, E08-F03, E08-F04]
+    plan_features: [F30-word-timing-port, F31-whisperx-fallback, F32-content-hash-cache]
+    notes: skill split sentence-level cache as F04; plan folds into F32.
+  - skill_epic: E09-player-ui
+    plan_phase: N04-player
+    skill_features: [E09-F01, E09-F02, E09-F03, E09-F04, E09-F05, E09-F06]
+    plan_features: [F33-side-by-side-viewer, F34-per-block-controls, F35-word-sync-highlight, F36-accessibility-controls, F37-spell-word, F38-wcag-conformance]
+    notes: 1:1 mapping.
+  - skill_epic: E10-quality-validation
+    plan_phase: N05-quality-privacy (subset)
+    skill_features: [E10-F01, E10-F02, E10-F03, E10-F04, E10-F05]
+    plan_features: [F39-tirvi-bench-v0, F40-quality-gates-ci, F41-mos-study, F42-latency-cost-profiling]
+    notes: skill split cost-telemetry from latency-profiling; plan keeps F42 combined.
+  - skill_epic: E11-privacy-legal
+    plan_phase: N05-quality-privacy (subset)
+    skill_features: [E11-F01, E11-F02, E11-F03, E11-F04, E11-F05]
+    plan_features: [F43-ttl-automation, F44-dpia-process, F45-upload-attestation, F46-no-pii-logging, F47-feedback-capture]
+
+# Epics — concise per-epic summary keyed to skill IDs above. Stories
+# enumerated via the file-system layout under docs/business-design/epics/.
+epics:
+  - id: E00
+    name: Foundation & DevX
+    description: dev environment, cloud skeleton, adapter ports, CI gates, dev resource floor
+    bounded_context: platform
+  - id: E01
+    name: Document ingest
+    description: upload, manifest, status, delete cascade, lifecycle rules
+    bounded_context: document_ingest
+  - id: E02
+    name: OCR pipeline
+    description: Tesseract default, Document AI fallback, OCRResult contract, block detection, numbering, bench harness
+    bounded_context: extraction
+  - id: E03
+    name: Normalization
+    description: artifact repair, numbers/dates, acronym lexicon, mixed-language span detection, math template
+    bounded_context: hebrew_text
+  - id: E04
+    name: NLP & disambiguation
+    description: DictaBERT primary, AlephBERT/YAP fallback, NLPResult schema, HebPipe coref optional
+    bounded_context: hebrew_nlp
+  - id: E05
+    name: Pronunciation prediction
+    description: Dicta-Nakdan, Phonikud G2P, homograph lexicon, confidence aggregator
+    bounded_context: pronunciation
+  - id: E06
+    name: Reading plan generator
+    description: block-typed plan.json, SSML shaping, lang switch, math template, table template
+    bounded_context: reading_plan
+  - id: E07
+    name: TTS adapters
+    description: Google Wavenet, Google Chirp 3 HD, Azure HilaNeural, voice selection policy
+    bounded_context: speech_synthesis
+  - id: E08
+    name: Word-timing & cache
+    description: WordTimingProvider port, WhisperX fallback, content-hash cache, sentence-level cache
+    bounded_context: audio_delivery
+  - id: E09
+    name: Player UI
+    description: side-by-side viewer, per-block affordances, word-sync highlight, controls, spell, WCAG
+    bounded_context: player
+  - id: E10
+    name: Quality validation
+    description: tirvi-bench v0, quality gates, MOS study, latency profiling, cost telemetry
+    bounded_context: quality_assurance
+  - id: E11
+    name: Privacy & legal
+    description: 24h TTL, DPIA + parental consent, upload attestation, no-PII logging, feedback capture
+    bounded_context: privacy_compliance
+
+# Business objects discovered across all epics (entity / value_object / aggregate_root / domain_event / command / query / policy / rule).
+business_objects:
+  # --- Document lifecycle ---
+  - id: BO01
+    name: Document
+    type: aggregate_root
+    description: uploaded PDF; owns pages, manifest reference, retention policy
+    owned_by_context: document_ingest
+    related_features: [E01-F01, E01-F02, E01-F04, E01-F05, E11-F01]
+  - id: BO02
+    name: UploadSession
+    type: entity
+    description: per-session upload state with byte offset and TTL
+    owned_by_context: document_ingest
+    related_features: [E01-F01]
+  - id: BO03
+    name: Manifest
+    type: aggregate_root
+    description: per-document state machine and stage history (read model)
+    owned_by_context: document_ingest
+    related_features: [E01-F02, E01-F03]
+  - id: BO04
+    name: PageStatus
+    type: value_object
+    description: per-page state (uploaded → ocr → norm → nlp → plan → audio-ready | failed)
+    owned_by_context: document_ingest
+    related_features: [E01-F03]
+  - id: BO05
+    name: StageHistory
+    type: value_object
+    description: per-stage timestamps + retry count + error code
+    owned_by_context: document_ingest
+    related_features: [E01-F02, E01-F03]
+  - id: BO06
+    name: RetentionPolicy
+    type: value_object
+    description: 24h default; 7d opt-in
+    owned_by_context: privacy_compliance
+    related_features: [E01-F05, E11-F01]
+  - id: BO07
+    name: DocumentDeleted
+    type: domain_event
+    description: emitted on cascade complete
+    owned_by_context: document_ingest
+    related_features: [E01-F04]
+  - id: BO08
+    name: DeletionCertificate
+    type: value_object
+    description: enumerates purged scope; optional signature
+    owned_by_context: privacy_compliance
+    related_features: [E01-F04, E11-F02]
+  # --- Extraction / OCR ---
+  - id: BO09
+    name: OCRResult
+    type: value_object
+    description: per-page bboxes, words, conf, lang_hints, provider
+    owned_by_context: extraction
+    related_features: [E02-F01, E02-F02, E02-F03]
+  - id: BO10
+    name: Block
+    type: entity
+    description: block_id + type (heading | instruction | question_stem | answer_option | paragraph | table | figure_caption | math_region) + bbox + question_no / option_no / parent_question_no
+    owned_by_context: extraction
+    related_features: [E02-F04, E02-F05]
+  - id: BO11
+    name: BenchmarkSet
+    type: entity
+    description: tirvi-bench v0 — 20 held-out pages with ground truth
+    owned_by_context: quality_assurance
+    related_features: [E10-F01, E02-F06]
+  - id: BO12
+    name: BenchmarkRun
+    type: value_object
+    description: per-adapter, per-page WER + block-recall + timings
+    owned_by_context: quality_assurance
+    related_features: [E10-F01, E02-F06, E10-F02]
+  # --- Hebrew text + NLP ---
+  - id: BO13
+    name: NormalizedText
+    type: value_object
+    description: repaired text + bbox→span mapping
+    owned_by_context: hebrew_text
+    related_features: [E03-F01, E03-F02]
+  - id: BO14
+    name: AcronymEntry
+    type: value_object
+    description: form, expansion, optional context filter, source
+    owned_by_context: hebrew_text
+    related_features: [E03-F03]
+  - id: BO15
+    name: Lexicon
+    type: aggregate_root
+    description: versioned collection of acronyms or homographs
+    owned_by_context: hebrew_text
+    related_features: [E03-F03, E05-F03]
+  - id: BO16
+    name: LanguageSpan
+    type: value_object
+    description: start, end, lang ∈ {he, en, num, math}, confidence
+    owned_by_context: hebrew_text
+    related_features: [E03-F04, E06-F03]
+  - id: BO17
+    name: MathTemplateRule
+    type: rule
+    description: pattern → Hebrew template
+    owned_by_context: hebrew_text
+    related_features: [E03-F05, E06-F04]
+  - id: BO18
+    name: TableTemplateRule
+    type: rule
+    description: row-by-row + column header phrasing
+    owned_by_context: hebrew_text
+    related_features: [E06-F05]
+  - id: BO19
+    name: NLPResult
+    type: value_object
+    description: per-token POS, lemma, morphological features, confidence, provider
+    owned_by_context: hebrew_nlp
+    related_features: [E04-F01, E04-F02, E04-F03]
+  - id: BO20
+    name: Token
+    type: value_object
+    description: text, lemma, POS, morph, pronunciation_hint, confidence
+    owned_by_context: hebrew_nlp
+    related_features: [E04-F03, E05-F02, E06-F01]
+  - id: BO21
+    name: CorefChain
+    type: value_object
+    description: optional pronoun chain from HebPipe
+    owned_by_context: hebrew_nlp
+    related_features: [E04-F04]
+  # --- Pronunciation ---
+  - id: BO22
+    name: DiacritizationResult
+    type: value_object
+    description: vocalized form + confidence
+    owned_by_context: pronunciation
+    related_features: [E05-F01]
+  - id: BO23
+    name: G2PResult
+    type: value_object
+    description: IPA + stress + vocal-shva per token
+    owned_by_context: pronunciation
+    related_features: [E05-F02]
+  - id: BO24
+    name: HomographEntry
+    type: value_object
+    description: surface form + POS filter + pronunciation hint
+    owned_by_context: pronunciation
+    related_features: [E05-F03]
+  # --- Reading plan ---
+  - id: BO25
+    name: ReadingPlan
+    type: aggregate_root
+    description: per-page plan.json with block list + voice spec
+    owned_by_context: reading_plan
+    related_features: [E06-F01]
+  - id: BO26
+    name: PlanBlock
+    type: entity
+    description: block_id, ssml, plain_text variant, voice_spec
+    owned_by_context: reading_plan
+    related_features: [E06-F01, E06-F02, E06-F03]
+  - id: BO27
+    name: PlanToken
+    type: value_object
+    description: per-token enriched copy (lemma, POS, IPA hint)
+    owned_by_context: reading_plan
+    related_features: [E06-F01]
+  - id: BO28
+    name: SSMLProfile
+    type: rule
+    description: per-block-type pacing + emphasis policy
+    owned_by_context: reading_plan
+    related_features: [E06-F02]
+  # --- TTS + audio ---
+  - id: BO29
+    name: TTSResult
+    type: value_object
+    description: audio bytes + codec + voice_meta + word_marks
+    owned_by_context: speech_synthesis
+    related_features: [E07-F01, E07-F02, E07-F03]
+  - id: BO30
+    name: WordMark
+    type: value_object
+    description: word index → start/end timepoint
+    owned_by_context: speech_synthesis
+    related_features: [E07-F01, E07-F03]
+  - id: BO31
+    name: VoiceRoutingDecision
+    type: value_object
+    description: block_id → voice_spec with reason
+    owned_by_context: speech_synthesis
+    related_features: [E07-F04]
+  - id: BO32
+    name: WordTimingResult
+    type: value_object
+    description: per-word timing + source (tts-marks | forced-alignment)
+    owned_by_context: audio_delivery
+    related_features: [E08-F01, E08-F02]
+  - id: BO33
+    name: AudioObject
+    type: aggregate_root
+    description: cached audio at audio/{block_hash}.mp3
+    owned_by_context: audio_delivery
+    related_features: [E08-F03, E08-F04]
+  - id: BO34
+    name: BlockHash
+    type: value_object
+    description: hash(ssml + voice_spec + provider + version)
+    owned_by_context: audio_delivery
+    related_features: [E08-F03]
+  - id: BO35
+    name: SentenceHash
+    type: value_object
+    description: per-sentence reuse key
+    owned_by_context: audio_delivery
+    related_features: [E08-F04]
+  # --- Player ---
+  - id: BO36
+    name: PageImage
+    type: entity
+    description: original PDF page rendering for side-by-side
+    owned_by_context: player
+    related_features: [E09-F01]
+  - id: BO37
+    name: RenderedText
+    type: value_object
+    description: text projected from normalized text + bbox refs
+    owned_by_context: player
+    related_features: [E09-F01, E09-F03]
+  - id: BO38
+    name: WordSpellAudio
+    type: value_object
+    description: per-word letter-by-letter audio cache entry
+    owned_by_context: player
+    related_features: [E09-F05]
+  - id: BO39
+    name: UserPreference
+    type: value_object
+    description: speed, font size, contrast, optionally persisted
+    owned_by_context: player
+    related_features: [E09-F04]
+  # --- Quality + privacy ---
+  - id: BO40
+    name: GroundTruth
+    type: value_object
+    description: hand-curated text + blocks + IPA per bench page
+    owned_by_context: quality_assurance
+    related_features: [E10-F01]
+  - id: BO41
+    name: MOSStudy
+    type: aggregate_root
+    description: panel + protocol + per-voice ratings
+    owned_by_context: quality_assurance
+    related_features: [E10-F03]
+  - id: BO42
+    name: MOSRating
+    type: value_object
+    description: anonymized rating
+    owned_by_context: quality_assurance
+    related_features: [E10-F03]
+  - id: BO43
+    name: ConsentRecord
+    type: aggregate_root
+    description: parental consent for minors ≥ 14
+    owned_by_context: privacy_compliance
+    related_features: [E11-F02]
+  - id: BO44
+    name: AttestationRecord
+    type: value_object
+    description: per-session copyright attestation
+    owned_by_context: privacy_compliance
+    related_features: [E11-F03]
+  - id: BO45
+    name: LogScrubRule
+    type: rule
+    description: drop / hash policy per field
+    owned_by_context: privacy_compliance
+    related_features: [E11-F04]
+  - id: BO46
+    name: FeedbackEntry
+    type: entity
+    description: doc_id + word_id + optional correction + timestamp
+    owned_by_context: privacy_compliance
+    related_features: [E11-F05]
+  - id: BO47
+    name: WaiverRecord
+    type: value_object
+    description: CI quality / security gate waiver with expiry
+    owned_by_context: quality_assurance
+    related_features: [E00-F04, E10-F02]
+  - id: BO48
+    name: BudgetState
+    type: value_object
+    description: per-document Document AI fallback budget
+    owned_by_context: extraction
+    related_features: [E02-F02]
 
 # Collaboration objects (humans, systems, agents, external parties).
 collaboration_objects:
