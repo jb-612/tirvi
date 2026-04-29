@@ -498,3 +498,15 @@ dependencies:
     risk_if_broken: PII leakage.
     related_files:
       - path: docs/business-design/epics/E11-privacy-legal/stories/E11-F04-no-pii-logging-audit.stories.md
+
+  # --- POC sw-design REALIZES edges (adapter → port) ---
+  - id: DEP-046
+    source: { type: feature, id: N01/F08, name: Tesseract heb adapter }
+    target: { type: port, id: PORT-01, name: tirvi.ports.OCRBackend }
+    relationship: realizes
+    rationale: F08 supplies the concrete OCR adapter for the locked F03 port.
+    strength: strong
+    direction: one_way
+    risk_if_broken: domain code cannot extract text from PDFs.
+    related_files:
+      - path: .workitems/N01-ingest-ocr/F08-tesseract-adapter/design.md

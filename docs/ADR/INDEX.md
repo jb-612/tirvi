@@ -22,6 +22,7 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-013 | SDLC harness — biz / sw design split + ACM ingestion | Proposed | sdlc | all (harness-wide) |
 | ADR-014 | Result-object schema versioning (contract tests over numeric versions) | Proposed | platform | F03 |
 | ADR-015 | WordTimingProvider fallback policy (automatic on schema mismatch) | Proposed | audio_delivery | F03, F30, F31 |
+| ADR-016 | Tesseract deskew preprocessor lives inside the adapter | Proposed | ingest | F08 |
 
 ## Conventions
 

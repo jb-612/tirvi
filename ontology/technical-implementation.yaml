@@ -45,6 +45,13 @@ modules:
     bounded_context: platform
     source_path: tirvi/contracts.py
     status: designed
+  - id: MOD-N01-F08
+    name: tirvi.adapters.tesseract
+    description: Tesseract OCR adapter package (invoker, deskew, layout post-processor)
+    feature_refs: [N01/F08]
+    bounded_context: extraction
+    source_path: tirvi/adapters/tesseract/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -144,6 +151,15 @@ adapters:
     port_ref: PORT-06
     source_path: tirvi/fakes/word_timing.py
     status: designed
+  # --- N01/F08 ---
+  - id: ADP-N01-F08-tesseract
+    name: TesseractOCRAdapter
+    description: Tesseract heb adapter (tessdata_best, layout post-processor, optional deskew)
+    feature_refs: [N01/F08]
+    bounded_context: extraction
+    port_ref: PORT-01
+    source_path: tirvi/adapters/tesseract/__init__.py
+    status: designed
 
 # Classes / structs — result-object value types.
 classes:
@@ -223,6 +239,13 @@ adr_decisions:
     bounded_context: audio_delivery
     source_path: docs/ADR/ADR-015-audio-word-timing-fallback-policy.md
     status: proposed
+  - id: adr:016
+    name: Tesseract deskew preprocessor lives inside the adapter
+    description: Skew measured in-adapter; rotation applied when angle ≥ 5°; opt-out via env var
+    feature_refs: [N01/F08]
+    bounded_context: ingest
+    source_path: docs/ADR/ADR-016-ingest-tesseract-deskew-location.md
+    status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
 tasks:
@@ -279,4 +302,41 @@ tasks:
     feature_refs: [N00/F03]
     spec_refs: [spec:N00/F03/DE-06]
     test_path: tests/unit/test_import_boundary.py
+    status: designed
+  # --- N01/F08 Tesseract adapter ---
+  - id: task:N01/F08/T-01
+    name: pdf-rasterizer
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-01]
+    test_path: tests/unit/test_pdf_rasterizer.py
+    status: designed
+  - id: task:N01/F08/T-02
+    name: tesseract-invoker
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-02]
+    test_path: tests/unit/test_tesseract_adapter.py
+    status: designed
+  - id: task:N01/F08/T-03
+    name: rtl-column-reorder
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-03]
+    test_path: tests/unit/test_rtl_column_reorder.py
+    status: designed
+  - id: task:N01/F08/T-04
+    name: inline-lang-hint
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-04]
+    test_path: tests/unit/test_lang_hint.py
+    status: designed
+  - id: task:N01/F08/T-05
+    name: deskew-preprocessor
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-05]
+    test_path: tests/unit/test_deskew.py
+    status: designed
+  - id: task:N01/F08/T-06
+    name: ocr-result-assembly
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-06]
+    test_path: tests/unit/test_tesseract_adapter.py
     status: designed
