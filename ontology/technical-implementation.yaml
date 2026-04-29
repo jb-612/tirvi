@@ -94,6 +94,13 @@ modules:
     bounded_context: platform
     source_path: tirvi/fixtures/nlp.py
     status: designed
+  - id: MOD-N02-F19
+    name: tirvi.adapters.nakdan
+    description: Dicta-Nakdan adapter package (loader, context conditioning, NFC/NFD normalize)
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    source_path: tirvi/adapters/nakdan/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -210,6 +217,14 @@ adapters:
     port_ref: PORT-02
     source_path: tirvi/adapters/dictabert/__init__.py
     status: designed
+  - id: ADP-N02-F19-nakdan
+    name: DictaNakdanAdapter
+    description: Dicta-Nakdan diacritization adapter (in-process loader, NLP-context tilt)
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    port_ref: PORT-03
+    source_path: tirvi/adapters/nakdan/__init__.py
+    status: designed
 
 # Classes / structs — result-object value types.
 classes:
@@ -323,6 +338,13 @@ adr_decisions:
     feature_refs: [N02/F17]
     bounded_context: hebrew-interpretation
     source_path: docs/ADR/ADR-020-hebrew-nlp-dictabert-loading-topology.md
+    status: proposed
+  - id: adr:021
+    name: Dicta-Nakdan loaded in-process for POC; API path deferred
+    description: Local model load via lru_cache; hosted API behind same DiacritizerBackend port at MVP
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-021-pronunciation-nakdan-loading-topology.md
     status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
@@ -584,4 +606,41 @@ tasks:
     feature_refs: [N02/F18]
     spec_refs: [spec:N02/F18/DE-05, spec:N02/F18/DE-06]
     test_path: tests/unit/test_nlp_v1_invariants.py
+    status: designed
+  # --- N02/F19 Dicta-Nakdan adapter ---
+  - id: task:N02/F19/T-01
+    name: nakdan-loader
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-01]
+    test_path: tests/unit/test_nakdan_loader.py
+    status: designed
+  - id: task:N02/F19/T-02
+    name: nakdan-nlp-context
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-02]
+    test_path: tests/unit/test_nakdan_context.py
+    status: designed
+  - id: task:N02/F19/T-03
+    name: nakdan-word-level-inference
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-03]
+    test_path: tests/unit/test_nakdan_inference.py
+    status: designed
+  - id: task:N02/F19/T-04
+    name: token-skip-filter
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-04]
+    test_path: tests/unit/test_token_skip_filter.py
+    status: designed
+  - id: task:N02/F19/T-05
+    name: nikud-nfc-nfd-normalize
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-05]
+    test_path: tests/unit/test_nikud_normalize.py
+    status: designed
+  - id: task:N02/F19/T-06
+    name: nakdan-adapter-contract
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-06]
+    test_path: tests/unit/test_nakdan_adapter.py
     status: designed
