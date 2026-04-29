@@ -1,27 +1,116 @@
-# Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+# Traceability index — N04/F35 Word-sync highlight.
+feature_id: N04/F35
+status: designed
 
-feature_id: TBD
-status: scaffolded
+hld_refs:
+  - HLD-§3.1/Frontend
+prd_refs:
+  - "PRD §6.6 — Player word highlight"
+adr_refs:
+  - ADR-023
 
-# Source-document references
-hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
-prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
-adr_refs: []        # e.g. ["ADR-001"]
+biz_source:
+  functional_test_plan_path: ./functional-test-plan.md
+  behavioural_test_plan_path: ./behavioural-test-plan.md
+  corpus_e_id: E09-F03
+  imported_at: 2026-04-29T21:09:31Z
+  source_sha: 2af7279d515d1177f3f9774c0aeae63996e2b2e7
 
-# ACM nodes
+ontology_refs:
+  - persona:P01
+  - persona:P02
+  - persona:P09
+  - bo:WordTimingResult
+  - bo:OCRResult
+  - bc:audio_delivery
+  - co:Player
+  - asm:ASM10
+
 acm_nodes:
-  feature: feature:TBD
-  specs: []         # spec:<feature_id>/DE-NN
-  user_stories: []  # story:<feature_id>/US-NN
-  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
-  tasks: []         # task:<feature_id>/T-NN
+  feature: feature:N04/F35
+  specs:
+    - spec:N04/F35/DE-01
+    - spec:N04/F35/DE-02
+    - spec:N04/F35/DE-03
+    - spec:N04/F35/DE-04
+    - spec:N04/F35/DE-05
+    - spec:N04/F35/DE-06
+  user_stories:
+    - story:N04/F35/US-01
+    - story:N04/F35/US-02
+  acceptance_criteria:
+    - criterion:N04/F35/US-01/AC-01
+    - criterion:N04/F35/US-02/AC-01
+  tasks:
+    - task:N04/F35/T-01
+    - task:N04/F35/T-02
+    - task:N04/F35/T-03
+    - task:N04/F35/T-04
+    - task:N04/F35/T-05
+    - task:N04/F35/T-06
+  diagrams:
+    - diagram:N04/F35/word-sync-highlight
 
-# ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+acm_edges:
+  - {from: spec:N04/F35/DE-01, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F35/DE-02, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F35/DE-03, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F35/DE-04, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F35/DE-05, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F35/DE-06, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F35/DE-01, to: adr:023, type: INFLUENCED_BY}
+  - {from: story:N04/F35/US-01, to: criterion:N04/F35/US-01/AC-01, type: HAS_CRITERION}
+  - {from: story:N04/F35/US-02, to: criterion:N04/F35/US-02/AC-01, type: HAS_CRITERION}
+  - {from: story:N04/F35/US-01, to: spec:N04/F35/DE-03, type: VERIFIED_BY}
+  - {from: story:N04/F35/US-01, to: spec:N04/F35/DE-04, type: VERIFIED_BY}
+  - {from: story:N04/F35/US-01, to: spec:N04/F35/DE-05, type: VERIFIED_BY}
+  - {from: story:N04/F35/US-02, to: spec:N04/F35/DE-06, type: VERIFIED_BY}
+  - {from: feature:N04/F35, to: spec:N04/F35/DE-01, type: CONTAINS}
+  - {from: feature:N04/F35, to: spec:N04/F35/DE-02, type: CONTAINS}
+  - {from: feature:N04/F35, to: spec:N04/F35/DE-03, type: CONTAINS}
+  - {from: feature:N04/F35, to: spec:N04/F35/DE-04, type: CONTAINS}
+  - {from: feature:N04/F35, to: spec:N04/F35/DE-05, type: CONTAINS}
+  - {from: feature:N04/F35, to: spec:N04/F35/DE-06, type: CONTAINS}
+  - {from: spec:N04/F35/DE-01, to: bc:audio_delivery, type: BELONGS_TO}
+  - {from: spec:N04/F35/DE-02, to: bc:audio_delivery, type: BELONGS_TO}
+  - {from: spec:N04/F35/DE-03, to: bc:audio_delivery, type: BELONGS_TO}
+  - {from: spec:N04/F35/DE-04, to: bc:audio_delivery, type: BELONGS_TO}
+  - {from: spec:N04/F35/DE-05, to: bc:audio_delivery, type: BELONGS_TO}
+  - {from: spec:N04/F35/DE-06, to: bc:audio_delivery, type: BELONGS_TO}
+  - {from: "diagram:N04/F35/word-sync-highlight", to: spec:N04/F35/DE-03, type: EXPLAINS}
+  - {from: "diagram:N04/F35/word-sync-highlight", to: spec:N04/F35/DE-04, type: EXPLAINS}
+  - {from: task:N04/F35/T-01, to: spec:N04/F35/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:N04/F35/T-02, to: spec:N04/F35/DE-02, type: IMPLEMENTED_BY}
+  - {from: task:N04/F35/T-03, to: spec:N04/F35/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:N04/F35/T-04, to: spec:N04/F35/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N04/F35/T-05, to: spec:N04/F35/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N04/F35/T-06, to: spec:N04/F35/DE-06, type: IMPLEMENTED_BY}
 
-# Per-element traces (denormalized for quick lookup)
-de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
-story_to_prd: {}    # US-NN -> PRD §X.Y
-task_to_de: {}      # T-NN -> DE-NN
-ac_to_story: {}     # AC-NN -> US-NN
+de_to_hld:
+  DE-01: HLD-§3.1/Frontend
+  DE-02: HLD-§3.1/Frontend
+  DE-03: HLD-§3.1/Frontend
+  DE-04: HLD-§3.1/Frontend
+  DE-05: HLD-§3.1/Frontend
+  DE-06: HLD-§3.1/Frontend
+story_to_prd:
+  US-01: "PRD §6.6 — Player word highlight"
+  US-02: "PRD §6.6 — Player word highlight"
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-04
+  T-05: DE-05
+  T-06: DE-06
+ac_to_story:
+  US-01/AC-01: US-01
+  US-02/AC-01: US-02
+
+tests:
+  - {ontology_id: "task:N04/F35/T-01", test_path: tests/unit/test_player_html.py, status: pending}
+  - {ontology_id: "task:N04/F35/T-02", test_path: tests/unit/test_timings_loader.py, status: pending}
+  - {ontology_id: "task:N04/F35/T-03", test_path: tests/unit/test_raf_loop.py, status: pending}
+  - {ontology_id: "task:N04/F35/T-04", test_path: tests/unit/test_lookup_word.py, status: pending}
+  - {ontology_id: "task:N04/F35/T-05", test_path: tests/unit/test_marker_position.py, status: pending}
+  - {ontology_id: "task:N04/F35/T-06", test_path: tests/unit/test_a11y_player.py, status: pending}

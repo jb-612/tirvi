@@ -1,0 +1,20 @@
+flowchart LR
+    NT["NormalizedText\nfrom F14"]
+    LOAD["DE-01\nload_model\n(in-process, ADR-020)"]
+    TOK["DE-02\nwhitespace tokenize"]
+    CHUNK["DE-05\nlong-sentence chunking\n(>200 tokens)"]
+    INF["DE-02\nDictaBERT joint head"]
+    PFX["DE-03\nprefix segmentation"]
+    CONF["DE-04\nper-attribute confidence"]
+    DEC["decode_morph\nUD-Hebrew labels"]
+    RES["NLPResult\nprovider=dictabert-large-joint"]
+    NT --> TOK
+    LOAD -.-> INF
+    TOK --> CHUNK
+    CHUNK --> INF
+    INF --> PFX
+    INF --> DEC
+    INF --> CONF
+    PFX --> RES
+    DEC --> RES
+    CONF --> RES

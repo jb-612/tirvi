@@ -1,0 +1,16 @@
+flowchart LR
+    SSML["per-block SSML\nfrom F23"]
+    SHA["reading_plan_sha\nfrom F22 deterministic JSON"]
+    CLI["DE-01\nWavenet client\n(v1beta1)"]
+    SYN["DE-02\nsynthesize_speech\nenable_time_pointing=SSML_MARK"]
+    PARSE["DE-03\nparse_timepoints\n-> WordMark[]"]
+    TRUNC["DE-04\nmark-truncation\ndetector"]
+    IO["DE-05\nwrite drafts/sha/\naudio.mp3 + audio.json"]
+    RES["TTSResult\nprovider=wavenet\nvoice=he-IL-Wavenet-D"]
+    SSML --> CLI
+    CLI --> SYN
+    SYN --> PARSE
+    PARSE --> TRUNC
+    TRUNC --> RES
+    SHA --> IO
+    RES --> IO

@@ -1,0 +1,16 @@
+flowchart LR
+    OCR["OCRResult\nblocks + words"]
+    PASS["DE-02\npass-through joiner"]
+    REJOIN["DE-03\nline-break rejoin"]
+    PUNCT["DE-04\nstray-punctuation drop"]
+    SPAN["DE-05\nbbox to span map"]
+    LOG["DE-06\nrepair log emitter"]
+    NT["NormalizedText\ntext + spans + repair_log"]
+    OCR --> PASS
+    PASS --> REJOIN
+    REJOIN --> PUNCT
+    PUNCT --> SPAN
+    SPAN --> NT
+    REJOIN -.->|RepairLogEntry| LOG
+    PUNCT -.->|RepairLogEntry| LOG
+    LOG --> NT

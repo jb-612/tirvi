@@ -1,38 +1,105 @@
+<!-- DERIVED FROM docs/business-design/epics/E08-word-timing-cache/stories/E08-F01-word-timing-provider.stories.md @ sha:2af7279d515d1177f3f9774c0aeae63996e2b2e7 at 2026-04-29T21:06:35Z -->
+<!-- Edit upstream and re-import; direct edits will trigger drift detection. -->
+
+# E08-F01 — WordTimingProvider Port
+
+## Source Basis
+- Research: src-003 §3 architecture change #1 (port + dual adapters), §10 Phase 3 F8.1; ADR-009
+- HLD: §4 adapter interface (implicit)
+- Assumptions: ASM03, ASM10
+
+## Personas
+| Persona | Role | Goal | Pain Point | Success Criterion |
+|---------|------|------|-----------|------------------|
+| P01 Student | accurate highlight | desync feels broken | timing budget |
+| P08 Backend Dev | wires provider | TTS marks unreliable | fallback path |
+| P10 Test Author | benches alignment | drift | bench timings |
+
+## Collaboration Model
+1. Primary: backend dev.
+2. Supporting: SRE (telemetry), test author.
+3. System actors: TTSEmittedTimingAdapter, ForcedAlignmentAdapter (E08-F02).
+4. Approvals: ADR-009.
+5. Handoff: WordTimingResult → player.
+6. Failure recovery: TTS-mark fail → forced alignment within budget.
+
+## Behavioural Model
+- Hesitation: dev unsure when to switch source.
+- Rework: alignment quality drifts; bench catches.
+- Partial info: adapters partial; player handles missing words.
+- Retry: per-block.
+
 ---
-feature_id: TBD
-status: scaffolded
-prd_refs: []
+
+## User Stories
+
+### Story 1: Provider returns per-word timing or fallback
+
+**As a** dev
+**I want** the WordTimingProvider to return per-word timing from TTS marks when present and from forced alignment when not
+**So that** the player highlight works on every voice.
+
+#### Preconditions
+- E07 produced TTSResult.
+
+#### Main Flow
+1. Provider inspects TTSResult.word_marks.
+2. If present + complete → emit timing from marks.
+3. If absent or truncated → call forced alignment adapter; emit timing.
+4. Result includes `source` field.
+
+#### Edge Cases
+- Both adapters fail → degraded result; player falls back to block-level highlight.
+
+#### Acceptance Criteria
+```gherkin
+Given a Wavenet TTSResult with full marks
+When provider runs
+Then `WordTimingResult.source = "tts-marks"`
+And alignment error budget ≤ 80 ms
+
+Given a Chirp 3 HD TTSResult without marks
+When provider runs
+Then `source = "forced-alignment"`
+```
+
+#### Data and Business Objects
+- `WordTimingResult`, `WordTiming`.
+
+#### Dependencies
+- DEP-INT to E07 + E08-F02.
+
+#### Non-Functional Considerations
+- Quality: alignment error ≤ 80 ms (ASM10).
+- Reliability: failover ≤ 200 ms.
+
+#### Open Questions
+- Auto vs explicit policy (E00-F03 carry-over).
+
 ---
 
-# User Stories: TBD
+### Story 2: Telemetry on source distribution
 
-## US-01: TBD
+**As an** SRE
+**I want** per-block timing source emitted as a metric
+**So that** I can detect TTS-mark unreliability over time.
 
-**As** TBD persona
-**I want** TBD capability
-**So that** TBD outcome
+#### Main Flow
+1. Provider emits `timing_source` counter.
+2. Dashboard shows distribution.
 
-PRD ref: PRD §X.Y — TBD
+#### Edge Cases
+- Burst of forced-alignment usage; alert at threshold.
 
-### Acceptance Criteria
+#### Acceptance Criteria
+```gherkin
+Given 100 blocks synthesized
+When the metric is queried
+Then per-source counts are reported
+```
 
-- AC-01: TBD — testable assertion
-- AC-02: TBD
+#### Dependencies
+- DEP-INT to E10-F05.
 
-### Notes
-
-- Persona: TBD
-- Edge cases: TBD
-
-## US-02: TBD
-
-**As** TBD
-**I want** TBD
-**So that** TBD
-
-PRD ref: PRD §X.Y — TBD
-
-### Acceptance Criteria
-
-- AC-03: TBD
-- AC-04: TBD
+#### Non-Functional Considerations
+- Reliability: low-noise alerts.

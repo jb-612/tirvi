@@ -1,0 +1,14 @@
+flowchart LR
+    PDF["PDF page bytes"]
+    RAST["DE-01\nrasterize 300dpi"]
+    DESKEW["DE-05\ndeskew_if_needed\n(threshold 5deg)"]
+    TESS["DE-02\nTesseract heb\npsm 6, tessdata_best"]
+    LANG["DE-04\nlang_hint per word\n(he / en)"]
+    SORT["DE-03\nreorder_rtl_columns"]
+    RES["DE-06\nOCRResult\nprovider=tesseract"]
+    PDF --> RAST
+    RAST --> DESKEW
+    DESKEW --> TESS
+    TESS --> LANG
+    LANG --> SORT
+    SORT --> RES

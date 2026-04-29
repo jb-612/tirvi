@@ -45,6 +45,104 @@ modules:
     bounded_context: platform
     source_path: tirvi/contracts.py
     status: designed
+  - id: MOD-N01-F08
+    name: tirvi.adapters.tesseract
+    description: Tesseract OCR adapter package (invoker, deskew, layout post-processor)
+    feature_refs: [N01/F08]
+    bounded_context: extraction
+    source_path: tirvi/adapters/tesseract/
+    status: designed
+  - id: MOD-N01-F10
+    name: tirvi.fixtures.ocr
+    description: YAML-driven OCRResult fixture builder for downstream test seeding
+    feature_refs: [N01/F10]
+    bounded_context: platform
+    source_path: tirvi/fixtures/ocr.py
+    status: designed
+  - id: MOD-N01-F11
+    name: tirvi.blocks
+    description: heuristic block segmenter (POC subset taxonomy) over OCRResult
+    feature_refs: [N01/F11]
+    bounded_context: extraction
+    source_path: tirvi/blocks/
+    status: designed
+  - id: MOD-N02-F14
+    name: tirvi.normalize
+    description: pipeline normalize stage — pass-through + minimum repair (POC)
+    feature_refs: [N02/F14]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/normalize/
+    status: designed
+  - id: MOD-N02-F17
+    name: tirvi.adapters.dictabert
+    description: DictaBERT-large-joint adapter package (loader, inference, prefix split)
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/adapters/dictabert/
+    status: designed
+  - id: MOD-N02-F18
+    name: tirvi.disambiguate
+    description: confidence-driven sense pick + NLPResult v1 invariants
+    feature_refs: [N02/F18]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/disambiguate/
+    status: designed
+  - id: MOD-N02-F18-fixtures
+    name: tirvi.fixtures.nlp
+    description: YAML-driven NLPResult fixture builder
+    feature_refs: [N02/F18]
+    bounded_context: platform
+    source_path: tirvi/fixtures/nlp.py
+    status: designed
+  - id: MOD-N02-F19
+    name: tirvi.adapters.nakdan
+    description: Dicta-Nakdan adapter package (loader, context conditioning, NFC/NFD normalize)
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    source_path: tirvi/adapters/nakdan/
+    status: designed
+  - id: MOD-N02-F20
+    name: tirvi.adapters.phonikud
+    description: Phonikud G2P adapter package (loader, IPA + stress, shape)
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    source_path: tirvi/adapters/phonikud/
+    status: designed
+  - id: MOD-N02-F22
+    name: tirvi.plan
+    description: reading-plan assembler combining blocks + NLP + diacritization + G2P
+    feature_refs: [N02/F22]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/plan/
+    status: designed
+  - id: MOD-N02-F23
+    name: tirvi.ssml
+    description: SSML shaping for ReadingPlan (POC minimum: break + mark)
+    feature_refs: [N02/F23]
+    bounded_context: speech_synthesis
+    source_path: tirvi/ssml/
+    status: designed
+  - id: MOD-N03-F26
+    name: tirvi.adapters.wavenet
+    description: Google Cloud TTS Wavenet adapter (v1beta1 client, marks, drafts/ writer)
+    feature_refs: [N03/F26]
+    bounded_context: speech_synthesis
+    source_path: tirvi/adapters/wavenet/
+    status: designed
+  - id: MOD-N03-F30
+    name: tirvi.adapters.tts_marks
+    description: TTS-marks word-timing adapter (per-block, monotonic, projection)
+    feature_refs: [N03/F30]
+    bounded_context: audio_delivery
+    source_path: tirvi/adapters/tts_marks/
+    status: designed
+  - id: MOD-N04-F35
+    name: tirvi.player
+    description: vanilla HTML/JS player surface for POC (audio + word-sync highlight)
+    feature_refs: [N04/F35, N04/F36]
+    bounded_context: audio_delivery
+    source_path: tirvi/player/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -144,6 +242,55 @@ adapters:
     port_ref: PORT-06
     source_path: tirvi/fakes/word_timing.py
     status: designed
+  # --- N01/F08 ---
+  - id: ADP-N01-F08-tesseract
+    name: TesseractOCRAdapter
+    description: Tesseract heb adapter (tessdata_best, layout post-processor, optional deskew)
+    feature_refs: [N01/F08]
+    bounded_context: extraction
+    port_ref: PORT-01
+    source_path: tirvi/adapters/tesseract/__init__.py
+    status: designed
+  - id: ADP-N02-F17-dictabert
+    name: DictaBERTAdapter
+    description: DictaBERT-large-joint NLP adapter (in-process loader, prefix segmentation)
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    port_ref: PORT-02
+    source_path: tirvi/adapters/dictabert/__init__.py
+    status: designed
+  - id: ADP-N02-F19-nakdan
+    name: DictaNakdanAdapter
+    description: Dicta-Nakdan diacritization adapter (in-process loader, NLP-context tilt)
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    port_ref: PORT-03
+    source_path: tirvi/adapters/nakdan/__init__.py
+    status: designed
+  - id: ADP-N02-F20-phonikud
+    name: PhonikudG2PAdapter
+    description: Phonikud G2P adapter (in-process loader, IPA + stress, vocal-shva passthrough)
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    port_ref: PORT-04
+    source_path: tirvi/adapters/phonikud/__init__.py
+    status: designed
+  - id: ADP-N03-F26-wavenet
+    name: WavenetTTSAdapter
+    description: Google Cloud TTS v1beta1 adapter for he-IL-Wavenet-D with mark timepoints
+    feature_refs: [N03/F26]
+    bounded_context: speech_synthesis
+    port_ref: PORT-05
+    source_path: tirvi/adapters/wavenet/__init__.py
+    status: designed
+  - id: ADP-N03-F30-tts-marks
+    name: TTSEmittedTimingAdapter
+    description: TTS-marks adapter slot of F03's WordTimingProvider coordinator (POC: no fallback)
+    feature_refs: [N03/F30]
+    bounded_context: audio_delivery
+    port_ref: PORT-06
+    source_path: tirvi/adapters/tts_marks/__init__.py
+    status: designed
 
 # Classes / structs — result-object value types.
 classes:
@@ -223,6 +370,62 @@ adr_decisions:
     bounded_context: audio_delivery
     source_path: docs/ADR/ADR-015-audio-word-timing-fallback-policy.md
     status: proposed
+  - id: adr:016
+    name: Tesseract deskew preprocessor lives inside the adapter
+    description: Skew measured in-adapter; rotation applied when angle ≥ 5°; opt-out via env var
+    feature_refs: [N01/F08]
+    bounded_context: ingest
+    source_path: docs/ADR/ADR-016-ingest-tesseract-deskew-location.md
+    status: proposed
+  - id: adr:017
+    name: OCRResult fixture builder uses YAML, not a Python DSL
+    description: YAML templates loaded by OCRResultBuilder.from_yaml; lives under tests/fixtures/ocr/
+    feature_refs: [N01/F10]
+    bounded_context: platform
+    source_path: docs/ADR/ADR-017-platform-ocr-fixture-builder-format.md
+    status: proposed
+  - id: adr:018
+    name: Block segmentation uses heuristics for POC; learned model deferred
+    description: Heuristic classifier over OCRResult; 3 POC block types; learned upgrade deferred to N05
+    feature_refs: [N01/F11]
+    bounded_context: ingest
+    source_path: docs/ADR/ADR-018-ingest-block-segmentation-heuristic.md
+    status: proposed
+  - id: adr:019
+    name: Normalization uses deterministic rules for POC; ML repair deferred
+    description: 2-rule deterministic normalizer; ML denoiser deferred to MVP
+    feature_refs: [N02/F14]
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-019-hebrew-nlp-normalization-rule-strategy.md
+    status: proposed
+  - id: adr:020
+    name: DictaBERT loaded in-process for POC; sidecar deferred to MVP
+    description: In-process module-level cache; sidecar topology behind same NLPBackend port at MVP
+    feature_refs: [N02/F17]
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-020-hebrew-nlp-dictabert-loading-topology.md
+    status: proposed
+  - id: adr:021
+    name: Dicta-Nakdan loaded in-process for POC; API path deferred
+    description: Local model load via lru_cache; hosted API behind same DiacritizerBackend port at MVP
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-021-pronunciation-nakdan-loading-topology.md
+    status: proposed
+  - id: adr:022
+    name: Phonikud loaded in-process for POC; matching ADR-020/021 pattern
+    description: Lazy in-process Phonikud import + lru_cache; sidecar deferred behind same G2PBackend port
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-022-pronunciation-phonikud-loading-topology.md
+    status: proposed
+  - id: adr:023
+    name: POC player ships as vanilla HTML; Next.js deferred to MVP
+    description: Static HTML + 3 small JS modules for the demo; HLD §3.1 Next.js stack lifts to MVP
+    feature_refs: [N04/F35, N04/F36]
+    bounded_context: player
+    source_path: docs/ADR/ADR-023-player-vanilla-html-poc.md
+    status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
 tasks:
@@ -279,4 +482,492 @@ tasks:
     feature_refs: [N00/F03]
     spec_refs: [spec:N00/F03/DE-06]
     test_path: tests/unit/test_import_boundary.py
+    status: designed
+  # --- N01/F08 Tesseract adapter ---
+  - id: task:N01/F08/T-01
+    name: pdf-rasterizer
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-01]
+    test_path: tests/unit/test_pdf_rasterizer.py
+    status: designed
+  - id: task:N01/F08/T-02
+    name: tesseract-invoker
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-02]
+    test_path: tests/unit/test_tesseract_adapter.py
+    status: designed
+  - id: task:N01/F08/T-03
+    name: rtl-column-reorder
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-03]
+    test_path: tests/unit/test_rtl_column_reorder.py
+    status: designed
+  - id: task:N01/F08/T-04
+    name: inline-lang-hint
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-04]
+    test_path: tests/unit/test_lang_hint.py
+    status: designed
+  - id: task:N01/F08/T-05
+    name: deskew-preprocessor
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-05]
+    test_path: tests/unit/test_deskew.py
+    status: designed
+  - id: task:N01/F08/T-06
+    name: ocr-result-assembly
+    feature_refs: [N01/F08]
+    spec_refs: [spec:N01/F08/DE-06]
+    test_path: tests/unit/test_tesseract_adapter.py
+    status: designed
+  # --- N01/F10 OCRResult contract ---
+  - id: task:N01/F10/T-01
+    name: per-word-semantic-fields
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-01]
+    test_path: tests/unit/test_ocr_result_fields.py
+    status: designed
+  - id: task:N01/F10/T-02
+    name: page-level-lang-hints
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-02]
+    test_path: tests/unit/test_ocr_result_fields.py
+    status: designed
+  - id: task:N01/F10/T-03
+    name: yaml-fixture-builder
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-03]
+    test_path: tests/unit/test_ocr_fixture_builder.py
+    status: designed
+  - id: task:N01/F10/T-04
+    name: v1-invariant-assertion
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-04]
+    test_path: tests/unit/test_ocr_v1_invariants.py
+    status: designed
+  - id: task:N01/F10/T-05
+    name: provider-version-metadata
+    feature_refs: [N01/F10]
+    spec_refs: [spec:N01/F10/DE-05]
+    test_path: tests/unit/test_ocr_result_fields.py
+    status: designed
+  # --- N01/F11 Block segmentation ---
+  - id: task:N01/F11/T-01
+    name: block-taxonomy
+    feature_refs: [N01/F11]
+    spec_refs: [spec:N01/F11/DE-01]
+    test_path: tests/unit/test_block_taxonomy.py
+    status: designed
+  - id: task:N01/F11/T-02
+    name: page-statistics
+    feature_refs: [N01/F11]
+    spec_refs: [spec:N01/F11/DE-02]
+    test_path: tests/unit/test_page_statistics.py
+    status: designed
+  - id: task:N01/F11/T-03
+    name: heuristic-classifier
+    feature_refs: [N01/F11]
+    spec_refs: [spec:N01/F11/DE-03, spec:N01/F11/DE-04]
+    test_path: tests/unit/test_block_classifier.py
+    status: designed
+  - id: task:N01/F11/T-04
+    name: word-to-block-linkage
+    feature_refs: [N01/F11]
+    spec_refs: [spec:N01/F11/DE-05]
+    test_path: tests/unit/test_block_classifier.py
+    status: designed
+  - id: task:N01/F11/T-05
+    name: block-bbox-aggregation
+    feature_refs: [N01/F11]
+    spec_refs: [spec:N01/F11/DE-06]
+    test_path: tests/unit/test_block_bbox.py
+    status: designed
+  # --- N02/F14 Normalization pass ---
+  - id: task:N02/F14/T-01
+    name: normalized-text-type
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-01]
+    test_path: tests/unit/test_normalized_text.py
+    status: designed
+  - id: task:N02/F14/T-02
+    name: pass-through-joiner
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-02]
+    test_path: tests/unit/test_normalize_passthrough.py
+    status: designed
+  - id: task:N02/F14/T-03
+    name: line-break-rejoin
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-03]
+    test_path: tests/unit/test_line_break_rejoin.py
+    status: designed
+  - id: task:N02/F14/T-04
+    name: stray-punctuation-drop
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-04]
+    test_path: tests/unit/test_stray_punct.py
+    status: designed
+  - id: task:N02/F14/T-05
+    name: bbox-span-roundtrip
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-05]
+    test_path: tests/unit/test_bbox_span_map.py
+    status: designed
+  - id: task:N02/F14/T-06
+    name: repair-log-emitter
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-06]
+    test_path: tests/unit/test_repair_log.py
+    status: designed
+  # --- N02/F17 DictaBERT adapter ---
+  - id: task:N02/F17/T-01
+    name: dictabert-loader
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-01]
+    test_path: tests/unit/test_dictabert_loader.py
+    status: designed
+  - id: task:N02/F17/T-02
+    name: dictabert-inference
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-02]
+    test_path: tests/unit/test_dictabert_inference.py
+    status: designed
+  - id: task:N02/F17/T-03
+    name: prefix-segmentation
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-03]
+    test_path: tests/unit/test_prefix_segmentation.py
+    status: designed
+  - id: task:N02/F17/T-04
+    name: per-attribute-confidence
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-04]
+    test_path: tests/unit/test_per_attr_confidence.py
+    status: designed
+  - id: task:N02/F17/T-05
+    name: long-sentence-chunking
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-05]
+    test_path: tests/unit/test_long_sentence_chunking.py
+    status: designed
+  - id: task:N02/F17/T-06
+    name: dictabert-adapter-contract
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-06]
+    test_path: tests/unit/test_dictabert_adapter.py
+    status: designed
+  # --- N02/F18 Disambiguation + NLP contract ---
+  - id: task:N02/F18/T-01
+    name: nlp-per-token-fields
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-01]
+    test_path: tests/unit/test_nlp_result_fields.py
+    status: designed
+  - id: task:N02/F18/T-02
+    name: morph-dict-whitelist
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-02]
+    test_path: tests/unit/test_morph_dict.py
+    status: designed
+  - id: task:N02/F18/T-03
+    name: pick-sense-disambiguation
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-03]
+    test_path: tests/unit/test_disambiguate.py
+    status: designed
+  - id: task:N02/F18/T-04
+    name: nlp-yaml-fixture-builder
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-04]
+    test_path: tests/unit/test_nlp_fixture_builder.py
+    status: designed
+  - id: task:N02/F18/T-05
+    name: nlp-v1-invariants
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-05, spec:N02/F18/DE-06]
+    test_path: tests/unit/test_nlp_v1_invariants.py
+    status: designed
+  # --- N02/F19 Dicta-Nakdan adapter ---
+  - id: task:N02/F19/T-01
+    name: nakdan-loader
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-01]
+    test_path: tests/unit/test_nakdan_loader.py
+    status: designed
+  - id: task:N02/F19/T-02
+    name: nakdan-nlp-context
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-02]
+    test_path: tests/unit/test_nakdan_context.py
+    status: designed
+  - id: task:N02/F19/T-03
+    name: nakdan-word-level-inference
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-03]
+    test_path: tests/unit/test_nakdan_inference.py
+    status: designed
+  - id: task:N02/F19/T-04
+    name: token-skip-filter
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-04]
+    test_path: tests/unit/test_token_skip_filter.py
+    status: designed
+  - id: task:N02/F19/T-05
+    name: nikud-nfc-nfd-normalize
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-05]
+    test_path: tests/unit/test_nikud_normalize.py
+    status: designed
+  - id: task:N02/F19/T-06
+    name: nakdan-adapter-contract
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-06]
+    test_path: tests/unit/test_nakdan_adapter.py
+    status: designed
+  # --- N02/F20 Phonikud G2P adapter ---
+  - id: task:N02/F20/T-01
+    name: phonikud-loader
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-01]
+    test_path: tests/unit/test_phonikud_loader.py
+    status: designed
+  - id: task:N02/F20/T-02
+    name: phonikud-ipa-stress
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-02]
+    test_path: tests/unit/test_phonikud_inference.py
+    status: designed
+  - id: task:N02/F20/T-03
+    name: vocal-shva-passthrough
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-03]
+    test_path: tests/unit/test_vocal_shva.py
+    status: designed
+  - id: task:N02/F20/T-04
+    name: g2p-skip-filter
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-04]
+    test_path: tests/unit/test_g2p_skip_filter.py
+    status: designed
+  - id: task:N02/F20/T-05
+    name: pronunciation-hint-shape
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-05]
+    test_path: tests/unit/test_pronunciation_hint.py
+    status: designed
+  - id: task:N02/F20/T-06
+    name: phonikud-adapter-contract
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-06]
+    test_path: tests/unit/test_phonikud_adapter.py
+    status: designed
+  # --- N02/F22 Reading-plan output ---
+  - id: task:N02/F22/T-01
+    name: plan-value-types
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-01]
+    test_path: tests/unit/test_plan_value_types.py
+    status: designed
+  - id: task:N02/F22/T-02
+    name: build-plan-combinator
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-02]
+    test_path: tests/unit/test_build_plan.py
+    status: designed
+  - id: task:N02/F22/T-03
+    name: per-token-provenance
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-03]
+    test_path: tests/unit/test_plan_provenance.py
+    status: designed
+  - id: task:N02/F22/T-04
+    name: plan-invariants
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-04]
+    test_path: tests/unit/test_plan_invariants.py
+    status: designed
+  - id: task:N02/F22/T-05
+    name: empty-block-skip
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-05]
+    test_path: tests/unit/test_empty_block_skip.py
+    status: designed
+  - id: task:N02/F22/T-06
+    name: deterministic-json-serialization
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-06]
+    test_path: tests/unit/test_plan_serialization.py
+    status: designed
+  # --- N02/F23 SSML shaping ---
+  - id: task:N02/F23/T-01
+    name: ssml-block-builder
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-01]
+    test_path: tests/unit/test_ssml_block_builder.py
+    status: designed
+  - id: task:N02/F23/T-02
+    name: per-word-mark-insertion
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-02]
+    test_path: tests/unit/test_per_word_mark.py
+    status: designed
+  - id: task:N02/F23/T-03
+    name: inter-block-break
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-03]
+    test_path: tests/unit/test_inter_block_break.py
+    status: designed
+  - id: task:N02/F23/T-04
+    name: xml-safe-escape
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-04]
+    test_path: tests/unit/test_xml_escape.py
+    status: designed
+  - id: task:N02/F23/T-05
+    name: ssml-invariant-and-emit
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-05, spec:N02/F23/DE-06]
+    test_path: tests/unit/test_ssml_shape.py
+    status: designed
+  # --- N03/F26 Google Wavenet adapter ---
+  - id: task:N03/F26/T-01
+    name: wavenet-client-wrapper
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-01]
+    test_path: tests/unit/test_wavenet_client.py
+    status: designed
+  - id: task:N03/F26/T-02
+    name: wavenet-synthesize-with-marks
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-02]
+    test_path: tests/unit/test_wavenet_synthesize.py
+    status: designed
+  - id: task:N03/F26/T-03
+    name: tts-result-assembly
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-03]
+    test_path: tests/unit/test_tts_result_assembly.py
+    status: designed
+  - id: task:N03/F26/T-04
+    name: mark-truncation-detector
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-04]
+    test_path: tests/unit/test_mark_truncation.py
+    status: designed
+  - id: task:N03/F26/T-05
+    name: drafts-dir-writer
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-05]
+    test_path: tests/unit/test_drafts_dir_write.py
+    status: designed
+  - id: task:N03/F26/T-06
+    name: wavenet-adapter-contract
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-06]
+    test_path: tests/unit/test_wavenet_adapter.py
+    status: designed
+  # --- N03/F30 Word-timing port ---
+  - id: task:N03/F30/T-01
+    name: tts-marks-adapter
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-01]
+    test_path: tests/unit/test_tts_marks_adapter.py
+    status: designed
+  - id: task:N03/F30/T-02
+    name: mark-to-timing-projection
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-02]
+    test_path: tests/unit/test_mark_to_timing.py
+    status: designed
+  - id: task:N03/F30/T-03
+    name: per-block-scope-guard
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-03]
+    test_path: tests/unit/test_per_block_scope.py
+    status: designed
+  - id: task:N03/F30/T-04
+    name: marks-monotonicity
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-04]
+    test_path: tests/unit/test_marks_monotonic.py
+    status: designed
+  - id: task:N03/F30/T-05
+    name: word-timing-provider-integration
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-05, spec:N03/F30/DE-06]
+    test_path: tests/unit/test_word_timing_provider.py
+    status: designed
+  # --- N04/F35 Word-sync highlight (vanilla HTML POC) ---
+  - id: task:N04/F35/T-01
+    name: player-html-scaffold
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-01]
+    test_path: tests/unit/test_player_html.py
+    status: designed
+  - id: task:N04/F35/T-02
+    name: timings-page-loader
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-02]
+    test_path: tests/unit/test_timings_loader.py
+    status: designed
+  - id: task:N04/F35/T-03
+    name: raf-loop
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-03]
+    test_path: tests/unit/test_raf_loop.py
+    status: designed
+  - id: task:N04/F35/T-04
+    name: active-word-lookup
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-04]
+    test_path: tests/unit/test_lookup_word.py
+    status: designed
+  - id: task:N04/F35/T-05
+    name: marker-positioning
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-05]
+    test_path: tests/unit/test_marker_position.py
+    status: designed
+  - id: task:N04/F35/T-06
+    name: a11y-reduced-motion-and-contrast
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-06]
+    test_path: tests/unit/test_a11y_player.py
+    status: designed
+  # --- N04/F36 Accessibility controls (4-button POC) ---
+  - id: task:N04/F36/T-01
+    name: button-scaffold
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-01]
+    test_path: tests/unit/test_button_scaffold.py
+    status: designed
+  - id: task:N04/F36/T-02
+    name: player-state-machine
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-02]
+    test_path: tests/unit/test_player_state_machine.py
+    status: designed
+  - id: task:N04/F36/T-03
+    name: button-handlers
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-03]
+    test_path: tests/unit/test_button_handlers.py
+    status: designed
+  - id: task:N04/F36/T-04
+    name: button-enable-per-state
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-04]
+    test_path: tests/unit/test_button_enable.py
+    status: designed
+  - id: task:N04/F36/T-05
+    name: keyboard-shortcuts
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-05]
+    test_path: tests/unit/test_keyboard_shortcuts.py
+    status: designed
+  - id: task:N04/F36/T-06
+    name: aria-focus-contrast
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-06]
+    test_path: tests/unit/test_aria_focus.py
     status: designed

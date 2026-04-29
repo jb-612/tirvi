@@ -1,0 +1,17 @@
+flowchart LR
+    NLP["NLPResult\nfrom F17 (top-K candidates)"]
+    PICK["DE-03\npick_sense\n(margin >= 0.2)"]
+    AMB{"margin < 0.2?"}
+    SET_AMB["set ambiguous=true"]
+    SET_OK["set ambiguous=false"]
+    INV["DE-05\nassert_nlp_result_v1"]
+    OUT["NLPResult v1\nper-token POS+morph+lemma+ambiguous"]
+    BLD["DE-04\nNLPResultBuilder.from_yaml\n(ADR-017)"]
+    NLP --> PICK
+    PICK --> AMB
+    AMB -->|yes| SET_AMB
+    AMB -->|no| SET_OK
+    SET_AMB --> INV
+    SET_OK --> INV
+    INV --> OUT
+    BLD --> OUT

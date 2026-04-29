@@ -1,0 +1,15 @@
+flowchart LR
+    OCR["OCRResult\nwords with bbox + lang_hint"]
+    STATS["DE-02\npage statistics\n(median height, modal x-start)"]
+    CLS["DE-03\nheuristic classifier"]
+    LOW["DE-04\nlow-confidence default\n(<0.6 -> paragraph)"]
+    LINK["DE-05\nword-to-block linkage"]
+    BBOX["DE-06\nunion bbox aggregation"]
+    OUT["OCRResult.blocks[]\n(heading | paragraph | question_stem)"]
+    OCR --> STATS
+    OCR --> CLS
+    STATS --> CLS
+    CLS --> LOW
+    LOW --> LINK
+    LINK --> BBOX
+    BBOX --> OUT

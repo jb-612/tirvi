@@ -22,6 +22,14 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-013 | SDLC harness — biz / sw design split + ACM ingestion | Proposed | sdlc | all (harness-wide) |
 | ADR-014 | Result-object schema versioning (contract tests over numeric versions) | Proposed | platform | F03 |
 | ADR-015 | WordTimingProvider fallback policy (automatic on schema mismatch) | Proposed | audio_delivery | F03, F30, F31 |
+| ADR-016 | Tesseract deskew preprocessor lives inside the adapter | Proposed | ingest | F08 |
+| ADR-017 | OCRResult fixture builder uses YAML, not a Python DSL | Proposed | platform | F10 |
+| ADR-018 | Block segmentation uses heuristics for POC; learned model deferred | Proposed | ingest | F11 |
+| ADR-019 | Normalization uses deterministic rules for POC; ML repair deferred | Proposed | hebrew-interpretation | F14 |
+| ADR-020 | DictaBERT loaded in-process for POC; sidecar deferred to MVP | Proposed | hebrew-interpretation | F17 |
+| ADR-021 | Dicta-Nakdan loaded in-process for POC; API path deferred | Proposed | pronunciation | F19 |
+| ADR-022 | Phonikud loaded in-process for POC; matching ADR-020/021 pattern | Proposed | pronunciation | F20 |
+| ADR-023 | POC player ships as vanilla HTML; Next.js deferred to MVP | Proposed | player | F35, F36 |
 
 ## Conventions
 
