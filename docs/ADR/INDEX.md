@@ -24,6 +24,7 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-015 | WordTimingProvider fallback policy (automatic on schema mismatch) | Proposed | audio_delivery | F03, F30, F31 |
 | ADR-016 | Tesseract deskew preprocessor lives inside the adapter | Proposed | ingest | F08 |
 | ADR-017 | OCRResult fixture builder uses YAML, not a Python DSL | Proposed | platform | F10 |
+| ADR-018 | Block segmentation uses heuristics for POC; learned model deferred | Proposed | ingest | F11 |
 
 ## Conventions
 
