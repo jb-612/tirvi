@@ -1,0 +1,14 @@
+# Functional Test Ontology — tirvi
+# Updated incrementally per feature.
+# Schema: .claude/skills/biz-functional-design/schemas/functional-test-ontology.schema.yaml
+
+version: 1
+
+# Functional + behavioural tests are added as each feature lands its
+# test plans. Each entry correlates a test ID to its story IDs, business
+# objects, bounded context, aggregate, and inferred future implementation
+# objects (classes / functions / services). The future-impl section is
+# *expected scope*, not a class diagram — it tells TDD what to look for.
+
+functional_tests: []   # appended per feature
+behavioural_tests: []  # appended per feature

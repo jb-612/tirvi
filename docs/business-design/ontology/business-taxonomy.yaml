@@ -1,0 +1,273 @@
+# Business Taxonomy — tirvi
+# Updated incrementally after each feature lands stories.
+# Schema: .claude/skills/biz-functional-design/schemas/business-taxonomy.schema.yaml
+
+version: 1
+
+source_documents:
+  - id: src-001
+    name: tirvi PRD v1
+    type: prd
+    path: docs/PRD.md
+    confidence: high
+  - id: src-002
+    name: tirvi HLD v1
+    type: architecture
+    path: docs/HLD.md
+    confidence: high
+  - id: src-003
+    name: tirvi Validation & MVP scoping research v1
+    type: market_research
+    path: docs/research/tirvi-validation-and-mvp-scoping.md
+    confidence: high
+  - id: src-012
+    name: Repo CLAUDE.md
+    type: other
+    path: CLAUDE.md
+    confidence: high
+
+# Domains, subdomains, bounded contexts.
+domains:
+  - id: D01
+    name: Accessible Hebrew Reading
+    subdomains:
+      - id: D01-SD01
+        name: Hebrew Linguistic Interpretation
+        type: core
+        bounded_contexts:
+          - id: BC03
+            name: hebrew_text
+          - id: BC04
+            name: hebrew_nlp
+          - id: BC05
+            name: pronunciation
+          - id: BC06
+            name: reading_plan
+      - id: D01-SD02
+        name: Document Lifecycle
+        type: supporting
+        bounded_contexts:
+          - id: BC02
+            name: document_ingest
+          - id: BC11
+            name: privacy_compliance
+      - id: D01-SD03
+        name: Extraction & Layout
+        type: supporting
+        bounded_contexts:
+          - id: BC07
+            name: extraction
+      - id: D01-SD04
+        name: Speech Delivery
+        type: supporting
+        bounded_contexts:
+          - id: BC08
+            name: speech_synthesis
+          - id: BC09
+            name: audio_delivery
+      - id: D01-SD05
+        name: Accommodation Player
+        type: core
+        bounded_contexts:
+          - id: BC10
+            name: player
+      - id: D01-SD06
+        name: Platform & Quality
+        type: generic
+        bounded_contexts:
+          - id: BC01
+            name: platform
+          - id: BC12
+            name: quality_assurance
+
+# Personas (recurring; per-feature stories add specifics).
+personas:
+  - id: P01
+    name: Dyslexic Hebrew Student
+    role: primary user; ages 14–24; Bagrut prep / university
+    collaboration_level: solo
+  - id: P02
+    name: Accommodation Coordinator
+    role: school staff (רכז התאמות / מורה שילוב); preps practice material
+    collaboration_level: coordinator-mediated
+  - id: P03
+    name: Parent or Guardian
+    role: legal consent holder for minors ≥14 (PPL Amendment 13)
+    collaboration_level: paired
+  - id: P04
+    name: Operator / SRE
+    role: internal; cost, lifecycle, benchmarks
+    collaboration_level: solo
+  - id: P05
+    name: MOS Test Panel Participant
+    role: dyslexic teen volunteer rating TTS quality
+    collaboration_level: async-batch
+  - id: P06
+    name: Adult Learner
+    role: secondary; self-study Hebrew material
+    collaboration_level: solo
+  - id: P07
+    name: Anonymous Browser Session
+    role: system actor (no auth)
+    collaboration_level: solo
+
+# Epics and features. Stories arrays populated incrementally.
+epics: []  # appended per feature; final form lives in this file at end of run.
+
+# Business objects (entities, value objects, events, commands, queries, policies, rules).
+business_objects: []  # appended per feature.
+
+# Collaboration objects (humans, systems, agents, external parties).
+collaboration_objects:
+  - id: CO01
+    name: OCR Engine
+    type: system
+    responsibilities:
+      - extract Hebrew text and layout from PDF pages
+    interacts_with: []
+  - id: CO02
+    name: Hebrew NLP Service
+    type: system
+    responsibilities:
+      - tokenize, segment, POS-tag, lemmatize, NER on Hebrew text
+    interacts_with: []
+  - id: CO03
+    name: Diacritizer (Dicta-Nakdan)
+    type: external_party
+    responsibilities:
+      - add ניקוד to undecorated Hebrew tokens
+    interacts_with: []
+  - id: CO04
+    name: G2P Engine (Phonikud)
+    type: external_party
+    responsibilities:
+      - emit IPA with stress / vocal shva for diacritized tokens
+    interacts_with: []
+  - id: CO05
+    name: TTS Provider
+    type: external_party
+    responsibilities:
+      - synthesize audio from SSML or text; emit word timings
+    interacts_with: []
+  - id: CO06
+    name: WordTimingProvider
+    type: system
+    responsibilities:
+      - return per-word timing from TTS marks or forced alignment
+    interacts_with: []
+  - id: CO07
+    name: Storage Adapter
+    type: system
+    responsibilities:
+      - put / get / signed-URL for blobs
+    interacts_with: []
+  - id: CO08
+    name: Queue Adapter
+    type: system
+    responsibilities:
+      - enqueue / dequeue per-stage tasks; isolate retries
+    interacts_with: []
+  - id: CO09
+    name: Manifest Coordinator
+    type: system
+    responsibilities:
+      - serialize per-document status with conditional writes
+    interacts_with: []
+  - id: CO10
+    name: Lifecycle Manager
+    type: system
+    responsibilities:
+      - enforce TTL on documents and derived artifacts
+    interacts_with: []
+  - id: CO11
+    name: Lexicon Maintainer
+    type: human
+    responsibilities:
+      - curate acronyms and homograph overrides offline
+    interacts_with: []
+  - id: CO12
+    name: MOS Panel Orchestrator
+    type: human
+    responsibilities:
+      - run blind MOS sessions with dyslexic teens
+    interacts_with: []
+
+# Assumptions — record once, reference by ID elsewhere.
+assumptions:
+  - id: ASM01
+    description: MVP framing is "practice-and-prep" tool, not in-Bagrut tool. Drives SLO derivation and feature scope.
+    source: src-003 §4 R1, §9 Option B
+    confidence: high
+    validation_needed: false
+  - id: ASM02
+    description: Default TTL for confidential exam content is 24 hours; 7 days is opt-in only.
+    source: src-003 §4 R3, §6 ADR-005 slot
+    confidence: high
+    validation_needed: true
+  - id: ASM03
+    description: Hebrew SSML <mark> support is unverified end-to-end on Google he-IL; design must keep TTS-marks and forced-alignment paths in parallel.
+    source: src-003 §2.3, §3.1
+    confidence: high
+    validation_needed: true
+  - id: ASM04
+    description: DictaBERT-large-joint replaces AlephBERT as primary NLP backbone; AlephBERT/YAP retained as fallback only.
+    source: src-003 §2.2
+    confidence: high
+    validation_needed: false
+  - id: ASM05
+    description: No real-Bagrut authorization exists for third-party SaaS TTS; tirvi targets practice settings.
+    source: src-003 §4 R1
+    confidence: high
+    validation_needed: true
+  - id: ASM06
+    description: tirvi-bench v0 (held-out 20 pages) is internal only; no public Hebrew exam OCR benchmark exists.
+    source: src-003 §8.1
+    confidence: high
+    validation_needed: false
+  - id: ASM07
+    description: Anonymous browser session is sufficient for MVP; persistent accounts deferred to post-MVP with relational DB.
+    source: src-003 §3 change 5, §10 deferred
+    confidence: high
+    validation_needed: false
+  - id: ASM08
+    description: Single docker compose with `--profile models` is the canonical dev shape; supervisor/single-image is rejected.
+    source: src-002 §8, src-003 §3 change 6
+    confidence: high
+    validation_needed: false
+  - id: ASM09
+    description: Audio cache key is `block_hash` (content-hash of normalized SSML + voice spec); reuse is cross-user, cross-document.
+    source: src-002 §3.4, src-003 §5
+    confidence: high
+    validation_needed: false
+  - id: ASM10
+    description: Word-timing alignment error budget is ≤ 80 ms (MVP) / ≤ 50 ms (post-MVP). Below that, highlight feels broken.
+    source: src-003 §8.2
+    confidence: medium
+    validation_needed: true
+
+open_questions:
+  - id: OQ01
+    question: Does Google he-IL Wavenet emit reliable <mark> timepoints across full exam-length SSML?
+    related_epic: E7
+    related_feature: E07-F01
+    severity: blocking
+  - id: OQ02
+    question: Will Israeli MoE permit any third-party cloud TTS in real Bagrut, or is the practice-only framing permanent?
+    related_epic: E11
+    related_feature: E11-F02
+    severity: important
+  - id: OQ03
+    question: Can DictaBERT-large-joint be run inside the same Docker compose without exceeding the 16 GB resident floor?
+    related_epic: E0
+    related_feature: E00-F05
+    severity: important
+  - id: OQ04
+    question: Is parental consent required at age 14 (Israeli law) or younger when school accommodation context applies?
+    related_epic: E11
+    related_feature: E11-F02
+    severity: important
+  - id: OQ05
+    question: Are publisher-copyrighted exam practice books legally uploadable by individual students, or must MVP block them?
+    related_epic: E11
+    related_feature: E11-F03
+    severity: important

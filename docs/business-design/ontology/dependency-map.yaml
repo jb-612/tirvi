@@ -1,0 +1,179 @@
+# Dependency Map — tirvi
+# Updated incrementally per feature.
+# Schema: .claude/skills/biz-functional-design/schemas/dependency-map.schema.yaml
+
+version: 1
+
+# Cross-feature, cross-context, cross-actor dependencies. Per-feature
+# stories add specific edges; this seed file captures the core arteries
+# from PRD/HLD/research. Each edge cites a related_files anchor so the
+# reviewer can verify the claim.
+
+dependencies:
+  # --- Pipeline arteries ---
+  - id: DEP-001
+    source: { type: feature, id: E01-F02, name: Manifest with conditional writes }
+    target: { type: feature, id: E02-F01, name: Tesseract heb adapter }
+    relationship: triggers
+    rationale: Document-registered manifest enqueues OCR; OCR result feeds back into manifest under preconditions.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: per-page fan-out / fan-in races; lost OCR results
+    related_files:
+      - path: docs/HLD.md
+  - id: DEP-002
+    source: { type: feature, id: E02-F01, name: Tesseract heb adapter }
+    target: { type: feature, id: E03-F01, name: OCR artifact repair }
+    relationship: requires
+    rationale: Normalization needs raw OCR text + bbox + RTL hints.
+    strength: strong
+    direction: one_way
+    risk_if_broken: garbage-in to NLP layer
+    related_files:
+      - path: docs/HLD.md
+  - id: DEP-003
+    source: { type: feature, id: E03-F01, name: OCR artifact repair }
+    target: { type: feature, id: E04-F01, name: DictaBERT-large-joint adapter }
+    relationship: requires
+    rationale: NLP requires repaired, RTL-correct, language-tagged text.
+    strength: strong
+    direction: one_way
+    risk_if_broken: morph errors compound; homograph disambiguation fails
+    related_files:
+      - path: docs/HLD.md
+  - id: DEP-004
+    source: { type: feature, id: E04-F01, name: DictaBERT-large-joint adapter }
+    target: { type: feature, id: E05-F01, name: Dicta-Nakdan adapter }
+    relationship: requires
+    rationale: Diacritization conditioned on POS / lemma / morph features.
+    strength: strong
+    direction: one_way
+    risk_if_broken: diacritization on undisambiguated tokens degrades pronunciation
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+  - id: DEP-005
+    source: { type: feature, id: E05-F01, name: Dicta-Nakdan adapter }
+    target: { type: feature, id: E05-F02, name: Phonikud adapter }
+    relationship: requires
+    rationale: Phonikud G2P needs diacritized input.
+    strength: strong
+    direction: one_way
+    risk_if_broken: ambiguous letters (בּ vs ב) collapse; stress wrong
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+  - id: DEP-006
+    source: { type: feature, id: E05-F02, name: Phonikud adapter }
+    target: { type: feature, id: E06-F01, name: Block-typed reading plan }
+    relationship: requires
+    rationale: Reading plan emits per-token IPA hint for SSML injection.
+    strength: strong
+    direction: one_way
+    risk_if_broken: SSML carries no pronunciation; TTS pronounces wrong
+    related_files:
+      - path: docs/HLD.md
+  - id: DEP-007
+    source: { type: feature, id: E06-F01, name: Block-typed reading plan }
+    target: { type: feature, id: E07-F01, name: Google Wavenet adapter }
+    relationship: requires
+    rationale: Reading plan SSML fed to TTS; voice routing per block type.
+    strength: strong
+    direction: one_way
+    risk_if_broken: TTS receives flat text; word-sync impossible
+    related_files:
+      - path: docs/HLD.md
+  - id: DEP-008
+    source: { type: feature, id: E07-F01, name: Google Wavenet adapter }
+    target: { type: feature, id: E08-F01, name: WordTimingProvider port }
+    relationship: requires
+    rationale: TTS-emitted marks feed timing provider; fallback to forced alignment.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: highlight desync; UX unusable
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+  - id: DEP-009
+    source: { type: feature, id: E08-F03, name: Content-hash audio cache }
+    target: { type: feature, id: E07-F01, name: Google Wavenet adapter }
+    relationship: validates
+    rationale: Cache hit avoids TTS call entirely; cost SLO depends on it.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: cost balloons past $0.02/page
+    related_files:
+      - path: docs/PRD.md
+  - id: DEP-010
+    source: { type: feature, id: E08-F01, name: WordTimingProvider port }
+    target: { type: feature, id: E09-F03, name: Word-sync highlight }
+    relationship: requires
+    rationale: Player consumes timing JSON for live highlight.
+    strength: strong
+    direction: one_way
+    risk_if_broken: word-sync UX feature broken
+    related_files:
+      - path: docs/PRD.md
+
+  # --- Privacy / lifecycle arteries ---
+  - id: DEP-011
+    source: { type: feature, id: E11-F01, name: 24h TTL + lifecycle automation }
+    target: { type: feature, id: E01-F05, name: Bucket lifecycle rules }
+    relationship: validates
+    rationale: TTL policy operationalized via bucket lifecycle rules.
+    strength: strong
+    direction: one_way
+    risk_if_broken: PPL Amendment 13 violation; minors' data retained
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+  - id: DEP-012
+    source: { type: feature, id: E11-F02, name: DPIA + parental consent ≥14 }
+    target: { type: feature, id: E01-F01, name: Signed-URL upload }
+    relationship: requires
+    rationale: Upload blocked until consent gate satisfied for minors.
+    strength: medium
+    direction: one_way
+    risk_if_broken: minors upload without consent; regulatory exposure
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+  - id: DEP-013
+    source: { type: feature, id: E11-F03, name: Upload attestation }
+    target: { type: feature, id: E01-F01, name: Signed-URL upload }
+    relationship: requires
+    rationale: Attestation captured pre-upload to limit copyright exposure.
+    strength: medium
+    direction: one_way
+    risk_if_broken: publishers raise copyright claim; takedown burden
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+
+  # --- Quality & telemetry arteries ---
+  - id: DEP-014
+    source: { type: feature, id: E10-F01, name: tirvi-bench v0 }
+    target: { type: feature, id: E02-F06, name: OCR benchmark harness }
+    relationship: validates
+    rationale: OCR benchmark consumes the same held-out set.
+    strength: strong
+    direction: one_way
+    risk_if_broken: OCR quality drift undetected
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+  - id: DEP-015
+    source: { type: feature, id: E10-F03, name: Blind MOS study }
+    target: { type: feature, id: E07-F04, name: Voice selection policy }
+    relationship: validates
+    rationale: MOS results drive voice routing decisions.
+    strength: strong
+    direction: bidirectional
+    risk_if_broken: voice choice not evidence-backed; PRD SLO undefendable
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+  - id: DEP-016
+    source: { type: feature, id: E10-F05, name: Cost telemetry per page }
+    target: { type: feature, id: E08-F03, name: Content-hash audio cache }
+    relationship: validates
+    rationale: Cost telemetry verifies cache-hit ratio meets $0.02/page gate.
+    strength: medium
+    direction: one_way
+    risk_if_broken: budget overrun goes unnoticed
+    related_files:
+      - path: docs/research/tirvi-validation-and-mvp-scoping.md
+
+  # Per-feature edges appended below as features are processed.
