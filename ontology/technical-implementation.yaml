@@ -80,6 +80,20 @@ modules:
     bounded_context: hebrew_nlp
     source_path: tirvi/adapters/dictabert/
     status: designed
+  - id: MOD-N02-F18
+    name: tirvi.disambiguate
+    description: confidence-driven sense pick + NLPResult v1 invariants
+    feature_refs: [N02/F18]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/disambiguate/
+    status: designed
+  - id: MOD-N02-F18-fixtures
+    name: tirvi.fixtures.nlp
+    description: YAML-driven NLPResult fixture builder
+    feature_refs: [N02/F18]
+    bounded_context: platform
+    source_path: tirvi/fixtures/nlp.py
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -539,4 +553,35 @@ tasks:
     feature_refs: [N02/F17]
     spec_refs: [spec:N02/F17/DE-06]
     test_path: tests/unit/test_dictabert_adapter.py
+    status: designed
+  # --- N02/F18 Disambiguation + NLP contract ---
+  - id: task:N02/F18/T-01
+    name: nlp-per-token-fields
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-01]
+    test_path: tests/unit/test_nlp_result_fields.py
+    status: designed
+  - id: task:N02/F18/T-02
+    name: morph-dict-whitelist
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-02]
+    test_path: tests/unit/test_morph_dict.py
+    status: designed
+  - id: task:N02/F18/T-03
+    name: pick-sense-disambiguation
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-03]
+    test_path: tests/unit/test_disambiguate.py
+    status: designed
+  - id: task:N02/F18/T-04
+    name: nlp-yaml-fixture-builder
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-04]
+    test_path: tests/unit/test_nlp_fixture_builder.py
+    status: designed
+  - id: task:N02/F18/T-05
+    name: nlp-v1-invariants
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-05, spec:N02/F18/DE-06]
+    test_path: tests/unit/test_nlp_v1_invariants.py
     status: designed
