@@ -1,0 +1,16 @@
+flowchart LR
+    PLAN["ReadingPlan from F22\nblocks with ssml=''"]
+    BUILD["DE-01\nblock_to_ssml"]
+    MARK["DE-02\nper-word mark\nname=PlanToken.id"]
+    BREAK["DE-03\ninter-block break\n500ms"]
+    ESC["DE-04\nxml_escape\n(preserve nikud + IPA)"]
+    INV["DE-05\nassert_ssml_v1\n(XML parse, marks unique)"]
+    EMIT["DE-06\nplan re-emit\nwith ssml populated"]
+    OUT["ReadingPlan v1\nssml ready for F26"]
+    PLAN --> BUILD
+    BUILD --> ESC
+    ESC --> MARK
+    MARK --> BREAK
+    BREAK --> INV
+    INV --> EMIT
+    EMIT --> OUT

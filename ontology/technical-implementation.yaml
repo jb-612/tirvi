@@ -115,6 +115,13 @@ modules:
     bounded_context: hebrew_nlp
     source_path: tirvi/plan/
     status: designed
+  - id: MOD-N02-F23
+    name: tirvi.ssml
+    description: SSML shaping for ReadingPlan (POC minimum: break + mark)
+    feature_refs: [N02/F23]
+    bounded_context: speech_synthesis
+    source_path: tirvi/ssml/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -746,4 +753,35 @@ tasks:
     feature_refs: [N02/F22]
     spec_refs: [spec:N02/F22/DE-06]
     test_path: tests/unit/test_plan_serialization.py
+    status: designed
+  # --- N02/F23 SSML shaping ---
+  - id: task:N02/F23/T-01
+    name: ssml-block-builder
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-01]
+    test_path: tests/unit/test_ssml_block_builder.py
+    status: designed
+  - id: task:N02/F23/T-02
+    name: per-word-mark-insertion
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-02]
+    test_path: tests/unit/test_per_word_mark.py
+    status: designed
+  - id: task:N02/F23/T-03
+    name: inter-block-break
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-03]
+    test_path: tests/unit/test_inter_block_break.py
+    status: designed
+  - id: task:N02/F23/T-04
+    name: xml-safe-escape
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-04]
+    test_path: tests/unit/test_xml_escape.py
+    status: designed
+  - id: task:N02/F23/T-05
+    name: ssml-invariant-and-emit
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-05, spec:N02/F23/DE-06]
+    test_path: tests/unit/test_ssml_shape.py
     status: designed
