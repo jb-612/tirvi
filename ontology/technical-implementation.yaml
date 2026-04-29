@@ -117,7 +117,7 @@ modules:
     status: designed
   - id: MOD-N02-F23
     name: tirvi.ssml
-    description: SSML shaping for ReadingPlan (POC minimum: break + mark)
+    description: "SSML shaping for ReadingPlan (POC minimum: break + mark)"
     feature_refs: [N02/F23]
     bounded_context: speech_synthesis
     source_path: tirvi/ssml/
@@ -285,7 +285,7 @@ adapters:
     status: designed
   - id: ADP-N03-F30-tts-marks
     name: TTSEmittedTimingAdapter
-    description: TTS-marks adapter slot of F03's WordTimingProvider coordinator (POC: no fallback)
+    description: "TTS-marks adapter slot of F03's WordTimingProvider coordinator (POC: no fallback)"
     feature_refs: [N03/F30]
     bounded_context: audio_delivery
     port_ref: PORT-06
