@@ -129,6 +129,13 @@ modules:
     bounded_context: speech_synthesis
     source_path: tirvi/adapters/wavenet/
     status: designed
+  - id: MOD-N03-F30
+    name: tirvi.adapters.tts_marks
+    description: TTS-marks word-timing adapter (per-block, monotonic, projection)
+    feature_refs: [N03/F30]
+    bounded_context: audio_delivery
+    source_path: tirvi/adapters/tts_marks/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -268,6 +275,14 @@ adapters:
     bounded_context: speech_synthesis
     port_ref: PORT-05
     source_path: tirvi/adapters/wavenet/__init__.py
+    status: designed
+  - id: ADP-N03-F30-tts-marks
+    name: TTSEmittedTimingAdapter
+    description: TTS-marks adapter slot of F03's WordTimingProvider coordinator (POC: no fallback)
+    feature_refs: [N03/F30]
+    bounded_context: audio_delivery
+    port_ref: PORT-06
+    source_path: tirvi/adapters/tts_marks/__init__.py
     status: designed
 
 # Classes / structs — result-object value types.
@@ -836,4 +851,35 @@ tasks:
     feature_refs: [N03/F26]
     spec_refs: [spec:N03/F26/DE-06]
     test_path: tests/unit/test_wavenet_adapter.py
+    status: designed
+  # --- N03/F30 Word-timing port ---
+  - id: task:N03/F30/T-01
+    name: tts-marks-adapter
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-01]
+    test_path: tests/unit/test_tts_marks_adapter.py
+    status: designed
+  - id: task:N03/F30/T-02
+    name: mark-to-timing-projection
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-02]
+    test_path: tests/unit/test_mark_to_timing.py
+    status: designed
+  - id: task:N03/F30/T-03
+    name: per-block-scope-guard
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-03]
+    test_path: tests/unit/test_per_block_scope.py
+    status: designed
+  - id: task:N03/F30/T-04
+    name: marks-monotonicity
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-04]
+    test_path: tests/unit/test_marks_monotonic.py
+    status: designed
+  - id: task:N03/F30/T-05
+    name: word-timing-provider-integration
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-05, spec:N03/F30/DE-06]
+    test_path: tests/unit/test_word_timing_provider.py
     status: designed

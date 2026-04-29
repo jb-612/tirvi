@@ -1,0 +1,14 @@
+flowchart LR
+    TTS["TTSResult from F26\nword_marks + audio_duration"]
+    TX["transcript tokens\n(from F22 PlanBlock)"]
+    ADAP["DE-01\nTTSEmittedTimingAdapter"]
+    MONO["DE-04\nassert_marks_monotonic"]
+    MATCH["DE-05\nlen(marks) == len(tokens)"]
+    PROJ["DE-02\nmark_to_timing\nend_s = next.start_s"]
+    RES["WordTimingResult\nprovider=tts-marks\nsource=tts-marks"]
+    TTS --> ADAP
+    TX --> ADAP
+    ADAP --> MONO
+    MONO --> MATCH
+    MATCH --> PROJ
+    PROJ --> RES

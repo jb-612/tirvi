@@ -550,3 +550,13 @@ dependencies:
     risk_if_broken: no audio for the demo.
     related_files:
       - path: .workitems/N03-audio-sync/F26-google-wavenet-adapter/design.md
+  - id: DEP-051
+    source: { type: feature, id: N03/F30, name: Word-timing port (TTS-marks adapter) }
+    target: { type: port, id: PORT-06, name: tirvi.ports.WordTimingProvider }
+    relationship: realizes
+    rationale: F30 fills the TTS-marks slot of F03's coordinator; forced-alignment slot deferred.
+    strength: strong
+    direction: one_way
+    risk_if_broken: highlight cannot step at word level.
+    related_files:
+      - path: .workitems/N03-audio-sync/F30-word-timing-port/design.md
