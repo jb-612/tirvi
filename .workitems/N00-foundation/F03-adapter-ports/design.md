@@ -46,6 +46,7 @@ Public Python contracts exposed by package `tirvi/`:
 | `tirvi.contracts` | `assert_adapter_contract(adapter, port)` | helper | shared contract test harness |
 
 `OCRResult(provider, text, blocks, confidence)` — F03 defines structural identity; F10 enriches semantics only (no new fields).
+`TTSResult(provider, audio_bytes, codec, voice_meta, word_marks, audio_duration_s)` — `audio_duration_s: float | None` was added 2026-04-29 to satisfy F30 DE-02's last-token end-time derivation; `None` when the upstream API does not report duration (Wavenet behavior is inconsistent).
 All results carry `provider` (FT-traceability) and `confidence: float | None` (`None` not `0.0`, biz S01).
 
 ## Approach

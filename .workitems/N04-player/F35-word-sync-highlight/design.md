@@ -54,7 +54,13 @@ demo page.
    page image, an absolutely-positioned `.marker` div, and an
    `<audio>` element bound to `drafts/<sha>/audio.mp3`.
 2. **DE-02**: Timings + page loader — async fetches `audio.json` and
-   `page.json`; parses into `Player.state` once.
+   `page.json`; parses into `Player.state` once. **Degraded path
+   (post-review C2)**: if `audio.json` is missing OR has
+   `error: <message>`, the player still binds the audio element and
+   plays audio without word-sync highlight; a non-blocking banner
+   surfaces the error message. `page.json` missing fails loud (the
+   demo cannot show the page image without it). Conforms to
+   `docs/schemas/audio.schema.json` and `docs/schemas/page.schema.json`.
 3. **DE-03**: rAF loop — on `<audio>` `play`, start a
    `requestAnimationFrame` loop that reads `audio.currentTime` and
    updates the marker (stops on `pause`).

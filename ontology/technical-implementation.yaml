@@ -117,7 +117,7 @@ modules:
     status: designed
   - id: MOD-N02-F23
     name: tirvi.ssml
-    description: SSML shaping for ReadingPlan (POC minimum: break + mark)
+    description: "SSML shaping for ReadingPlan (POC minimum: break + mark)"
     feature_refs: [N02/F23]
     bounded_context: speech_synthesis
     source_path: tirvi/ssml/
@@ -285,7 +285,7 @@ adapters:
     status: designed
   - id: ADP-N03-F30-tts-marks
     name: TTSEmittedTimingAdapter
-    description: TTS-marks adapter slot of F03's WordTimingProvider coordinator (POC: no fallback)
+    description: "TTS-marks adapter slot of F03's WordTimingProvider coordinator (POC: no fallback)"
     feature_refs: [N03/F30]
     bounded_context: audio_delivery
     port_ref: PORT-06
@@ -797,6 +797,12 @@ tasks:
     feature_refs: [N02/F22]
     spec_refs: [spec:N02/F22/DE-06]
     test_path: tests/unit/test_plan_serialization.py
+    status: designed
+  - id: task:N02/F22/T-07
+    name: page-json-projection
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-07]
+    test_path: tests/unit/test_page_json_projection.py
     status: designed
   # --- N02/F23 SSML shaping ---
   - id: task:N02/F23/T-01

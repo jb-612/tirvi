@@ -39,6 +39,7 @@ acm_nodes:
     - spec:N02/F22/DE-04
     - spec:N02/F22/DE-05
     - spec:N02/F22/DE-06
+    - spec:N02/F22/DE-07
   user_stories:
     - story:N02/F22/US-01
     - story:N02/F22/US-02
@@ -52,6 +53,7 @@ acm_nodes:
     - task:N02/F22/T-04
     - task:N02/F22/T-05
     - task:N02/F22/T-06
+    - task:N02/F22/T-07
   diagrams:
     - diagram:N02/F22/reading-plan-assembly
 
@@ -62,7 +64,9 @@ acm_edges:
   - {from: spec:N02/F22/DE-04, to: HLD-§5.3/Output, type: TRACED_TO}
   - {from: spec:N02/F22/DE-05, to: HLD-§5.2/Processing, type: TRACED_TO}
   - {from: spec:N02/F22/DE-06, to: HLD-§5.3/Output, type: TRACED_TO}
+  - {from: spec:N02/F22/DE-07, to: HLD-§5.3/Output, type: TRACED_TO}
   - {from: spec:N02/F22/DE-04, to: adr:014, type: INFLUENCED_BY}
+  - {from: spec:N02/F22/DE-07, to: adr:023, type: INFLUENCED_BY}
   - {from: story:N02/F22/US-01, to: criterion:N02/F22/US-01/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F22/US-02, to: criterion:N02/F22/US-02/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F22/US-01, to: spec:N02/F22/DE-02, type: VERIFIED_BY}
@@ -75,12 +79,14 @@ acm_edges:
   - {from: feature:N02/F22, to: spec:N02/F22/DE-04, type: CONTAINS}
   - {from: feature:N02/F22, to: spec:N02/F22/DE-05, type: CONTAINS}
   - {from: feature:N02/F22, to: spec:N02/F22/DE-06, type: CONTAINS}
+  - {from: feature:N02/F22, to: spec:N02/F22/DE-07, type: CONTAINS}
   - {from: spec:N02/F22/DE-01, to: bc:hebrew_nlp, type: BELONGS_TO}
   - {from: spec:N02/F22/DE-02, to: bc:hebrew_nlp, type: BELONGS_TO}
   - {from: spec:N02/F22/DE-03, to: bc:hebrew_nlp, type: BELONGS_TO}
   - {from: spec:N02/F22/DE-04, to: bc:hebrew_nlp, type: BELONGS_TO}
   - {from: spec:N02/F22/DE-05, to: bc:hebrew_nlp, type: BELONGS_TO}
   - {from: spec:N02/F22/DE-06, to: bc:hebrew_nlp, type: BELONGS_TO}
+  - {from: spec:N02/F22/DE-07, to: bc:audio_delivery, type: BELONGS_TO}
   - {from: "diagram:N02/F22/reading-plan-assembly", to: spec:N02/F22/DE-02, type: EXPLAINS}
   - {from: "diagram:N02/F22/reading-plan-assembly", to: spec:N02/F22/DE-03, type: EXPLAINS}
   - {from: task:N02/F22/T-01, to: spec:N02/F22/DE-01, type: IMPLEMENTED_BY}
@@ -89,6 +95,7 @@ acm_edges:
   - {from: task:N02/F22/T-04, to: spec:N02/F22/DE-04, type: IMPLEMENTED_BY}
   - {from: task:N02/F22/T-05, to: spec:N02/F22/DE-05, type: IMPLEMENTED_BY}
   - {from: task:N02/F22/T-06, to: spec:N02/F22/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F22/T-07, to: spec:N02/F22/DE-07, type: IMPLEMENTED_BY}
 
 de_to_hld:
   DE-01: HLD-§5.3/Output
@@ -97,6 +104,7 @@ de_to_hld:
   DE-04: HLD-§5.3/Output
   DE-05: HLD-§5.2/Processing
   DE-06: HLD-§5.3/Output
+  DE-07: HLD-§5.3/Output
 story_to_prd:
   US-01: "PRD §6.4 — Reading plan"
   US-02: "PRD §6.4 — Reading plan"
@@ -107,6 +115,7 @@ task_to_de:
   T-04: DE-04
   T-05: DE-05
   T-06: DE-06
+  T-07: DE-07
 ac_to_story:
   US-01/AC-01: US-01
   US-02/AC-01: US-02
@@ -118,3 +127,4 @@ tests:
   - {ontology_id: "task:N02/F22/T-04", test_path: tests/unit/test_plan_invariants.py, status: pending}
   - {ontology_id: "task:N02/F22/T-05", test_path: tests/unit/test_empty_block_skip.py, status: pending}
   - {ontology_id: "task:N02/F22/T-06", test_path: tests/unit/test_plan_serialization.py, status: pending}
+  - {ontology_id: "task:N02/F22/T-07", test_path: tests/unit/test_page_json_projection.py, status: pending}

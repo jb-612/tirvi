@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tirvi.local/schemas/audio.schema.json",
+  "title": "audio.json — per-block word-timing artefact",
+  "description": "Produced by N03/F30 (TTSEmittedTimingAdapter) for one PlanBlock; consumed by N04/F35 player. Lives at drafts/<reading-plan-sha>/<block_id>.audio.json alongside the block's audio.mp3. Stable wire surface per ADR-023.",
+  "type": "object",
+  "required": ["block_id", "provider", "source", "timings"],
+  "properties": {
+    "block_id": {
+      "type": "string",
+      "description": "Matches PlanBlock.block_id from F22 (e.g., 'b3')."
+    },
+    "provider": {
+      "type": "string",
+      "const": "tts-marks",
+      "description": "F30 POC only emits the tts-marks adapter; forced-alignment is deferred per ADR-015."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["tts-marks", "forced-alignment"],
+      "description": "WordTimingResult.source field per F03 lock."
+    },
+    "audio_duration_s": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "From TTSResult.audio_duration_s (F03 lock); null when Wavenet did not report duration."
+    },
+    "tts_marks_truncated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mirrored from voice_meta.tts_marks_truncated (F26 DE-04). When true, F30 aligned by min(marks, tokens) and tail tokens carry end_s=null."
+    },
+    "timings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["mark_id", "start_s"],
+        "properties": {
+          "mark_id": {
+            "type": "string",
+            "description": "Equals PlanToken.id from F22 (e.g., 'b3-0'). Wire-contract pin per F23 deviation note."
+          },
+          "start_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end_s": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "description": "Null only for tail tokens after a truncated-mark alignment (graceful degradation per F30 DE-05)."
+          }
+        }
+      }
+    },
+    "error": {
+      "type": "string",
+      "description": "Set when F30 raised but the orchestrator chose to emit a degraded artefact for the player; F35 surfaces this in a non-blocking banner."
+    }
+  }
+}

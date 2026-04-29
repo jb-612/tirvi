@@ -92,6 +92,8 @@ typed list of `(mark_id, t_seconds)`.
 | Audio cache by content hash | Out of scope (POC) | PLAN-POC.md F26 scope: no caching |
 | Multi-voice routing | Single voice | Wavenet-D only for POC |
 | Cloud Storage `audio/{block_hash}.mp3` path | POC writes to `drafts/<sha>/` locally | PLAN-POC.md storage section overrides HLD §3.4 for POC |
+| `synthesize` signature | HLD §4 shows `synthesize(ssml, voice: VoiceSpec) -> Synthesis`; F03 locked `synthesize(ssml: str, voice: str) -> TTSResult`. F26 implements the F03 lock. | HLD `VoiceSpec` was illustrative; locked F03 port is path-string typed for simpler config wiring. Return type renamed `Synthesis → TTSResult` to align with the F03 result-object family. |
+| `TTSResult.audio_duration_s` | New field added to F03 lock 2026-04-29 (post-review C8) | Required by F30 DE-02 last-mark end-time derivation; `None` when Wavenet does not report duration. |
 | Forced-alignment fallback | Out of scope (POC) | F30 sticks to TTS marks; ADR-015 fallback deferred |
 
 ## HLD Open Questions

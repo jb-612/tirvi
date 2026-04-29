@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tirvi.local/schemas/page.schema.json",
+  "title": "page.json — per-page projection for the player",
+  "description": "Produced by N02/F22 DE-07 (plan.to_page_json); consumed by N04/F35 player. Lives at drafts/<reading-plan-sha>/page.json. Stable wire surface per ADR-023.",
+  "type": "object",
+  "required": ["page_image_url", "words", "marks_to_word_index"],
+  "properties": {
+    "page_image_url": {
+      "type": "string",
+      "description": "Relative URL to the page raster image (POC: 'page-1.png' alongside the JSON in drafts/<sha>/)."
+    },
+    "image_natural_width": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Original image width in pixels at OCR DPI (300). F35 DE-05 uses this to scale bbox coords if the image is rendered at a different size."
+    },
+    "image_natural_height": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "words": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "bbox"],
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Word surface form, post-OCR (from OCRWord.text)."
+          },
+          "bbox": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {"type": "integer", "minimum": 0},
+            "description": "Pixel coords [x, y, w, h] in page-frame, top-left origin, post-deskew (per ADR-016)."
+          },
+          "lang_hint": {
+            "type": ["string", "null"],
+            "enum": ["he", "en", null]
+          }
+        }
+      }
+    },
+    "marks_to_word_index": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "description": "Map PlanToken.id (== <mark name=...>) to the word index in words[]. Built by F22 DE-07 from plan.blocks[].tokens[].src_word_indices[0]."
+    }
+  }
+}

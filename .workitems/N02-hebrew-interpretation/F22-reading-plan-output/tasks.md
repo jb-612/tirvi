@@ -1,7 +1,7 @@
 ---
 feature_id: N02/F22
 status: ready
-total_estimate_hours: 7.0
+total_estimate_hours: 8.5
 ---
 
 # Tasks: N02/F22 — Reading-plan output
@@ -69,6 +69,15 @@ total_estimate_hours: 7.0
 - dependencies: [T-01, T-02]
 - hints: ReadingPlan.to_json(); json.dumps(asdict(plan), sort_keys=True, ensure_ascii=False, indent=2); two runs over same input -> byte identical
 
+## T-07: page.json projection (post-review C4)
+
+- design_element: DE-07
+- acceptance_criteria: [US-01/AC-01]
+- estimate: 1.5h
+- test_file: tests/unit/test_page_json_projection.py
+- dependencies: [T-01, T-02]
+- hints: plan.to_page_json(ocr_result) -> dict; output validated by docs/schemas/page.schema.json; words[].bbox from ocr_result; marks_to_word_index = {token.id: first(token.src_word_indices) for block in plan.blocks for token in block.tokens}; page_image_url is caller-supplied (defaults to "page-1.png")
+
 ## Dependency DAG
 
 ```
@@ -76,6 +85,7 @@ T-01 → T-02 → T-03
 T-02 → T-04
 T-02 → T-05
 T-01, T-02 → T-06
+T-01, T-02 → T-07
 ```
 
 Critical path: T-01 → T-02 → T-03 (4.5h)

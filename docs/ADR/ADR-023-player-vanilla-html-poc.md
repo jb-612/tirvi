@@ -52,4 +52,7 @@ Negative:
 - HLD §3.1 — Frontend (Next.js / React + Tailwind)
 - PLAN-POC.md — F35 scope: "Vanilla HTML + Web Audio API; no framework"
 - Biz corpus E09-F03
-- Related: N04/F35 design.md DE-01; N04/F36 (4-control player)
+- Stable surface schemas (post-review C7): `docs/schemas/audio.schema.json`,
+  `docs/schemas/page.schema.json` — pinned wire formats for MVP migration
+- Related: N04/F35 design.md DE-01; N04/F36 (4-control player); F22 DE-07
+  produces `page.json`; F30 produces `audio.json`
