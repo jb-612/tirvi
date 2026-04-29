@@ -1,5 +1,6 @@
 # Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+# Filled by @design-pipeline OR @sw-designpipeline; read by validate-hld-refs.sh
+# and ACM ingestion (scripts/acm-ingest.sh).
 
 feature_id: TBD
 status: scaffolded
@@ -8,6 +9,20 @@ status: scaffolded
 hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
 prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
 adr_refs: []        # e.g. ["ADR-001"]
+
+# Biz corpus source (when @biz-functional-design ran for this feature).
+# Presence of functional_test_plan_path is the canonical signal that
+# @design-pipeline should delegate to @sw-designpipeline (Stage 0).
+biz_source:
+  functional_test_plan_path:    # e.g. "./functional-test-plan.md"
+  behavioural_test_plan_path:   # e.g. "./behavioural-test-plan.md"
+  corpus_e_id:                  # e.g. "E00-F03" — original biz-skill ID
+  imported_at:                  # ISO date when migrated from corpus
+  source_sha:                   # commit SHA at import time (for drift detection)
+
+# Project-level ontology nodes referenced by this feature (no slicing —
+# IDs only; full nodes live in ontology/*.yaml at repo root).
+ontology_refs: []   # e.g. ["bc:hebrew_text", "persona:P01", "bo:Document"]
 
 # ACM nodes
 acm_nodes:
@@ -18,10 +33,14 @@ acm_nodes:
   tasks: []         # task:<feature_id>/T-NN
 
 # ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY|REALIZES|TESTED_BY}
 
 # Per-element traces (denormalized for quick lookup)
 de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
 story_to_prd: {}    # US-NN -> PRD §X.Y
 task_to_de: {}      # T-NN -> DE-NN
 ac_to_story: {}     # AC-NN -> US-NN
+
+# Test execution state (filled at TDD time; tests defined in
+# ontology/testing.yaml are referenced here by ontology_id).
+tests: []           # entries: {ontology_id: "ft:...", test_path: "...", status: designed|implemented|passing|failing}

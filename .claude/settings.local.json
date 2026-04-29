@@ -6,7 +6,9 @@
       "Bash(mkdir -p /tmp/pdf-audit)",
       "Bash(rm -f /tmp/pdf-audit/*)",
       "Bash(pdftoppm -png -r 90 /Users/jbellish/VSProjects/tirvi/dist/build/tirvi-market-brief.pdf /tmp/pdf-audit/p)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(cp .claude/skills/biz-functional-design/templates/functional-test-plan.md .workitems/templates/functional-test-plan.md)",
+      "Bash(cp .claude/skills/biz-functional-design/templates/behavioural-test-plan.md .workitems/templates/behavioural-test-plan.md)"
     ]
   }
 }

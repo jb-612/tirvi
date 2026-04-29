@@ -107,6 +107,40 @@ Keep IDs stable. Treat the YAML as the contract. The TDD code-writer reads
 it to know which bounded context a test or class lives in and which
 aggregate it must respect.
 
+## Stage 0: Biz Corpus Detection
+
+Before scaffolding, check whether `@biz-functional-design` already
+produced a corpus for this feature. If yes, delegate the software-design
+half to `@sw-designpipeline` (which extracts Stages 2, 2.5, 4, 4b, 5–11
+of this pipeline) and exit. This avoids regenerating `user_stories.md`
+when biz has already written it.
+
+**Detection signal**: presence of `functional-test-plan.md` in the
+workitem folder.
+
+```bash
+if [[ -f .workitems/$ARGUMENTS/functional-test-plan.md ]]; then
+  # Biz corpus exists for this feature → delegate to @sw-designpipeline.
+  # @sw-designpipeline reads the existing user_stories.md, functional-
+  # test-plan.md, behavioural-test-plan.md, and ontology/*.yaml as inputs.
+  echo "Biz corpus detected for $ARGUMENTS. Delegating to @sw-designpipeline."
+  exec @sw-designpipeline $ARGUMENTS
+fi
+# Otherwise: continue with the holistic flow below (Stages 1–11).
+```
+
+**When biz is missing but expected**: if the feature has a corpus stub in
+`docs/business-design/epics/E##-*/`, run `scripts/migrate-feature.sh
+<N##/F##>` to import biz artefacts into the workitem folder, then re-run
+this pipeline (which will detect the corpus and delegate).
+
+**When biz won't be run for this feature**: continue below. The holistic
+flow still produces a valid feature design; the biz/sw split is an
+optimization, not a requirement.
+
+See `docs/ADR/ADR-013-sdlc-biz-sw-design-split.md` for the architectural
+rationale.
+
 ## Stage 1: Scaffold
 
 ```bash
