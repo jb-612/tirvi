@@ -19,6 +19,7 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-010 | NLP compute primitive (Cloud Run CPU vs. GPU) | Proposed | hebrew-interpretation | F17 |
 | ADR-011 | Dev container layout (Compose vs. supervisord) | **Accepted** | dev-platform | F01 |
 | ADR-012 | Cloud compute primitive (Cloud Run vs. App Engine vs. Functions) | **Accepted** | cloud-platform | F02 |
+| ADR-013 | SDLC harness — biz / sw design split + ACM ingestion | Proposed | sdlc | all (harness-wide) |
 
 ## Conventions
 
