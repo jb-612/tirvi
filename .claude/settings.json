@@ -49,8 +49,10 @@
       "Edit(ontology/dependencies.yaml)"
     ],
     "deny": [
+      "Bash(git push:*)",
       "Bash(rm -rf:*)",
       "Bash(git reset --hard:*)",
+      "Bash(git checkout:*)",
       "Write(tirvi/**)",
       "Write(scripts/**)",
       "Edit(.claude/skills/**)",
