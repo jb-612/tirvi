@@ -45,10 +45,23 @@ refactor. Repeat for each test. Used for tasks with unknown solution shape.
 - Python: `pytest` with `tmp_path` fixtures
 
 ### Functional/Smoke/Regression Tests — written separately:
-- Use `@test-design` to produce STD.md + traceability.yaml (WHAT to test)
+- Use `@test-design` to produce STD.md + traceability.yaml (WHAT to test).
+  When `@biz-functional-design` has run for the feature (presence of
+  `functional-test-plan.md`), test-design SYNTHESISES from biz plans
+  rather than generating from stories alone. See ADR-013.
 - Use `@test-mock-registry` to generate shared fakes from port interfaces
 - Use `@test-functional` to write FUNC/SMOKE/REG code (Chicago-school)
 - TDD skills handle unit tests only (per-task, from tasks.md)
+
+### Traceability schema (ADR-013):
+The per-feature `traceability.yaml` schema is forward-compatible. Existing
+`acm_nodes`, `acm_edges`, `de_to_hld`, `story_to_prd`, `task_to_de`,
+`ac_to_story` fields are unchanged. New optional fields added by the biz/sw
+split: `biz_source.{functional_test_plan_path, behavioural_test_plan_path,
+corpus_e_id, imported_at, source_sha}`, `ontology_refs[]` (refs to
+`ontology/*.yaml` node IDs), and `tests[].{ontology_id, test_path, status}`
+(execution state filled at TDD time). Skills that ignore the new fields
+continue to work; TDD skills SHOULD update `tests[].status` as code lands.
 
 ### Characterization Tests — for existing untested code:
 - Capture current behavior before refactoring

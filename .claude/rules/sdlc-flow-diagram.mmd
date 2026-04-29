@@ -8,6 +8,7 @@ flowchart TD
     EP_DOCS["@documentation<br/>(docs-only change)"]
     EP_QA["@general-question<br/>info only, no artifact"]
     EP_FULL["@design-pipeline<br/>(full 11-stage)"]
+    EP_BIZ["@biz-functional-design<br/>(stories + test plans + ontology;<br/>often run upstream)"]
 
     USER --> EP_IDEA
     USER --> EP_RESEARCH
@@ -15,12 +16,15 @@ flowchart TD
     USER --> EP_DOCS
     USER --> EP_QA
     USER --> EP_FULL
+    USER --> EP_BIZ
 
     EP_IDEA -. "promote" .-> EP_RESEARCH
     EP_IDEA -. "promote" .-> EP_FULL
     EP_RESEARCH -. "feeds" .-> EP_FULL
+    EP_RESEARCH -. "feeds" .-> EP_BIZ
     EP_QA -. "save-as-idea" .-> EP_IDEA
     EP_HOTFIX -. "escalate" .-> EP_FULL
+    EP_BIZ -. "biz corpus →<br/>sw-designpipeline routes" .-> EP_FULL
 
     %% ── Step 1 ──
     S1[Step 1: Workplan]
@@ -30,17 +34,23 @@ flowchart TD
 
     %% ── Step 2: Design ──
     S2[Step 2: Design]
-    S2_DP["@design-pipeline<br/>design.md, stories, tasks.md"]
+    S2_BIZ_CHECK{Biz corpus exists?<br/>(functional-test-plan.md)}
+    S2_DP["@design-pipeline<br/>holistic 11 stages<br/>(design + stories + tasks)"]
+    S2_SW["@sw-designpipeline<br/>sw-only: design + tasks + ADRs<br/>+ technical-implementation.yaml"]
     S2_DR["@design-review<br/>2 rounds + adversary"]
     S2_TB["@task-breakdown<br/>atomic decomposition"]
-    S2_TD["@test-design<br/>STD.md + traceability.yaml"]
+    S2_TD["@test-design<br/>STD.md + traceability.yaml<br/>(synthesises from biz when present)"]
     S2_FT{Feature type?}
     S2_MR_YES["@test-mock-registry<br/>generate fakes NOW"]
     S2_MR_DEFER["defer @test-mock-registry<br/>to step 3"]
     S2_HITL{{HITL: User Gate}}
 
     S1 --> S2
-    S2 --> S2_DP --> S2_DR --> S2_TB
+    S2 --> S2_BIZ_CHECK
+    S2_BIZ_CHECK -- "yes (delegate)" --> S2_SW
+    S2_BIZ_CHECK -- "no (holistic)" --> S2_DP
+    S2_DP --> S2_DR --> S2_TB
+    S2_SW --> S2_DR
     S2_TB --> S2_TD
     S2_TD --> S2_FT
     S2_FT -- "Consumer<br/>(ports exist)" --> S2_MR_YES --> S2_HITL
@@ -102,9 +112,9 @@ flowchart TD
     classDef entry fill:#0ea5e9,color:#fff,stroke:#0284c7
 
     class S1,S2,S3,S4,S5,S6,S7,S8 step
-    class S2_DP,S2_DR,S2_TB,S2_TD,S2_MR_YES,S3_PORTS,S3_MR_MID,S3_TASKS,S3_TRACK_A,S3_TRACK_B,S3_TRACK_C skill
+    class S2_DP,S2_SW,S2_DR,S2_TB,S2_TD,S2_MR_YES,S3_PORTS,S3_MR_MID,S3_TASKS,S3_TRACK_A,S3_TRACK_B,S3_TRACK_C skill
     class S2_HITL,S5_HITL,S6_HITL,S7_HITL,S3_HITL hitl
-    class S2_FT,S3_FT_CHECK decision
+    class S2_BIZ_CHECK,S2_FT,S3_FT_CHECK decision
     class S2_MR_DEFER,S3_E2E deferred
     class S3_TRACK_A,S3_TRACK_B,S3_TRACK_C track
-    class USER,EP_IDEA,EP_RESEARCH,EP_HOTFIX,EP_DOCS,EP_QA,EP_FULL entry
+    class USER,EP_IDEA,EP_RESEARCH,EP_HOTFIX,EP_DOCS,EP_QA,EP_FULL,EP_BIZ entry

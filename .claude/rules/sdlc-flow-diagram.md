@@ -21,18 +21,38 @@ different point; some skip the trunk entirely.
 | `@documentation` | Step 4 (Review) directly | Tier-classified review | Docs under `docs/` |
 | `@general-question` | — (conversational) | None | None by default; opt-in memo stub |
 | `@design-pipeline` | Step 1 (Workplan) | Full 3-round design-review | Full feature workitem |
+| `@biz-functional-design` | Step 2 (Design) — biz half | 10-reviewer + adversary + autoresearch | `.workitems/<F>/{user_stories,functional-test-plan,behavioural-test-plan}.md` + `ontology/{business-domains,testing,dependencies}.yaml` + `.workitems/review/*.md` |
+| `@sw-designpipeline` | Step 2 (Design) — sw half (when biz ran) | Same as design-pipeline R1+R2 | `.workitems/<F>/{design,tasks,traceability}.yaml` + `ontology/technical-implementation.yaml` + ADRs + diagrams |
 
 Ideation can promote to Research or full Design. Research feeds full Design.
 General-question can opt-in to save as an idea. Hotfix can escalate to full
 Design if the 2-reviewer light check flags scope creep. The 8-step trunk
 itself is unchanged — entry points layer on top, they do not replace it.
 
+## Step 2: Design — Two-Skill Routing (ADR-013)
+
+`@design-pipeline` Stage 0 detects biz corpus presence (via
+`functional-test-plan.md` in the workitem):
+
+```
+biz corpus exists?
+  yes → @sw-designpipeline (sw-only: design, tasks, ADRs, diagrams)
+  no  → @design-pipeline (holistic: all 11 stages including PRD-driven stories)
+```
+
+`@biz-functional-design` runs separately (often by upstream PRD work or in
+a long-running cloud session); it produces stories + test plans + project
+ontology and stops at the design boundary. After biz lands, the next time
+`@design-pipeline` is invoked for that feature, it routes to
+`@sw-designpipeline`.
+
 ## Step 2: Design — Test Planning
 
-After `@design-pipeline` produces stories and tasks:
+After stories exist (from biz or holistic flow):
 
 1. **@test-design** — Always runs. Produces STD.md + traceability.yaml
-   (defines WHAT to test). No code dependencies — only needs stories.
+   (defines WHAT to test). When biz test plans exist, SYNTHESISES from
+   them rather than generating from stories alone.
 
 2. **@test-mock-registry** — Conditional on feature type:
 

@@ -24,6 +24,21 @@ Before running, ensure:
 Read from `.workitems/$ARGUMENTS/`:
 - `design.md` — interfaces, approach, file structure, decisions
 - `user_stories.md` — acceptance criteria, test scenarios
+- `functional-test-plan.md` (if present, from biz corpus) — FT-NN scenarios that tasks must cover
+- `behavioural-test-plan.md` (if present, from biz corpus) — BT-NN scenarios
+
+## Step 1.5: AC Heading Contract Assertion
+
+Verify `user_stories.md` uses `## Acceptance Criteria` (or `## acceptance_criteria`)
+section headings. AC→task linkage downstream depends on this exact heading;
+biz-corpus-generated stories must preserve it. If the heading is missing or
+renamed, abort with a clear error: "user_stories.md schema violation —
+expected `## Acceptance Criteria` heading. AC→task linkage will silently
+fail downstream."
+
+Reason: this skill (and `@sw-designpipeline` Stage 8) extract ACs by
+pattern-matching the heading; renaming silently loses traceability.
+See ADR-013 §A2 cross-skill audit findings.
 
 ## Step 2: Decompose into Atomic Tasks
 

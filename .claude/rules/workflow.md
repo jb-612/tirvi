@@ -17,6 +17,14 @@ and HITL gates defined inline.
    adversary challenge), and `@task-breakdown` for atomic decomposition.
    For daemon work: verify async patterns and shared state implications.
 
+   **Two-skill design (biz → sw)** — When `@biz-functional-design` has been
+   run for a feature (presence of `functional-test-plan.md` in the workitem
+   folder), `@design-pipeline` Stage 0 detects this and delegates to
+   `@sw-designpipeline`, which extracts Stages 2, 2.5, 4, 4b, 5–11 of the
+   holistic pipeline and skips PRD-driven story generation (biz already
+   wrote `user_stories.md`). When biz has NOT run, `@design-pipeline`
+   continues with the holistic flow. See ADR-013.
+
    **Test planning (always):** Run `@test-design` after stories exist to produce
    STD.md + traceability.yaml (defines WHAT to test — consumed by TDD and
    functional test skills in step 3).

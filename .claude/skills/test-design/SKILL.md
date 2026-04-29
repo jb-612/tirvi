@@ -52,19 +52,39 @@ This skill produces the PLAN. Downstream skills produce the CODE.
 Read the epic's planning artifacts:
 
 ```
-.workitems/PLAN.md                          # Epic definition and feature list
-.workitems/{epic-id}-*/design.md            # Feature designs (if they exist)
-.workitems/{epic-id}-*/user_stories.md      # User stories (if they exist)
-.workitems/{epic-id}-*/tasks.md             # Task breakdown (if it exists)
+.workitems/PLAN.md                                 # Epic definition and feature list
+.workitems/{epic-id}-*/design.md                   # Feature designs (if they exist)
+.workitems/{epic-id}-*/user_stories.md             # User stories (if they exist)
+.workitems/{epic-id}-*/tasks.md                    # Task breakdown (if it exists)
+.workitems/{epic-id}-*/functional-test-plan.md     # Biz functional tests (if biz ran)
+.workitems/{epic-id}-*/behavioural-test-plan.md    # Biz behavioural tests (if biz ran)
+ontology/testing.yaml                              # Project-level test definitions (if biz ran)
 ```
 
 If user stories don't exist yet, derive testable requirements from the PLAN.md
 feature descriptions and any referenced ADRs or specs.
 
+**Biz corpus branch (when functional-test-plan.md + behavioural-test-plan.md
+exist for a feature):** SYNTHESISE the STD.md and traceability.yaml from the
+biz test plans rather than generating from stories alone. Specifically:
+- Biz `FT-NN` and `BT-NN` IDs become canonical `FUNC-{epic}-{feature}-NN` and
+  `BT-{epic}-{feature}-NN` IDs in the STD (rename, do not invent).
+- `mock_strategy` per scenario is derived from biz test plan's
+  "Validation method" + "Integration Tests" sections.
+- `acceptance_criteria` field references the AC IDs already linked from biz
+  user_stories.md (no re-derivation).
+- Cross-reference `ontology/testing.yaml` node IDs in `tests[].ontology_id`
+  so the per-feature traceability points back at the project graph.
+
+This branch runs when `@sw-designpipeline` invokes test-design at its Stage 8;
+it skips story-driven test generation entirely.
+
 Also check:
 - `docs/ADR/` for architectural constraints that imply tests
 - `docs/research/` for behavioral specs or product requirements
 - Existing test files for patterns and naming conventions
+- `ontology/business-domains.yaml` for personas / business objects to cross-reference
+  (when biz ran)
 
 ## Step 2: Identify Test Subjects per Feature
 
