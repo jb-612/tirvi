@@ -1,0 +1,51 @@
+# Schema for ontology/dependencies.yaml
+# Validates structure of cross-layer edges in the graph.
+
+$schema: dependencies
+version: 1
+
+required_top_level_keys:
+  - version
+  - dependencies
+
+node_types:
+
+  dependency_edge:
+    required: [id, source, target, relationship, rationale, strength, direction]
+    id_pattern: "^DEP-[0-9]{3}$"
+    optional: [risk_if_broken, related_files]
+
+    source_required: [type, id, name]
+    target_required: [type, id, name]
+    endpoint_type_enum:
+      - feature
+      - persona
+      - bounded_context
+      - business_object
+      - collaboration_object
+      - module
+      - service
+      - port
+      - adapter
+      - class
+      - function
+      - adr_decision
+      - functional_test
+      - behavioural_test
+
+    relationship_enum:
+      - triggers
+      - requires
+      - validates
+      - replaces
+      - realizes      # NEW: sw → biz mapping
+      - tested_by     # NEW: sw → testing
+      - depends_on    # NEW: runtime/build-time
+      - traced_to     # generic lineage
+      - implemented_by
+      - has_criterion
+      - contains
+      - verified_by
+
+    strength_enum: [strong, medium, weak]
+    direction_enum: [one_way, bidirectional]

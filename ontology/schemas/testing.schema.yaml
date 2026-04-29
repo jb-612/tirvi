@@ -1,0 +1,48 @@
+# Schema for ontology/testing.yaml
+# Validates structure of the testing-layer graph slice.
+
+$schema: testing
+version: 1
+
+required_top_level_keys:
+  - version
+  - functional_tests
+  - behavioural_tests
+
+node_types:
+
+  functional_test:
+    required: [id, type, story_refs, priority]
+    id_pattern: "^FT-[A-Z0-9-]+$|^FUNC-N[0-9]{2}-F[0-9]{2}-[0-9]{3}$"
+    graph_id_prefix: "ft:"
+    type_enum: [functional, smoke, regression]
+    priority_enum: [critical, high, medium, low]
+    optional:
+      - description
+      - business_object_refs
+      - bounded_context
+      - aggregate
+      - acceptance_criteria_refs
+      - mock_strategy
+      - test_path  # filled at TDD time
+      - status  # designed | implemented | passing | failing
+      - inferred_implementation  # FUT-* anchors
+
+  behavioural_test:
+    required: [id, type, story_refs, priority]
+    id_pattern: "^BT-[A-Z0-9-]+$|^BT-N[0-9]{2}-F[0-9]{2}-[0-9]{3}$"
+    graph_id_prefix: "bt:"
+    type_enum:
+      - hesitation
+      - rework
+      - abandonment
+      - retry
+      - recovery
+      - collaboration_breakdown
+    priority_enum: [critical, high, medium, low]
+    optional:
+      - description
+      - persona_refs
+      - bounded_context
+      - test_path
+      - status

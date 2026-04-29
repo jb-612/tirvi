@@ -1,0 +1,44 @@
+# Technical Implementation Ontology — tirvi
+# Project-level graph slice for the SOFTWARE LAYER. Owned by @sw-designpipeline.
+# Schema: ontology/schemas/technical-implementation.schema.yaml
+#
+# Populated incrementally as @sw-designpipeline runs per-feature design and
+# task breakdown. Each task records its target module/class as a node here;
+# each ADR authored gets an `adr-decision` node.
+#
+# Empty arrays in this file are EXPECTED at the start of the refactor
+# (PR 2). They populate as features migrate (PR 4+).
+
+version: 1
+
+# Modules — coarse-grained code groupings (e.g., a Go package, a Dart feature).
+modules: []  # MOD-NN: id, name, description, feature_refs, bounded_context, source_path, status
+
+# Services — runtime processes / Cloud Run endpoints / sidecar containers.
+services: []  # SVC-NN: id, name, description, feature_refs, bounded_context, source_path, status
+
+# Ports — abstract interfaces (DDD ports, hex-arch boundaries).
+ports: []  # PORT-NN: id, name, description, feature_refs, bounded_context, source_path, status
+
+# Adapters — concrete implementations of ports (e.g., GCS storage adapter).
+adapters: []  # ADP-NN: id, name, description, feature_refs, bounded_context, port_ref, source_path, status
+
+# Classes / structs — cohesive types within modules.
+classes: []  # CLS-NN: id, name, description, feature_refs, module_ref, source_path, status
+
+# Functions — top-level callable units worth tracking as graph nodes.
+# Most code-layer functions are auto-discovered by ACM's code ingest;
+# this list captures functions that need explicit cross-references
+# (e.g., entry points, scheduled jobs).
+functions: []  # FN-NN: id, name, description, feature_refs, module_ref, source_path, status
+
+# ADR decisions — first-class graph nodes referenced by traceability.yaml.
+# Mirrors docs/ADR/INDEX.md but lives here for graph queries.
+adr_decisions:
+  - id: adr:013
+    name: SDLC harness — biz / sw design split + ACM ingestion
+    description: Two-skill design model + repo-root ontology + ACM ingestion via existing CLI
+    feature_refs: []  # harness-wide
+    bounded_context: sdlc
+    source_path: docs/ADR/ADR-013-sdlc-biz-sw-design-split.md
+    status: proposed

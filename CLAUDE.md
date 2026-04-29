@@ -22,6 +22,8 @@ This repo runs under the SDLC harness conventions. Assets live in
 | `.claude/hooks/` | Shell hooks (TDD separation, complexity check, workitem requirement, dangerous-command block). |
 | `.claude/scripts/` | Quality gate + mailbox helpers. |
 | `.workitems/` | Per-feature design / stories / tasks / review trails. |
+| `ontology/` | Project-level graph slice (business domains, technical implementation, testing, dependencies) — loaded into ACM. |
+| `scripts/` | Repo-root scripts: ACM ingest wrapper, ontology validator, per-feature migration helper. |
 | `docs/PRD.md`, `docs/HLD.md` | Product + architectural baseline. |
 | `docs/research/` | Investigations and prior-art notes. |
 | `docs/ADR/` | Architectural decision records. |
@@ -43,6 +45,11 @@ Skip rules and HITL gates are documented in `.claude/rules/workflow.md`.
 For idea capture only, use `@ideation`. For info-only questions, use
 `@general-question`.
 
+**Two-skill design**: When `@biz-functional-design` has been run for a
+feature (corpus produces `functional-test-plan.md` + `behavioural-test-
+plan.md`), Step 2 routes through `@sw-designpipeline` (HLD-driven design
+only) instead of re-running PRD-driven story generation. See ADR-013.
+
 ## Project Conventions
 
 - **Tests first.** Every new behavior lands with a failing test before
@@ -53,7 +60,8 @@ For idea capture only, use `@ideation`. For info-only questions, use
 - **Never push to git** without explicit user permission.
 - **Protected paths** (require HITL before modifying): `CLAUDE.md`,
   `.claude/rules/**`, `.claude/hooks/**`, `.claude/agents/**`,
-  `.claude/scripts/**`, `docs/ADR/**`, `.workitems/**`. See
+  `.claude/scripts/**`, `docs/ADR/**`, `.workitems/**`,
+  `ontology/**`, `ontology/schemas/**`. See
   `.claude/rules/orchestrator.md`.
 
 ## Mailbox

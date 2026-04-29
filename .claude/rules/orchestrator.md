@@ -23,6 +23,8 @@ prevent accidental governance damage.
 | `Core/**` | User profile and operating context |
 | `pyproject.toml` | Build config and dependencies |
 | `.workitems/**` | Feature planning artifacts (design, stories, tasks) |
+| `ontology/**` | Project-level graph slice (loaded into ACM); changes affect all features |
+| `ontology/schemas/**` | Graph-layer schemas; node/edge type contracts |
 
 ## Before Modifying Protected Files
 

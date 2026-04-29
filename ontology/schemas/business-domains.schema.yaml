@@ -1,0 +1,72 @@
+# Schema for ontology/business-domains.yaml
+# Validates structure of the business-layer graph slice.
+
+$schema: business-domains
+version: 1
+
+required_top_level_keys:
+  - version
+  - source_documents
+  - domains
+  - personas
+
+optional_top_level_keys:
+  - epics
+  - business_objects
+  - collaboration_objects
+  - assumptions
+  - open_questions
+  - plan_md_cross_walk
+
+node_types:
+
+  source_document:
+    required: [id, name, type, path, confidence]
+    id_pattern: "^src-[0-9]{3}$"
+
+  domain:
+    required: [id, name]
+    id_pattern: "^D[0-9]{2}$"
+    optional: [subdomains]
+
+  subdomain:
+    required: [id, name, type]
+    id_pattern: "^D[0-9]{2}-SD[0-9]{2}$"
+    type_enum: [core, supporting, generic]
+    optional: [bounded_contexts]
+
+  bounded_context:
+    required: [id, name]
+    id_pattern: "^BC[0-9]{2}$"
+    graph_id_prefix: "bc:"
+
+  persona:
+    required: [id, name, role]
+    id_pattern: "^P[0-9]{2}$"
+    graph_id_prefix: "persona:"
+    optional: [collaboration_level]
+
+  business_object:
+    required: [id, name]
+    id_pattern: "^BO[0-9]{2}$"
+    graph_id_prefix: "bo:"
+    optional: [type, description, bounded_context_ref, lifecycle]
+
+  collaboration_object:
+    required: [id, name, type]
+    id_pattern: "^CO[0-9]{2}$"
+    graph_id_prefix: "co:"
+    type_enum: [system, external_party, human, agent]
+    optional: [responsibilities, interacts_with]
+
+  assumption:
+    required: [id, description, source, confidence]
+    id_pattern: "^ASM[0-9]{2}$"
+    confidence_enum: [high, medium, low]
+    optional: [validation_needed]
+
+  open_question:
+    required: [id, question, severity]
+    id_pattern: "^OQ[0-9]{2}$"
+    severity_enum: [blocking, important, minor]
+    optional: [related_epic, related_feature]
