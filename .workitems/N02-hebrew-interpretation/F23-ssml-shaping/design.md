@@ -90,6 +90,7 @@ because PlanToken IDs are derived from `(block_id, position)` per F22.
 | Answer-option pacing | Out of scope (POC drops US-02) | Demo PDF has no answer-option blocks (F11 POC taxonomy) |
 | Plain-text fallback | Out of scope | Wavenet supports full SSML; no fallback path needed in POC |
 | Per-voice SSML profiles | Single-profile only | One voice in POC (Wavenet) |
+| `<mark>` name format | HLD §5.2 shows `<mark name="block-{id}-word-{i}"/>`; F23 emits `<mark name="{block_id}-{position}"/>` (e.g., `b3-0`) — same as `PlanToken.id` from F22 | Wire-contract pin: F30 (mark→timing) and F35 (mark→word index) both consume the F22-derived `PlanToken.id` form; matching that form here means no rename across the F22→F23→F26→F30→F35 chain. MVP migration to the HLD form is a single regex change in F23 builder + downstream lookups. |
 
 ## HLD Open Questions
 

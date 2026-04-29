@@ -76,6 +76,12 @@ audit which adapter produced each fact.
    runs over the same input produce byte-identical files (basis for
    the `drafts/<reading-plan-sha>/` content-hash directory in
    PLAN-POC.md).
+7. **DE-07**: `page.json` projection (post-review C4) — `plan.to_page_json(ocr_result)`
+   produces the F35-consumed projection: `{page_image_url, words[],
+   marks_to_word_index}`. `words[].bbox` come from `ocr_result`, `text`
+   from each `OCRWord`, `marks_to_word_index` is built by walking
+   `plan.blocks[].tokens[]` and mapping `PlanToken.id → first(src_word_indices)`.
+   Conforms to `docs/schemas/page.schema.json`.
 
 ## Design Elements
 
@@ -85,6 +91,7 @@ audit which adapter produced each fact.
 - DE-04: planInvariantValidator (ref: HLD-§5.3/Output)
 - DE-05: emptyBlockSkip (ref: HLD-§5.2/Processing)
 - DE-06: deterministicJsonSerialization (ref: HLD-§5.3/Output)
+- DE-07: pageJsonProjection (ref: HLD-§5.3/Output)
 
 ## Decisions
 

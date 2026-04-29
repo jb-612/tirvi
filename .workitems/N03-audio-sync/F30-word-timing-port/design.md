@@ -63,10 +63,18 @@ where `end_s = next_mark.start_s` (last word ends at audio duration).
 4. **DE-04**: Monotonicity invariant — `assert_marks_monotonic` rejects
    marks where `t_seconds[i+1] < t_seconds[i]`; raises
    `TimingInvariantError` (catches Wavenet API regression).
-5. **DE-05**: Mark-count vs transcript-token match — adapter accepts
-   `transcript` argument from the F03 port; if `len(marks) !=
-   len(transcript_tokens)`, raise `MarkCountMismatch` (POC has no
-   fallback). Documented as ADR-015 deviation.
+5. **DE-05**: Mark-count vs transcript-token graceful alignment
+   (post-review C2) — adapter accepts `transcript` from the F03 port and
+   inspects `tts_result.voice_meta.get("tts_marks_truncated")` (set by
+   F26 DE-04). When truncation is signalled, align by index up to
+   `min(len(marks), len(transcript_tokens))`, log a warning with both
+   counts, and emit a `WordTimingResult` covering the aligned prefix.
+   Tail tokens beyond the prefix get a synthetic
+   `WordTiming(mark_id=token.id, start_s=last_aligned_end, end_s=None)`
+   so F35 can still render block-level position. Only when truncation
+   is NOT signalled and counts mismatch (genuine adapter bug) does F30
+   raise `MarkCountMismatch`. ADR-015 fallback (forced alignment) stays
+   deferred.
 6. **DE-06**: Adapter contract conformance — assert via F03's
    `assert_adapter_contract`; provider stamp; integration smoke uses
    the F03 fake `WordTimingProviderFake` with marks present.

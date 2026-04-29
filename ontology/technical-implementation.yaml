@@ -798,6 +798,12 @@ tasks:
     spec_refs: [spec:N02/F22/DE-06]
     test_path: tests/unit/test_plan_serialization.py
     status: designed
+  - id: task:N02/F22/T-07
+    name: page-json-projection
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-07]
+    test_path: tests/unit/test_page_json_projection.py
+    status: designed
   # --- N02/F23 SSML shaping ---
   - id: task:N02/F23/T-01
     name: ssml-block-builder
