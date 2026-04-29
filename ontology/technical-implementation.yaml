@@ -934,3 +934,40 @@ tasks:
     spec_refs: [spec:N04/F35/DE-06]
     test_path: tests/unit/test_a11y_player.py
     status: designed
+  # --- N04/F36 Accessibility controls (4-button POC) ---
+  - id: task:N04/F36/T-01
+    name: button-scaffold
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-01]
+    test_path: tests/unit/test_button_scaffold.py
+    status: designed
+  - id: task:N04/F36/T-02
+    name: player-state-machine
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-02]
+    test_path: tests/unit/test_player_state_machine.py
+    status: designed
+  - id: task:N04/F36/T-03
+    name: button-handlers
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-03]
+    test_path: tests/unit/test_button_handlers.py
+    status: designed
+  - id: task:N04/F36/T-04
+    name: button-enable-per-state
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-04]
+    test_path: tests/unit/test_button_enable.py
+    status: designed
+  - id: task:N04/F36/T-05
+    name: keyboard-shortcuts
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-05]
+    test_path: tests/unit/test_keyboard_shortcuts.py
+    status: designed
+  - id: task:N04/F36/T-06
+    name: aria-focus-contrast
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-06]
+    test_path: tests/unit/test_aria_focus.py
+    status: designed

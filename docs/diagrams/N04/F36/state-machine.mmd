@@ -1,0 +1,13 @@
+flowchart LR
+    IDLE["idle"]
+    PLAY["playing"]
+    PAUSE["paused"]
+    END["ended"]
+    IDLE -->|Play| PLAY
+    PLAY -->|Pause| PAUSE
+    PAUSE -->|Continue| PLAY
+    PAUSE -->|Reset| IDLE
+    PLAY -->|Reset| IDLE
+    END -->|Reset| IDLE
+    END -->|Play| PLAY
+    PLAY -->|audio_ended| END
