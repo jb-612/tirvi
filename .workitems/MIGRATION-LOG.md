@@ -1,1 +1,15 @@
 | 2026-04-29T17:03:54Z | N00/F03 | E00-F03-adapter-ports-and-fakes | 2af7279 |
+| 2026-04-29T20:30:25Z | N01/F08 | E02-F01-tesseract-adapter | 2af7279 |
+| 2026-04-29T20:36:51Z | N01/F10 | E02-F03-ocr-result-contract | 2af7279 |
+| 2026-04-29T20:39:57Z | N01/F11 | E02-F04-block-segmentation | 2af7279 |
+| 2026-04-29T20:43:16Z | N02/F14 | E03-F01-ocr-artifact-repair | 2af7279 |
+| 2026-04-29T20:46:18Z | N02/F17 | E04-F01-dictabert-adapter | 2af7279 |
+| 2026-04-29T20:49:21Z | N02/F18 | E04-F03-per-token-pos-morph | 2af7279 |
+| 2026-04-29T20:51:43Z | N02/F19 | E05-F01-dicta-nakdan-adapter | 2af7279 |
+| 2026-04-29T20:54:54Z | N02/F20 | E05-F02-phonikud-adapter | 2af7279 |
+| 2026-04-29T20:58:03Z | N02/F22 | E06-F01-block-typed-reading-plan | 2af7279 |
+| 2026-04-29T21:00:38Z | N02/F23 | E06-F02-ssml-shaping | 2af7279 |
+| 2026-04-29T21:03:01Z | N03/F26 | E07-F01-google-wavenet-adapter | 2af7279 |
+| 2026-04-29T21:06:35Z | N03/F30 | E08-F01-word-timing-provider | 2af7279 |
+| 2026-04-29T21:09:31Z | N04/F35 | E09-F03-word-sync-highlight | 2af7279 |
+| 2026-04-29T21:12:29Z | N04/F36 | E09-F04-controls | 2af7279 |
