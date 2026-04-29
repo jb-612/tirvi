@@ -25,6 +25,7 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-016 | Tesseract deskew preprocessor lives inside the adapter | Proposed | ingest | F08 |
 | ADR-017 | OCRResult fixture builder uses YAML, not a Python DSL | Proposed | platform | F10 |
 | ADR-018 | Block segmentation uses heuristics for POC; learned model deferred | Proposed | ingest | F11 |
+| ADR-019 | Normalization uses deterministic rules for POC; ML repair deferred | Proposed | hebrew-interpretation | F14 |
 
 ## Conventions
 
