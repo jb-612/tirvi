@@ -73,6 +73,13 @@ modules:
     bounded_context: hebrew_nlp
     source_path: tirvi/normalize/
     status: designed
+  - id: MOD-N02-F17
+    name: tirvi.adapters.dictabert
+    description: DictaBERT-large-joint adapter package (loader, inference, prefix split)
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/adapters/dictabert/
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
 services: []
@@ -181,6 +188,14 @@ adapters:
     port_ref: PORT-01
     source_path: tirvi/adapters/tesseract/__init__.py
     status: designed
+  - id: ADP-N02-F17-dictabert
+    name: DictaBERTAdapter
+    description: DictaBERT-large-joint NLP adapter (in-process loader, prefix segmentation)
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    port_ref: PORT-02
+    source_path: tirvi/adapters/dictabert/__init__.py
+    status: designed
 
 # Classes / structs — result-object value types.
 classes:
@@ -287,6 +302,13 @@ adr_decisions:
     feature_refs: [N02/F14]
     bounded_context: hebrew-interpretation
     source_path: docs/ADR/ADR-019-hebrew-nlp-normalization-rule-strategy.md
+    status: proposed
+  - id: adr:020
+    name: DictaBERT loaded in-process for POC; sidecar deferred to MVP
+    description: In-process module-level cache; sidecar topology behind same NLPBackend port at MVP
+    feature_refs: [N02/F17]
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-020-hebrew-nlp-dictabert-loading-topology.md
     status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
@@ -480,4 +502,41 @@ tasks:
     feature_refs: [N02/F14]
     spec_refs: [spec:N02/F14/DE-06]
     test_path: tests/unit/test_repair_log.py
+    status: designed
+  # --- N02/F17 DictaBERT adapter ---
+  - id: task:N02/F17/T-01
+    name: dictabert-loader
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-01]
+    test_path: tests/unit/test_dictabert_loader.py
+    status: designed
+  - id: task:N02/F17/T-02
+    name: dictabert-inference
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-02]
+    test_path: tests/unit/test_dictabert_inference.py
+    status: designed
+  - id: task:N02/F17/T-03
+    name: prefix-segmentation
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-03]
+    test_path: tests/unit/test_prefix_segmentation.py
+    status: designed
+  - id: task:N02/F17/T-04
+    name: per-attribute-confidence
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-04]
+    test_path: tests/unit/test_per_attr_confidence.py
+    status: designed
+  - id: task:N02/F17/T-05
+    name: long-sentence-chunking
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-05]
+    test_path: tests/unit/test_long_sentence_chunking.py
+    status: designed
+  - id: task:N02/F17/T-06
+    name: dictabert-adapter-contract
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-06]
+    test_path: tests/unit/test_dictabert_adapter.py
     status: designed
