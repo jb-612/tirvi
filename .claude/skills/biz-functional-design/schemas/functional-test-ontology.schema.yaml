@@ -1,9 +1,10 @@
-# Schema: functional-test-ontology.yaml
+# Schema: testing.yaml (renamed from functional-test-ontology.yaml in ADR-013)
 # Purpose: Correlates every functional and behavioural test to its stories,
 #          features, business objects, bounded contexts, aggregates, and
 #          inferred future implementation objects (classes, functions, services).
 #          Acts as the pre-implementation contract layer for TDD.
-# Location: docs/business-design/ontology/functional-test-ontology.yaml
+# Location: ontology/testing.yaml (project-level graph slice)
+# High-level overview schema: ontology/schemas/testing.schema.yaml
 
 version: 1
 

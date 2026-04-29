@@ -1,9 +1,11 @@
-# Schema: dependency-map.yaml
+# Schema: dependencies.yaml (renamed from dependency-map.yaml in ADR-013)
 # Purpose: Machine-readable dependency graph between all design objects —
 #          epics, features, personas, business objects, bounded contexts,
 #          aggregates, business rules, domain events, external systems,
 #          functional tests, behavioural tests, and inferred future classes.
-# Location: docs/business-design/ontology/dependency-map.yaml
+# Location: ontology/dependencies.yaml (project-level graph slice)
+# Note: @sw-designpipeline appends software-layer edges (REALIZES, TESTED_BY).
+# High-level overview schema: ontology/schemas/dependencies.schema.yaml
 
 version: 1
 

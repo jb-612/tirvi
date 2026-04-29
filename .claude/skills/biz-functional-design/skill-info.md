@@ -15,14 +15,14 @@ Stage 2  │    │  USER STORY GENERATION  (per feature, per epic)    │
          │                             │
 Stage 3  ├── DDD Alignment            │ revise stories if DDD misfit
          │                             │
-Stage 4  ├── business-taxonomy.yaml   │ updated after each feature
-Stage 5  ├── dependency-map.yaml      │ updated after each feature
+Stage 4  ├── ontology/business-domains.yaml  │ updated after each feature
+Stage 5  ├── ontology/dependencies.yaml      │ biz portion (sw appends later)
          │                             │
 Stage 6  ├── TEST PLANNING (per feature, Functional Test Agent role)
          │    ├── functional-test-plan.md
          │    └── behavioural-test-plan.md
          │
-Stage 7  ├── functional-test-ontology.yaml
+Stage 7  ├── ontology/testing.yaml
          │
          │    GATE: all features done before entering review stages
          │
@@ -58,9 +58,9 @@ Stage 15 └── COMPLETION GATE  ← stop here; no technical design
 9. Human behavioural patterns are covered
 10. Functional test plans exist for every feature
 11. Behavioural test plans exist for every feature
-12. `business-taxonomy.yaml` is complete
-13. `dependency-map.yaml` is complete
-14. `functional-test-ontology.yaml` is complete
+12. `ontology/business-domains.yaml` is complete
+13. `ontology/dependencies.yaml` (biz portion) is complete
+14. `ontology/testing.yaml` is complete
 15. Multi-agent design review is complete
 16. Adversarial review is complete
 17. Autoresearch loop reached consensus
@@ -87,10 +87,10 @@ Stage 15 └── COMPLETION GATE  ← stop here; no technical design
 
 | Trigger | Strategy | Naming |
 |---------|---------|-------|
-| Domain too large | Split by bounded context | `.stories.md`, `.<context>.stories.md` |
-| Many personas | Split by persona cluster | `.stories.md`, `.part-2.md` |
-| Long workflow | Split by workflow phase | `.<phase>.stories.md` |
-| Mixed sub-features | Split by business capability | `.<capability>.stories.md` |
+| Domain too large | Split by bounded context | `user_stories.md`, `user_stories.<context>.md` |
+| Many personas | Split by persona cluster | `user_stories.md`, `user_stories.part-2.md` |
+| Long workflow | Split by workflow phase | `user_stories.<phase>.md` |
+| Mixed sub-features | Split by business capability | `user_stories.<capability>.md` |
 
 Each split file must contain: scope statement, sibling file links,
 ontology refs, dependency refs.
@@ -107,6 +107,7 @@ ontology refs, dependency refs.
 | Review iteration log | `templates/review-iteration-log.md` |
 | Final synthesis + fix list + deferred | `templates/review-synthesis.md` |
 | Deferred finding Git issue | `templates/deferred-finding-issue.md` |
-| business-taxonomy.yaml schema | `schemas/business-taxonomy.schema.yaml` |
-| dependency-map.yaml schema | `schemas/dependency-map.schema.yaml` |
-| functional-test-ontology.yaml schema | `schemas/functional-test-ontology.schema.yaml` |
+| business-domains.yaml schema | `schemas/business-taxonomy.schema.yaml` (legacy filename, current contract) |
+| dependencies.yaml schema | `schemas/dependency-map.schema.yaml` (legacy filename, current contract) |
+| testing.yaml schema | `schemas/functional-test-ontology.schema.yaml` (legacy filename, current contract) |
+| Cross-skill ontology overview | `ontology/schemas/*.schema.yaml` (repo root) |

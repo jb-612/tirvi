@@ -1,7 +1,8 @@
-# Schema: business-taxonomy.yaml
+# Schema: business-domains.yaml (renamed from business-taxonomy.yaml in ADR-013)
 # Purpose: Canonical ontology linking epics, features, stories, DDD objects,
 #          personas, and collaboration actors. Updated after each feature.
-# Location: docs/business-design/ontology/business-taxonomy.yaml
+# Location: ontology/business-domains.yaml (project-level graph slice)
+# High-level overview schema: ontology/schemas/business-domains.schema.yaml
 
 version: 1
 

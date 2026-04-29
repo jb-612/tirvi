@@ -54,35 +54,49 @@ continue with cautious inference.
 
 ## Stage 1 — Source Discovery and Planning
 
-Read all available source documents.
+Read all available source documents. Build (or read existing) cross-walk
+between this skill's `E##-F##` IDs and `.workitems/PLAN.md`'s `N##/F##`
+features. The cross-walk lives in `ontology/business-domains.yaml` under
+`plan_md_cross_walk` and is consulted by all subsequent stages to write
+outputs into `.workitems/<N##-phase>/<F##-feature>/`.
 
 Create:
-- `docs/business-design/source-inventory.md` — for each source: name, type,
+- `.workitems/source-inventory.md` — for each source: name, type,
   relevant epics/features, confidence level, gaps, assumptions
-- `docs/business-design/coverage-plan.md` — full epic list, full feature list
-  per epic, processing order, expected bounded contexts, known domain entities,
+- `.workitems/coverage-plan.md` — full epic list, full feature list per
+  epic, processing order, expected bounded contexts, known domain entities,
   known business processes, known actors, risks from missing requirements
+- `ontology/business-domains.yaml` skeleton with `plan_md_cross_walk`
+  block (if not already present from a prior run) — maps `E##-F##` →
+  `N##/F##` so downstream stages know the workitem folder for each
+  feature.
 
-**Gate:** Do not proceed to story writing until `coverage-plan.md` exists.
+**Gate:** Do not proceed to story writing until `coverage-plan.md` and
+the `plan_md_cross_walk` exist.
 
 ## Stage 2 — User Story Generation
 
 For every feature in every epic (in coverage-plan order):
 
-1. Create the story file at:
-   `docs/business-design/epics/<epic-id>-<epic-name>/stories/<feature-id>-<feature-name>.stories.md`
-2. Use the template at `.claude/skills/biz-functional-design/templates/story.md`
-3. Trace every story to PRD section, market research finding, or a documented assumption
-4. Cover: primary persona, supporting personas, collaboration model, behavioural
+1. Resolve the workitem path via `plan_md_cross_walk`:
+   `<E##-F##>` → `.workitems/<N##-phase>/<F##-feature>/`
+   (When multiple skill features map to one plan feature, write to the
+   same workitem folder; when one skill feature splits across plan
+   features, write to each.)
+2. Create / append to the story file at:
+   `.workitems/<N##-phase>/<F##-feature>/user_stories.md`
+3. Use the template at `.claude/skills/biz-functional-design/templates/story.md`
+4. Trace every story to PRD section, market research finding, or a documented assumption
+5. Cover: primary persona, supporting personas, collaboration model, behavioural
    model (hesitation, rework, partial info, abandoned flow, retry), edge cases,
    exception paths, acceptance criteria in Gherkin
-5. **Split rule:** no story file exceeds 100–120 lines. Split by bounded context,
+6. **Split rule:** no story file exceeds 100–120 lines. Split by bounded context,
    aggregate, persona, workflow, or sub-feature using the naming:
-   `<feature-id>-<feature-name>.stories.part-2.md`
-   `<feature-id>-<feature-name>.<bounded-context>.stories.md`
+   `user_stories.part-2.md`
+   `user_stories.<bounded-context>.md`
    Each split file must include scope statement, sibling links, ontology refs,
    and dependency refs.
-6. Update `business-taxonomy.yaml` after each feature (Stage 4).
+7. Update `ontology/business-domains.yaml` after each feature (Stage 4).
 
 ## Stage 3 — DDD Alignment
 
@@ -96,19 +110,27 @@ before proceeding to test planning.
 ## Stage 4 — Business Taxonomy YAML
 
 Create and continuously update:
-`docs/business-design/ontology/business-taxonomy.yaml`
+`ontology/business-domains.yaml`
 
-Use the schema at `.claude/skills/biz-functional-design/schemas/business-taxonomy.schema.yaml`.
+Use the schema at `ontology/schemas/business-domains.schema.yaml` (high-
+level structure) and `.claude/skills/biz-functional-design/schemas/business-taxonomy.schema.yaml`
+(detailed per-skill contract). Both must agree.
 
 Update after completing stories for each feature. The YAML must stay
 synchronized with story files throughout all subsequent stages.
 
+The skill writes business-domains, testing, and the biz portion of
+dependencies. It does NOT write `ontology/technical-implementation.yaml`
+— that is owned by `@sw-designpipeline`.
+
 ## Stage 5 — Dependency Map YAML
 
 Create and update:
-`docs/business-design/ontology/dependency-map.yaml`
+`ontology/dependencies.yaml`
 
-Use the schema at `.claude/skills/biz-functional-design/schemas/dependency-map.schema.yaml`.
+Use the schema at `ontology/schemas/dependencies.schema.yaml` (overview)
+and `.claude/skills/biz-functional-design/schemas/dependency-map.schema.yaml`
+(detailed contract).
 
 Map dependencies between: epics, features, personas, business objects, bounded
 contexts, aggregates, business rules, domain events, external systems, functional
@@ -122,11 +144,16 @@ Use a separate **Functional Test Agent** role — do not let the story author
 write the test plans. The test agent derives testable scenarios from stories;
 it must not simply restate them.
 
-Create per feature:
-- `docs/business-design/epics/<epic-id>-<epic-name>/tests/<feature-id>-<feature-name>.functional-test-plan.md`
-  (template: `.claude/skills/biz-functional-design/templates/functional-test-plan.md`)
-- `docs/business-design/epics/<epic-id>-<epic-name>/tests/<feature-id>-<feature-name>.behavioural-test-plan.md`
-  (template: `.claude/skills/biz-functional-design/templates/behavioural-test-plan.md`)
+Create per feature (in the workitem resolved via `plan_md_cross_walk`):
+- `.workitems/<N##-phase>/<F##-feature>/functional-test-plan.md`
+  (template: `.workitems/templates/functional-test-plan.md`, sourced
+  from `.claude/skills/biz-functional-design/templates/functional-test-plan.md`)
+- `.workitems/<N##-phase>/<F##-feature>/behavioural-test-plan.md`
+  (template: `.workitems/templates/behavioural-test-plan.md`)
+
+These two files together form the **biz corpus signal**. Their presence
+in a workitem folder triggers `@design-pipeline` Stage 0 to delegate to
+`@sw-designpipeline`. Do not skip; both must exist for every feature.
 
 Cover: functional scenarios, negative tests, boundary tests, permission/role
 tests, integration tests, audit/traceability tests, regression risks.
@@ -137,9 +164,12 @@ collaboration breakdown, escalation paths).
 ## Stage 7 — Functional Test Ontology YAML
 
 Create and continuously update:
-`docs/business-design/ontology/functional-test-ontology.yaml`
+`ontology/testing.yaml`
 
-Use the schema at `.claude/skills/biz-functional-design/schemas/functional-test-ontology.schema.yaml`.
+Use the schema at `ontology/schemas/testing.schema.yaml` (overview) and
+`.claude/skills/biz-functional-design/schemas/functional-test-ontology.schema.yaml`
+(detailed contract). Test IDs flow from this file via `tests[].ontology_id`
+in per-feature `traceability.yaml` (filled by `@sw-designpipeline` and TDD).
 
 Correlate every test to: story, feature, business object, bounded context,
 aggregate, and inferred future implementation objects (classes, functions,
@@ -167,12 +197,13 @@ Each finding must include: reviewer, severity (Critical/High/Medium/Low), area,
 finding, evidence, risk, recommendation, files affected, must-fix-before-completion.
 
 Create per feature:
-- `docs/business-design/epics/<epic-id>-<epic-name>/reviews/<feature-id>-<feature-name>.design-review.md`
+- `.workitems/<N##-phase>/<F##-feature>/design-review.md`
+  (resolves via `plan_md_cross_walk`)
 
 ## Stage 9 — Meeting Room Review
 
 Create:
-`docs/business-design/review/global-design-review.md`
+`.workitems/review/global-design-review.md`
 
 Use template: `.claude/skills/biz-functional-design/templates/design-review.md`
 
@@ -183,7 +214,7 @@ disagreements, required revisions, evidence gaps, consensus status.
 ## Stage 10 — Adversarial Review
 
 Create:
-`docs/business-design/review/global-adversarial-review.md`
+`.workitems/review/global-adversarial-review.md`
 
 Use template: `.claude/skills/biz-functional-design/templates/adversarial-review.md`
 
@@ -211,7 +242,7 @@ Each cycle:
 8. Record remaining issues
 9. Decide whether consensus is reached
 
-Create: `docs/business-design/review/review-iteration-log.md`
+Create: `.workitems/review/review-iteration-log.md`
 Use template: `.claude/skills/biz-functional-design/templates/review-iteration-log.md`
 
 **Loop exit condition (ALL must be true):**
@@ -227,9 +258,9 @@ Use template: `.claude/skills/biz-functional-design/templates/review-iteration-l
 ## Stage 12 — Final Synthesis
 
 Create:
-- `docs/business-design/review/global-review-synthesis.md`
-- `docs/business-design/review/severity-ranked-fix-list.md`
-- `docs/business-design/review/deferred-findings.md`
+- `.workitems/review/global-review-synthesis.md`
+- `.workitems/review/severity-ranked-fix-list.md`
+- `.workitems/review/deferred-findings.md`
 
 Use template: `.claude/skills/biz-functional-design/templates/review-synthesis.md`
 
@@ -277,26 +308,21 @@ unless explicitly instructed.
 
 # Output Directory Structure
 
+Outputs span three roots after the SDLC biz/sw split refactor (see ADR-013):
+
 ```
-docs/business-design/
+.workitems/
   source-inventory.md
   coverage-plan.md
-  epics/
-    <epic-id>-<epic-name>/
-      stories/
-        <feature-id>-<feature-name>.stories.md
-        <feature-id>-<feature-name>.stories.part-2.md    (if split)
-      tests/
-        <feature-id>-<feature-name>.functional-test-plan.md
-        <feature-id>-<feature-name>.behavioural-test-plan.md
-      reviews/
-        <feature-id>-<feature-name>.design-review.md
-        <feature-id>-<feature-name>.adversarial-review.md
-        <feature-id>-<feature-name>.review-synthesis.md
-  ontology/
-    business-taxonomy.yaml
-    dependency-map.yaml
-    functional-test-ontology.yaml
+  RUN-SUMMARY.md
+  N##-<phase>/
+    F##-<feature>/
+      user_stories.md
+      user_stories.part-2.md           (if split at 100-120 lines)
+      user_stories.<bounded-context>.md (if split by BC)
+      functional-test-plan.md
+      behavioural-test-plan.md
+      design-review.md                 (per-feature stub)
   review/
     global-design-review.md
     global-adversarial-review.md
@@ -304,4 +330,26 @@ docs/business-design/
     severity-ranked-fix-list.md
     deferred-findings.md
     review-iteration-log.md
+
+ontology/
+  business-domains.yaml                (NEW name; was business-taxonomy.yaml)
+  testing.yaml                         (NEW name; was functional-test-ontology.yaml)
+  dependencies.yaml                    (biz portion only; sw appends)
+  technical-implementation.yaml        (NOT written by this skill — owned by @sw-designpipeline)
 ```
+
+# Relationship to @sw-designpipeline
+
+This skill (biz) is the **upstream** half of the design phase. It writes
+stories + test plans + project-level ontology. After biz finishes, the
+software-design half is owned by `@sw-designpipeline`, which:
+
+- Reads biz outputs (user_stories.md, functional-test-plan.md, behavioural-test-plan.md)
+- Writes design.md, tasks.md, traceability.yaml, ADRs, diagrams
+- Populates `ontology/technical-implementation.yaml` with module/service/port/adapter/class/fn nodes
+- Adds software-layer edges (REALIZES, TESTED_BY) to `ontology/dependencies.yaml`
+
+`@design-pipeline` Stage 0 detects biz corpus presence (via
+`functional-test-plan.md` in the workitem) and delegates to
+`@sw-designpipeline`. If biz has not run, `@design-pipeline` runs the
+holistic flow including PRD-driven story generation.
