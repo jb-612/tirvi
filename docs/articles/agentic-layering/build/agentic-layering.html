@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>How You Could Do Better: 3D-Printing Your Code, Agentic Layering, and the Ontology Icecracking</title>
+<style>
+/* ==========================================================================
+   Jishu PDF Editor — brand tokens
+   Copy this file into any project that needs the Jishu look. Token names
+   match the canonical design system. Never recolor by hand; either reuse
+   a token or oklch()-interpolate between two existing tokens.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Paper / surface — warm off-whites */
+  --paper:       #F4ECE0;
+  --paper-deep:  #EAE0D0;
+  --paper-soft:  #FAF4EB;
+  --paper-ink:   #E0D4C0;
+
+  /* Ink — warm brown-blacks, never #000 */
+  --ink:         #2B211A;
+  --ink-90:      rgba(43, 33, 26, 0.90);
+  --ink-60:      rgba(43, 33, 26, 0.60);
+  --ink-40:      rgba(43, 33, 26, 0.40);
+  --ink-24:      rgba(43, 33, 26, 0.24);
+  --ink-12:      rgba(43, 33, 26, 0.12);
+  --ink-06:      rgba(43, 33, 26, 0.06);
+
+  /* Clay — primary brand accent (terracotta) */
+  --clay:        #C35A3A;
+  --clay-deep:   #A64828;
+  --clay-soft:   #E8A88F;
+  --clay-wash:   #F6E0D4;
+
+  /* Secondary warms */
+  --ochre:       #C98B3A;
+  --ochre-deep:  #A06E22;
+  --ochre-wash:  #F4E6CC;
+  --sage:        #7B8A6F;
+  --sage-wash:   #DDE3D4;
+  --olive-deep:  #4F5A3E;
+
+  /* Status (warm-shifted) */
+  --success:     #5C7C4F;
+  --warning:     #A06E22;
+  --danger:      #B53D28;
+  --info:        #4E6B78;
+
+  /* Type families */
+  --font-display: 'Newsreader', 'Iowan Old Style', Cambria, Georgia, serif;
+  --font-body:    'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+
+@page { size: A4; margin: 22mm 18mm 22mm 18mm; }
+
+* { box-sizing: border-box; }
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 10.5pt;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+.container { max-width: 174mm; margin: 0 auto; padding: 0 0 30mm 0; }
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--clay); page-break-after: avoid; }
+h1 { font-size: 28pt; line-height: 1.1; margin: 0 0 .3em 0; letter-spacing: -0.5px; }
+h2 { font-size: 17pt; line-height: 1.2; margin: 1.5em 0 .4em; border-top: 2px solid var(--clay); padding-top: .6em; color: var(--clay); }
+h3 { font-size: 12pt; font-family: var(--font-display); color: var(--ink); margin: 1.1em 0 .3em; font-style: italic; font-weight: 500; }
+h4 { font-size: 10.5pt; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-60); margin: .9em 0 .2em; }
+p { margin: .5em 0 .8em; orphans: 3; widows: 3; }
+.lede { font-family: var(--font-display); font-style: italic; font-size: 13pt; color: var(--ink-90); max-width: 60ch; margin: .5em 0 1em; line-height: 1.4; }
+.eyebrow { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.16em; font-size: 8.5pt; color: var(--clay); display: block; margin-bottom: 1em; }
+hr { border: 0; border-top: 1px solid var(--ink-12); margin: 1.5em 0; }
+strong { color: var(--ink); font-weight: 600; }
+em { font-style: italic; }
+blockquote { border-left: 2px solid var(--clay); padding: .3em 0 .3em 1em; font-style: italic; font-family: var(--font-display); margin: 1em 0; color: var(--ink-90); }
+code { font-family: var(--font-mono); font-size: 9.5pt; color: var(--clay-deep); background: var(--paper-ink); padding: 1px 5px; border-radius: 2px; }
+pre { background: var(--ink); color: var(--paper); padding: 12px 14px; border-radius: 4px; overflow-x: auto; font-size: 9pt; line-height: 1.4; page-break-inside: avoid; }
+pre code { background: transparent; color: inherit; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0 1.4em; font-size: 9.5pt; page-break-inside: avoid; }
+table th { background: var(--paper-deep); font-family: var(--font-mono); text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.04em; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--ink); color: var(--ink); }
+table td { padding: 6px 10px; vertical-align: top; border-bottom: 1px solid var(--ink-12); }
+table tr:nth-child(even) td { background: rgba(43,33,26,0.02); }
+img.diagram { display: block; margin: 1.5em auto; max-width: 100%; max-height: 100mm; page-break-inside: avoid; }
+ul, ol { margin: .4em 0 1em; padding-left: 1.4em; }
+li { margin: .25em 0; }
+.footnotes { margin-top: 2em; padding-top: 1em; border-top: 1px solid var(--ink-12); font-size: 9pt; }
+.footnotes ol { padding-left: 2em; }
+.footnotes li { margin: .35em 0; }
+.footnotes p { display: inline; margin: 0; }
+.footnote-ref a { color: var(--clay); text-decoration: none; font-family: var(--font-mono); font-size: .8em; vertical-align: super; }
+.footnote-backref { color: var(--ink-40); text-decoration: none; font-size: .8em; }
+a { color: var(--clay-deep); }
+sup { font-size: .75em; }
+
+/* Cover */
+.cover {
+  height: 254mm;
+  display: flex; flex-direction: column; justify-content: space-between;
+  page-break-after: always;
+  background: linear-gradient(180deg, var(--paper-deep) 0%, var(--paper) 60%);
+  padding: 16mm 16mm 12mm;
+  margin: -8mm -8mm 8mm; /* nudge to bleed */
+}
+.cover h1 { font-size: 40pt; line-height: 1.05; margin: 0; color: var(--ink); font-style: italic; max-width: 16ch; }
+.cover h1 .accent { color: var(--clay); font-style: italic; }
+.cover .subtitle { font-family: var(--font-display); font-style: italic; font-size: 14pt; color: var(--ink-60); margin: 1em 0 0; max-width: 56ch; line-height: 1.4; }
+.cover .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10mm; font-size: 9pt; }
+.cover .meta dt { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-60); margin: 0 0 4px; font-size: 8pt; }
+.cover .meta dd { font-family: var(--font-body); margin: 0; color: var(--ink); font-weight: 500; }
+.cover .rule { width: 80mm; height: 4px; background: var(--clay); margin: 1.4em 0; }
+.brand-mark { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-style: italic; font-size: 16pt; color: var(--ink); }
+.brand-mark .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--clay); }
+</style>
+</head>
+<body>
+<div class="container">
+<section class="cover">
+  <div>
+    <div class="brand-mark">Jishu<span class="dot"></span></div>
+  </div>
+  <div>
+    <h1>How You Could <span class="accent">Do Better</span></h1>
+    <p class="subtitle">A method for layered software construction grounded in additive manufacturing principles, fractal mathematics, and knowledge-graph augmentation</p>
+    <div class="rule"></div>
+    <dl class="meta">
+      <div><dt>Author</dt><dd>J. Bellisha</dd></div>
+      <div><dt>Published</dt><dd>2026-04-29</dd></div>
+      <div><dt>Status</dt><dd>Draft v1</dd></div>
+    </dl>
+  </div>
+</section>
+<style>
+@import url('brand/colors_and_type.css');
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); }
+h1, h2 { font-family: var(--font-display); color: var(--clay); }
+h3 { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; font-size: 9.5pt; color: var(--ink-60); }
+.lede { font-family: var(--font-display); font-style: italic; font-size: 13pt; color: var(--ink-90); max-width: 60ch; }
+blockquote { border-left: 2px solid var(--clay); padding-left: 1em; font-style: italic; font-family: var(--font-display); }
+code { color: var(--clay-deep); background: var(--paper-ink); padding: 0 4px; border-radius: 2px; }
+table th { background: var(--paper-deep); font-family: var(--font-mono); text-transform: uppercase; font-size: 9pt; }
+table tr:nth-child(even) { background: rgba(43,33,26,0.02); }
+.eyebrow { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.16em; font-size: 8.5pt; color: var(--clay); }
+</style>
+<h1>How You Could Do Better</h1>
+<p class="eyebrow">Position paper · Agentic Software Engineering · April 2026</p>
+<p class="lede">If you let an LLM agent design, code and test a complex feature in one sequential pass, you are casting a delicate sculpture into a single mould. There is a better way — borrowed from how 3D printers, biological tissues and fractals achieve complexity. This paper introduces it.</p>
+<hr>
+<h2>Abstract</h2>
+<p>Most current LLM-driven software development pipelines move sequentially from design specification to implementation to test, treating intermediate construction as plumbing. This paper argues that the sequential approach is a structural bottleneck for agentic coding: it concentrates the highest-leverage architectural decisions into the moment when context is most fragmented and review is most absent. Drawing on Q1 peer-reviewed evidence from software engineering, additive manufacturing, materials science, theoretical biology and applied mathematics, we propose <strong>Agentic Layering (AL)</strong> — a seven-layer construction method, mediated by a code-scaffold skill that sits between approved design and test-driven implementation. The method’s central claim, supported by an inter-disciplinary citation base, is that complex delicate systems are better fabricated layer by layer with per-layer review than monolithically. We further demonstrate that the method produces a knowledge graph as a free byproduct — <em>ontology icecracking</em> — and we connect this to the rapidly maturing literature on graph-augmented language models. We close with limitations, threats to validity, and a research agenda.</p>
+<p><strong>Keywords</strong>: agentic software engineering, domain-driven design, additive manufacturing, layered construction, fractal architecture, knowledge graph, ontology, LLM grounding.</p>
+<hr>
+<h2>1. Introduction</h2>
+<p>The dominant pattern in agentic software development today is sequential. A user states an intent. An agent (or a chain of agents) drafts a design. The same agent, often without explicit checkpoints, writes the code. A separate or co-located test phase exercises the result. The pattern is appealingly simple, easy to depict in tutorials, and corresponds to a developer’s mental model of “write some code, then test it.” It is also wrong for non-trivial systems — and the empirical cost of being wrong is now measurable.</p>
+<p>This paper has three goals. <strong>First</strong>, to make the structural failure mode of sequential agentic coding explicit, with citations to Q1 peer-reviewed evidence. <strong>Second</strong>, to introduce <em>Agentic Layering</em> (AL): a seven-layer construction method, embodied in a Claude Code skill (<code>@ddd-7l-scaffold</code>), that interposes structured layered scaffolding between approved design and TDD. <strong>Third</strong>, to argue — by analogy to additive manufacturing, biological hierarchical materials and fractal mathematics, and with empirical support from each domain — that the layered approach is not stylistic preference but a structurally superior method for complex, delicate construction. As a closing observation, we note that AL produces a knowledge graph as a byproduct, and we connect this to recent work on graph-augmented LLM reasoning.</p>
+<hr>
+<h2>2. The state of the art: sequential agentic software development</h2>
+<h3>2.1 The conventional pattern</h3>
+<p>The conventional pipeline for agentic software construction has three phases. <strong>Design</strong>: an agent (or human) produces a specification — user stories, acceptance criteria, possibly a functional design document. <strong>Code</strong>: the agent generates implementation code, sometimes with an internal scratchpad, sometimes file by file. <strong>Test</strong>: a test suite is generated, executed, and used to validate the implementation. Variants exist (test-first variants invert phases two and three; review variants insert a critic agent), but the load-bearing structure is sequential: the agent finishes one phase before starting the next.</p>
+<p>The pattern’s appeal is its alignment with how developers describe their work in casual conversation. Its weakness is that the description was always inaccurate even for human developers: skilled engineers move continuously between design, implementation, and test in tight cycles, with constant micro-revision of all three. For LLM agents, however, the pattern is implemented literally, and the inaccuracy becomes a structural defect.</p>
+<h3>2.2 Documented limitations</h3>
+<p>The empirical software engineering literature now contains direct evidence of the failure modes the sequential pattern produces.</p>
+<p><strong>Context fragmentation.</strong> Liu et al. (2024) demonstrate experimentally that LLM performance “degrades significantly when models must access relevant information in the middle of long contexts,” producing the characteristic U-shaped accuracy curve in long-context retrieval <sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>. The implication for agentic coding is direct: design intent placed mid-sequence is systematically less accessible than intent at the prompt’s beginning or end. A long-running design-to-code pipeline drops architectural commitments along the way, not because the model “forgets” but because position-based attention attenuates them.</p>
+<p><strong>Class-level / dependency-chain failure.</strong> Du et al. (2024) introduce ClassEval, the first benchmark targeting class-level (multi-method, interdependent) code generation, and report that “all existing LLMs show much worse performance on class-level code generation compared to on standalone method-level code generation benchmarks” <sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup>. Method-level scores do not predict class-level competence. Sequential agentic pipelines that pass method-level checks therefore offer no guarantee that the integrated structure is sound.</p>
+<p><strong>Long-horizon resolution failure.</strong> Jimenez et al. (2024), in the SWE-bench evaluation accepted as an oral at ICLR, document that real-world GitHub issues — which “frequently require understanding and coordinating changes across multiple functions, classes, and even files simultaneously” — were resolved by the best 2024 model in only 1.96% of cases <sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup>. Even after substantial improvement, models fail catastrophically on tasks whose solutions span more than a small handful of structural elements.</p>
+<p><strong>Interface-mediated structural inadequacy.</strong> Yang et al. (2024) at NeurIPS show that the same models with purpose-built agent-computer interfaces achieve roughly 12.5% pass rates on SWE-bench, versus near-zero without — establishing that single-pass, interface-poor generation systematically lacks the structural review loop needed for coherent repository edits <sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup>.</p>
+<p><strong>Hallucination compounding at repository scale.</strong> Zhang et al. (2025) at ISSTA 2025 publish the first empirical taxonomy of LLM hallucinations specifically at the repository level, showing that hallucinations cluster around “complex contextual dependencies in practical development process” and cascade through dependent code units <sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup>. The errors do not stay local; they propagate.</p>
+<p><strong>Specification → implementation drift.</strong> Tian and Chen (2025), in work accepted to ICSE 2026, name and quantify the <em>specification perception gap</em>: “LLM-generated code often fails to fully align with the provided specification… [models] overlook the critical issue of specification perception, resulting in persistent misalignment issues” <sup class="footnote-ref"><a href="#fn6" id="fnref6">[6]</a></sup>.</p>
+<p>These six findings, drawn from CORE A* / Q1 venues, form a converging picture. The sequential pattern fails in a specific, predictable way: it produces working-but-incoherent code whose architectural defects are <em>structural</em> rather than <em>behavioural</em>, and whose cost compounds the further the pipeline runs without intermediate review.</p>
+<hr>
+<h2>3. Distillation: what we are trying to improve</h2>
+<p>The defects above share a single shape. They appear when a complex <em>structural</em> decision — aggregate boundary, port granularity, test-to-AC mapping, runtime separation — is made implicitly during a generative pass and only surfaces during downstream evaluation. By that point, the decision is encoded across many files, many tests, many call sites; reverting it costs a multiple of the original generation budget. Boehm’s classic defect-cost-escalation curve is well known to software engineering as a phenomenon of late-discovered bugs; the agentic version is its more aggressive cousin, because LLM-generated code is cheaper to produce and therefore tends to be produced in larger volume per unit of structural decision.</p>
+<p>What we want to improve is precisely this asymmetry. We want a method that <strong>front-loads the structural decisions, exposes them for review at the moment of formation, and prevents downstream generation against an unreviewed shape</strong>. The method should not slow down the cheap parts of the pipeline (writing the actual implementation, which TDD already handles). It should slow down — or rather, <em>gate</em> — the expensive parts, the moments where shape becomes locked in.</p>
+<hr>
+<h2>4. The 3D-printer analogy</h2>
+<h3>4.1 Why additive manufacturing succeeds where casting fails</h3>
+<p>Modern engineering relies increasingly on additive manufacturing (AM) — <em>3D printing</em> in popular usage — for components whose geometry cannot be produced by subtractive machining or casting. Ngo et al. (2018), in a frequently cited Q1 review in <em>Composites Part B: Engineering</em>, summarize the design-freedom argument: “Freedom of design, mass customisation, waste minimisation and the ability to manufacture complex structures… are the main benefits of additive manufacturing” <sup class="footnote-ref"><a href="#fn7" id="fnref7">[7]</a></sup>. Internal lattices, embedded coolant channels, undercut geometries — these are routine in AM and impossible in single-step casting. The reason is not novelty of material; it is novelty of <em>construction order</em>. Layered deposition lets each layer’s interior become the next layer’s exterior, recursively, until topologies that no monolithic process can produce are achieved.</p>
+<p>The mapping to software is exact. A monolithic sequential pipeline that emits a finished implementation in one pass is constrained to architectures it can describe in a single forward generation. A layered pipeline that gates each structural commitment can compose architectures whose interiors — separation between domain and infrastructure, invariant placement, port granularity — are decided by sequential review and never need to be recovered post-hoc.</p>
+<h3>4.2 Bioprinting: complexity from sequential layered deposition</h3>
+<p>The most striking demonstration of layered construction’s power comes from 3D bioprinting. Murphy and Atala (2014), in a landmark <em>Nature Biotechnology</em> review, document how living tissue composed of differentiated cell layers can be fabricated by precise layered deposition: “Recent advances have enabled 3D printing of biocompatible materials, cells and supporting components into complex 3D functional living tissues” <sup class="footnote-ref"><a href="#fn8" id="fnref8">[8]</a></sup>. No bulk-mixing process produces functional tissue; the biology requires correct <em>placement</em> of correct <em>cells</em> at correct <em>layers</em>, and the only known route to that fidelity is sequential deposition.</p>
+<p>Grigoryan et al. (2019), publishing in <em>Science</em>, sharpen the claim. They produced interlocking vascular networks — entangled blood-vessel and airway architectures with no monolithic analogue — via stereolithographic layer-by-layer construction, and demonstrated functional gas exchange in a lung-mimicking construct <sup class="footnote-ref"><a href="#fn9" id="fnref9">[9]</a></sup>. The architectural complexity was not pre-designed and then “fabricated”; it <em>emerged</em> from the layered process.</p>
+<p>Kim et al. (2024) extend the principle to functionally graded interfaces. A tendon-to-bone interface — biology’s example of a graded transition between two distinct tissue types — was fabricated only when bioinks of different cell phenotypes were deposited at layer-level resolution; non-graded controls failed to integrate <sup class="footnote-ref"><a href="#fn10" id="fnref10">[10]</a></sup>. The functional gradient was a property of the build order, not the material.</p>
+<p>Translated to software: monolithic generation cannot produce architectures that depend on graded transitions between layers (e.g., gradual handoff from domain language to infrastructure language across an anti-corruption layer). Layered generation can, because the gradient is constructed.</p>
+<h3>4.3 In-process per-layer review</h3>
+<p>Additive manufacturing is so prone to per-layer defect propagation that an entire literature has formed around in-process monitoring. Peng et al. (2023), reviewing in-situ defect detection for selective laser melting, document that “SLM part quality is affected by many factors, resulting in lack of repeatability and stability,” and that in-situ monitoring is the dominant cost-effective gate <sup class="footnote-ref"><a href="#fn11" id="fnref11">[11]</a></sup>. The point is not that AM is unreliable; it is that <em>each layer can introduce defects that propagate</em>, and the only economical control is to inspect each layer as it is laid down. Post-build inspection is too late: by then, the defects are sealed inside the part and the entire build must be discarded.</p>
+<p>The analogy in software is one-to-one. End-of-pipeline code review catches structural defects when they are most expensive to fix. Per-layer review during construction catches them when they are still cheap. The ratio between the two costs is empirically large in AM and we contend it is empirically large in agentic coding for the same structural reason.</p>
+<h3>4.4 Hierarchical biological precedents</h3>
+<p>Wegst et al. (2015), in a major Q1 <em>Nature Materials</em> review, document the convergent evolution of layered hierarchical construction across biological structural materials: “Natural structural materials are built at ambient temperature from a fairly limited selection of components… arranged in complex hierarchical architectures, with characteristic dimensions spanning from the nanoscale to the macroscale” <sup class="footnote-ref"><a href="#fn12" id="fnref12">[12]</a></sup>. Bone, nacre, wood, bamboo all achieve toughness values that exceed those of their constituent materials by orders of magnitude — and the mechanism is hierarchical layered structure across multiple scales. The toughness is <em>constituted by</em> the layering, not merely permitted by it.</p>
+<p>This is not an argument from analogy alone. It is an argument that a structural property of nature’s most successful complex materials is layered hierarchy, achieved through sequential deposition with per-layer biochemical checkpoints. We claim software architecture in DDD-shaped domains exhibits the same property: robustness emerges from hierarchical layered construction with per-layer review, and is not recoverable from monolithic processes.</p>
+<hr>
+<h2>5. Mathematical foundations</h2>
+<p>The 3D-printing analogy is not metaphor for its own sake; it sits inside a deeper mathematical literature on how complex structures arise from local recursive rules. Three results are foundational.</p>
+<h3>5.1 Self-similarity and iterated function systems</h3>
+<p>Hutchinson (1981), in the <em>Indiana University Mathematics Journal</em>, proved that self-similar sets — fractals — are exactly the fixed points of iterated function systems (IFS): finite collections of contraction mappings applied recursively <sup class="footnote-ref"><a href="#fn13" id="fnref13">[13]</a></sup>. The implication is profound: a finite, small set of local rules, applied at every scale, generates structures of unbounded complexity, with provable properties at every scale. The structure is not “compressed” by the rules; the rules <em>are</em> the structure.</p>
+<p>For software, the corollary is that a finite, well-chosen set of layered construction rules, applied at every gate of every feature, can generate large coherent architectures whose properties are predictable from the rules themselves. This is the formal version of the AL claim that layered review at fixed gates produces invariant structural quality.</p>
+<h3>5.2 Fractality of complex networks</h3>
+<p>Song, Havlin and Makse (2006), in <em>Nature Physics</em>, demonstrate that real complex networks — biological, technological — are fractal under renormalization, and that “a robust network comprising functional modules… necessitates a fractal topology, suggestive of an evolutionary drive for their existence” <sup class="footnote-ref"><a href="#fn14" id="fnref14">[14]</a></sup>. The result establishes that hierarchical modularity is not an aesthetic preference but a robustness requirement for complex networked systems.</p>
+<p>A software system is a complex network. By the Song et al. argument, its robustness depends on hierarchical modular structure with self-similar review across scales. The seven-layer scaffold is one such structure.</p>
+<h3>5.3 L-systems and emergent complexity from local rules</h3>
+<p>Lindenmayer (1968), in the <em>Journal of Theoretical Biology</em>, introduced L-systems: parallel rewriting grammars in which “the state of a cell at a given time is determined by… the states of its immediate neighbours” <sup class="footnote-ref"><a href="#fn15" id="fnref15">[15]</a></sup>. Local production rules, applied identically at each step, generate the global branching structure of plants and the morphogenesis of multicellular organisms. The complexity is not authored; it is <em>generated</em> by the rules.</p>
+<p>The implication for AL is that the right set of layer-construction rules, applied at every layer of every feature, can generate features of high complexity without explicit per-feature design effort. Each feature is a developmental path through the rule system; the rules are stable across features.</p>
+<h3>5.4 Hierarchical manifold learning</h3>
+<p>Zhang, Shih and Li (2024), in <em>PNAS Nexus</em>, formalize hierarchical simplicial manifold learning, showing that faithful global topology is recovered through “nested clustering and topological reduction” — local-to-global assembly of structure from interface-respecting layers <sup class="footnote-ref"><a href="#fn16" id="fnref16">[16]</a></sup>. The result is a contemporary mathematical confirmation that layered local construction with proper interface preservation produces faithful global structure. It is the cleanest available formalism for what AL is doing computationally: each layer commits to local structure with well-defined interfaces; the global architecture emerges from layer composition without separate global design.</p>
+<hr>
+<h2>6. The method: Agentic Layering</h2>
+<h3>6.1 The seven layers</h3>
+<p>AL decomposes the design-to-TDD construction phase into seven sequential layers. Each layer produces a small, focused, reviewable artefact. The sequence is the same for every feature, mirroring the recursive rule-set property from §5.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Output</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L1 Structural</strong></td>
+<td>Bounded-context folders, empty modules, package files</td>
+<td>Establish navigable spine; ubiquitous-language naming</td>
+</tr>
+<tr>
+<td><strong>L2 Contract</strong></td>
+<td>Interfaces, ports, command/query/result types, typed errors</td>
+<td>Lock typed boundaries and dependency direction</td>
+</tr>
+<tr>
+<td><strong>L3 Domain</strong></td>
+<td>Aggregates, entities, value objects, domain events, named invariants</td>
+<td>Codify DDD tactical model with <code>NotImplemented</code> bodies</td>
+</tr>
+<tr>
+<td><strong>L4 Behaviour</strong></td>
+<td>Test skeleton files with Given/When/Then comments, AC-named</td>
+<td>Pin behavioural intent before TDD writes assertions</td>
+</tr>
+<tr>
+<td><strong>L5 TDD shell</strong></td>
+<td>Constructor wiring, fakes, in-memory adapters, fixture builders</td>
+<td>Make the codebase compile; failing tests are intentional</td>
+</tr>
+<tr>
+<td><strong>L6 Runtime</strong></td>
+<td>API routes, controllers, message handlers, observability stubs</td>
+<td>Wire production entry points to use cases</td>
+</tr>
+<tr>
+<td><strong>L7 Traceability</strong></td>
+<td><code>bounded_contexts</code> ontology block, full feature graph</td>
+<td>Auto-generate the knowledge graph (see §7)</td>
+</tr>
+</tbody>
+</table>
+<p>The strict rule is that <strong>no business logic is written in any layer</strong>. Method bodies raise <code>NotImplemented</code>; test bodies are skipped with labelled reasons; route handlers contain only TODO sketches. This constraint preserves layer reviewability: a Gate-2 reviewer examines aggregate shape without wading through invariant validation logic.</p>
+<h3>6.2 The workflow</h3>
+<img class="diagram" src="diagrams/diagram-01.svg" alt="Diagram 1" />
+<h3>6.3 Staged review gates</h3>
+<p>Four review gates interrupt the layer sequence at predetermined points. The gates are not equally weighted: Gate 2 (after L3) and Gate 4 (after L7) carry the deepest review depth and hold mandatory Human-In-The-Loop checkpoints. Gate 2 catches DDD boundary errors — wrong aggregate ownership, misplaced invariants, primitive obsession — before any test or implementation is written against the wrong shape. Gate 4 catches orphan artefacts and traceability gaps before TDD begins.</p>
+<p>The gates are themselves implemented as a separate skill (<code>@scaffold-review</code>) that deliberately <em>skips</em> the conventional Phase-1 quality gate (because intentional <code>NotImplemented</code> failures would block it) and runs a design-aware Phase-2 review across twelve dimensions. The separation is a worked example of why review-skill design must respect the construction-method’s intended state.</p>
+<h3>6.4 External gate dependencies</h3>
+<img class="diagram" src="diagrams/diagram-02.svg" alt="Diagram 2" />
+<p>The diagram makes one fact explicit: AL does not replace the design pipeline. It consumes the design pipeline’s output and prepares the TDD pipeline’s input. It owns one phase only — the construction phase — and is the formal name for what was previously an unnamed handoff.</p>
+<h3>6.5 Assumptions</h3>
+<p>The method assumes that (a) design has been completed and approved, (b) the design includes acceptance criteria, © the project has at least one bounded context implied (otherwise AL is overkill), and (d) the construction language has type system features sufficient to express interfaces, value objects, and result types — true of TypeScript, Python (with Protocols), Go, Rust, Kotlin, Swift, Dart, and others.</p>
+<p>For language portability the skill ships with a canonical TypeScript prompt and per-language reference files in <code>references/{python,go,dart}.md</code>. New languages are added by following the same per-layer template.</p>
+<hr>
+<h2>7. The ontology icecracking</h2>
+<h3>7.1 The byproduct that becomes the product</h3>
+<p>The most surprising property of AL is that L7 produces a complete machine-readable knowledge graph as a byproduct of having executed L1 through L6. Every aggregate generated at L3 becomes a node. Every port at L2 becomes a node with edges to its adapters. Every test at L4 becomes a node with an edge to its acceptance criterion. Every route at L6 becomes a node with an edge to its use case. The graph is not separately authored; it is <em>written by the construction process itself</em>, because each layer’s strict rule “no orphan artefacts” forces traceability at the moment of creation.</p>
+<p>We call this the <em>ontology icecracking</em> — the surface ice of the codebase fragments under per-layer pressure into a connected graph of meaning. The name is intentionally unusual because the phenomenon is.</p>
+<h3>7.2 Knowledge-graph-augmented LLM reasoning</h3>
+<p>The auto-generated ontology is not curiosity; it is a substrate that demonstrably improves LLM reasoning over the codebase.</p>
+<img class="diagram" src="diagrams/diagram-03.svg" alt="Diagram 3" />
+<p>Peng et al. (2025), in an <em>ACM TOIS</em> (Q1) survey, formalize the GraphRAG paradigm and conclude that “GraphRAG leverages structural information across entities to enable more precise and comprehensive retrieval, capturing relational knowledge and facilitating more accurate, context-aware responses” <sup class="footnote-ref"><a href="#fn17" id="fnref17">[17]</a></sup>. Where vector RAG retrieves documents by semantic similarity, GraphRAG traverses the knowledge graph and returns relationally coherent context. For codebases — which are intrinsically relational — the paradigm is a structural fit.</p>
+<p>Xu et al. (2025), at ICSE 2025, demonstrate one realization. Their CKGFuzzer system uses a code knowledge graph constructed by interprocedural analysis and reports an 8.73% absolute improvement in code coverage over state-of-the-art baselines, plus an 84.4% reduction in crash-analysis manual workload <sup class="footnote-ref"><a href="#fn18" id="fnref18">[18]</a></sup>. The improvement is attributable to the LLM having access to the structural code KG, not to a larger model.</p>
+<p>Guo et al. (2021) at ICLR established the foundational case earlier with GraphCodeBERT. Pre-training on code’s data-flow graph rather than its raw token stream produced state-of-the-art results across code search, clone detection, translation and refinement <sup class="footnote-ref"><a href="#fn19" id="fnref19">[19]</a></sup>. The principle is general: graph-structured representations of code outperform token-only representations across downstream tasks.</p>
+<h3>7.3 Hallucination grounding</h3>
+<p>The same paradigm has been shown empirically to reduce LLM hallucination. Ali et al. (2026), in a Q1 <em>Journal of Biomedical Informatics</em> paper, integrate an OWL/RDF ontology with a knowledge graph as the grounding layer for clinical question answering, and document that “the hallucination rate was reduced from approximately 63% in ChatGPT-4 and 48% in DeepSeek-R1 to just 1.7%” <sup class="footnote-ref"><a href="#fn20" id="fnref20">[20]</a></sup>. The mechanism — providing the LLM with a verifiable structured knowledge substrate against which to validate its outputs — is domain-agnostic. We claim the AL-generated ontology serves the analogous function for software-engineering tasks: it is the substrate against which a downstream code-modifying agent can validate that its proposed change is consistent with the established structure.</p>
+<h3>7.4 Documentation that writes itself</h3>
+<p>A second, less spectacular but more pervasive consequence: the ontology is documentation. Every aggregate is documented by its node in the graph; every port is documented by its edges; every test is documented by its acceptance-criterion linkage. Querying the graph answers operational questions (“which tests cover invariant INV-LA-001?”, “which routes call which use cases?”, “which bounded contexts depend on which others?”) without separate documentation effort. The documentation maintenance problem dissolves into the construction process.</p>
+<p>This is the cherry on top — the icecracking — but it is also a practical capability that pays for the method’s overhead in its own right.</p>
+<hr>
+<h2>8. Limitations and critical reflection</h2>
+<p>We owe the reader a clear-eyed assessment of where the argument is strong and where it is weaker.</p>
+<p><strong>Empirical validation gap.</strong> No randomized controlled trial of AL versus sequential agentic coding has yet been run. The evidence in this paper is <em>converging</em> across domains — software engineering limitations of sequential pipelines, materials-science benefits of layered construction, mathematical proofs that local recursive rules generate global structure, empirical results on graph-augmented LLM reasoning — but the convergence is itself the argument, not a single direct measurement. Section 9 describes the empirical work that must follow.</p>
+<p><strong>Ceremonial overhead.</strong> AL imposes four review gates and a Human-In-The-Loop step per feature. For DDD-shaped features in long-lived codebases the overhead is justified; for one-off scripts and trivial features it is not. The skill’s documentation is explicit about its skip rules — hotfixes, docs-only changes, and trivial features with no domain modelling are excluded — but ceremony creep is a real risk and must be monitored.</p>
+<p><strong>Domain applicability boundaries.</strong> AL is designed for systems with bounded contexts, aggregates, and ports. Domains where DDD itself does not apply — e.g., pure data-pipeline ETL, statistical-modelling notebooks, rendering engines — see less of the method’s value. The method should not be uncritically transplanted.</p>
+<p><strong>Tooling maturity.</strong> AL today exists as a Claude Code skill plus a companion review skill plus an ADR. The schema bridge between the AL-emitted <code>bounded_contexts</code> block and the project’s existing flat <code>acm_nodes</code>/<code>acm_edges</code> graph schema is deferred to a follow-up workitem. Until it lands, the auto-emitted graph is human-readable but not yet automatically loaded into the project’s ACM ingest pipeline. This is a tractable engineering task, not a conceptual obstacle.</p>
+<p><strong>Cited evidence is analogical, not direct.</strong> The 3D-printing and biological-hierarchy citations support the method by <em>structural analogy</em>. We have argued the analogy is exact in the property of interest (layered construction with per-layer review prevents propagating defects), but we are not claiming software is materially equivalent to bioprinted tissue. Readers should evaluate whether the analogy bears the weight we place on it.</p>
+<p><strong>Selection bias in literature search.</strong> Our search was scoped to Q1 peer-reviewed venues and excluded preprints, industry whitepapers, and Q2 venues. This is a deliberate quality bar but it almost certainly excludes valid evidence. We flagged Q2 candidates (e.g., <em>Journal of Web Semantics</em> on KG-and-hallucinations) without citing them as primary; readers wanting a fuller picture should consult those sources separately.</p>
+<p><strong>LLM evolution.</strong> The Q1 SE evidence (Liu, Du, Jimenez, Yang, Zhang, Tian) was published 2024–2026 and reflects models of that era. As models improve, some of the cited limitations will weaken. The structural argument — that layered construction with per-layer review is superior for complex delicate systems — is independent of model generation, and the AL method should remain relevant. The specific failure rates of sequential coding will not.</p>
+<hr>
+<h2>9. Future research</h2>
+<p>Three concrete research directions follow from this paper.</p>
+<p><strong>Empirical comparison.</strong> A controlled study comparing AL against sequential agentic coding on a fixed corpus of feature requests, measuring (a) post-shipment defect rates, (b) time-to-first-correct-test, © downstream architectural debt accumulated over 30 days, and (d) cost in tokens, would convert the converging analogy into a measurable claim.</p>
+<p><strong>Schema bridge.</strong> Implementing the auto-translation from AL’s emitted <code>bounded_contexts</code> block to the canonical flat <code>acm_nodes</code>/<code>acm_edges</code> schema would close the loop between layered construction and graph-augmented LLM access. Once closed, downstream agents can query the auto-emitted ontology via standard GraphRAG plumbing without manual graph maintenance.</p>
+<p><strong>Cross-language portability empirical study.</strong> AL ships canonical TypeScript and per-language reference files for Python, Go, and Dart. A study measuring (a) whether AL skills produce equivalent structural quality across languages and (b) whether per-layer review gates catch the same defect classes across languages would test the universality claim of §5.</p>
+<p>A fourth direction — modifying the global TDD-first rule in the host project’s <a href="http://CLAUDE.md">CLAUDE.md</a> to explicitly admit AL’s narrow exception — has been completed in this project as part of the integration. Whether other projects will follow is a question of practitioner adoption, not research.</p>
+<hr>
+<h2>10. Conclusion</h2>
+<p>Sequential agentic software development concentrates the highest-leverage decisions into the most context-fragmented moment of the pipeline. The Q1 software-engineering literature documents the failure modes empirically. The Q1 materials-science and biology literature provides direct analogical evidence that complex delicate construction succeeds layer by layer with per-layer review and fails monolithically. The Q1 mathematical literature provides a formal substrate — fractal self-similarity, iterated function systems, L-systems, hierarchical manifolds — for why the layered approach is structural rather than aesthetic. The Q1 information-systems literature shows that the graph emerging from layered construction is itself a substrate for grounded LLM reasoning, with measurable hallucination reduction and coverage improvement.</p>
+<p>We propose Agentic Layering as the named alternative: seven sequential construction layers with four staged review gates, embodied in a Claude Code skill, designed to be portable across languages, accompanied by a companion review skill that respects the construction state. The method is implemented and live in the host project; its first run on a real feature is the next step.</p>
+<p>The icecracking — the auto-emergent ontology — is a free byproduct that converts a methodology into a knowledge-graph generator. Documentation writes itself; downstream LLM access is structurally grounded; the cost of the method is recovered in the value of the graph alone.</p>
+<p>If the converging evidence is right, sequential agentic coding will look, in retrospect, like sand-casting: a viable but blunt method that produced acceptable parts when nothing better existed. AL is what comes next.</p>
+<hr>
+<h2>References</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><strong>Liu, N. F., Lin, K., Hewitt, J., Paranjape, A., Bevilacqua, M., Petroni, F., &amp; Liang, P.</strong> (2024). Lost in the Middle: How Language Models Use Long Contexts. <em>Transactions of the Association for Computational Linguistics</em>, <strong>12</strong>, 157–173. doi:10.1162/tacl_a_00638. [Q1 / TACL] <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><strong>Du, X., Liu, M., Wang, K., Wang, H., Liu, J., Chen, Y., Feng, J., Sha, C., Peng, X., &amp; Lou, Y.</strong> (2024). ClassEval: A Manually-Crafted Benchmark for Evaluating LLMs on Class-level Code Generation. <em>Proceedings of the IEEE/ACM 46th International Conference on Software Engineering (ICSE 2024)</em>. doi:10.1145/3597503.3639219. [CORE A* / Q1] <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><strong>Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O., &amp; Narasimhan, K.</strong> (2024). SWE-bench: Can Language Models Resolve Real-World GitHub Issues? <em>International Conference on Learning Representations (ICLR 2024, oral)</em>. arXiv:2310.06770. [CORE A* / Top-tier] <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><strong>Yang, J., Jimenez, C. E., Wettig, A., Lieret, K., Yao, S., Narasimhan, K., &amp; Press, O.</strong> (2024). SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. <em>Advances in Neural Information Processing Systems (NeurIPS 2024)</em>. [CORE A* / Top-tier] <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><strong>Zhang, Z., Wang, Y., Wang, C., Chen, J., &amp; Zheng, Z.</strong> (2025). LLM Hallucinations in Practical Code Generation: Phenomena, Mechanism, and Mitigation. <em>Proceedings of the ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA 2025)</em>. doi:10.1145/3728894. [CORE A] <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><strong>Tian, Z., &amp; Chen, J.</strong> (2025). Aligning Requirement for Large Language Model’s Code Generation. <em>Proceedings of the IEEE/ACM 47th International Conference on Software Engineering (ICSE 2026, accepted)</em>. arXiv:2509.01313. [CORE A* / Q1] <a href="#fnref6" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn7" class="footnote-item"><p><strong>Ngo, T. D., Kashani, A., Imbalzano, G., Nguyen, K. T. Q., &amp; Hui, D.</strong> (2018). Additive manufacturing (3D printing): A review of materials, methods, applications and challenges. <em>Composites Part B: Engineering</em>, <strong>143</strong>, 172–196. doi:10.1016/j.compositesb.2018.02.012. [Q1, IF ~13.1] <a href="#fnref7" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn8" class="footnote-item"><p><strong>Murphy, S. V., &amp; Atala, A.</strong> (2014). 3D bioprinting of tissues and organs. <em>Nature Biotechnology</em>, <strong>32</strong>(8), 773–785. doi:10.1038/nbt.2958. [Q1, IF ~46.9] <a href="#fnref8" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn9" class="footnote-item"><p><strong>Grigoryan, B., Paulsen, S. J., Corbett, D. C., Sazer, D. W., et al.</strong> (2019). Multivascular networks and functional intravascular topologies within biocompatible hydrogels. <em>Science</em>, <strong>364</strong>(6439), 458–464. doi:10.1126/science.aav9750. [Q1, IF ~56.9] <a href="#fnref9" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn10" class="footnote-item"><p><strong>Kim, W., Kwon, D. R., Lee, H., Lee, J., Moon, Y. S., Lee, S. C., &amp; Kim, G. H.</strong> (2024). 3D bioprinted multi-layered cell constructs with gradient core-shell interface for tendon-to-bone tissue regeneration. <em>Bioactive Materials</em>, <strong>44</strong>. doi:10.1016/j.bioactmat.2024.10.002. [Q1, IF ~20.8] <a href="#fnref10" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn11" class="footnote-item"><p><strong>Peng, X., Kong, L., An, H., &amp; Dong, G.</strong> (2023). A Review of In Situ Defect Detection and Monitoring Technologies in Selective Laser Melting. <em>3D Printing and Additive Manufacturing</em>, <strong>10</strong>(3). doi:10.1089/3dp.2021.0114. [Q1] <a href="#fnref11" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn12" class="footnote-item"><p><strong>Wegst, U. G. K., Bai, H., Saiz, E., Tomsia, A. P., &amp; Ritchie, R. O.</strong> (2015). Bioinspired structural materials. <em>Nature Materials</em>, <strong>14</strong>(1), 23–36. doi:10.1038/nmat4089. [Q1, SJR 14.204] <a href="#fnref12" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn13" class="footnote-item"><p><strong>Hutchinson, J. E.</strong> (1981). Fractals and Self Similarity. <em>Indiana University Mathematics Journal</em>, <strong>30</strong>(5), 713–747. doi:10.1512/iumj.1981.30.30055. [Foundational mathematics] <a href="#fnref13" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn14" class="footnote-item"><p><strong>Song, C., Havlin, S., &amp; Makse, H. A.</strong> (2006). Origins of Fractality in the Growth of Complex Networks. <em>Nature Physics</em>, <strong>2</strong>, 275–281. doi:10.1038/nphys266. [Q1, IF ~22] <a href="#fnref14" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn15" class="footnote-item"><p><strong>Lindenmayer, A.</strong> (1968). Mathematical Models for Cellular Interactions in Development. I. Filaments with One-Sided Inputs. <em>Journal of Theoretical Biology</em>, <strong>18</strong>, 280–299. doi:10.1016/0022-5193(68)90079-9. [Q1] <a href="#fnref15" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn16" class="footnote-item"><p><strong>Zhang, W., Shih, Y.-H., &amp; Li, J.-S.</strong> (2024). Hierarchical Simplicial Manifold Learning. <em>PNAS Nexus</em>, <strong>3</strong>(12), pgae530. doi:10.1093/pnasnexus/pgae530. [Q1] <a href="#fnref16" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn17" class="footnote-item"><p><strong>Peng, B., Zhu, Y., Liu, Y., Bo, X., Shi, H., Hong, C., Zhang, Y., &amp; Tang, S.</strong> (2025). Graph Retrieval-Augmented Generation: A Survey. <em>ACM Transactions on Information Systems</em>. doi:10.1145/3777378. [Q1, IF ~9.17] <a href="#fnref17" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn18" class="footnote-item"><p><strong>Xu, H., Ma, W., Zhou, T., Zhao, Y., Chen, K., Hu, Q., Liu, Y., &amp; Wang, H.</strong> (2025). CKGFuzzer: LLM-Based Fuzz Driver Generation Enhanced By Code Knowledge Graph. <em>Proceedings of the IEEE/ACM 47th International Conference on Software Engineering — Companion Proceedings (ICSE 2025)</em>. doi:10.1109/ICSE-Companion66252.2025.00079. [CORE A*] <a href="#fnref18" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn19" class="footnote-item"><p><strong>Guo, D., Ren, S., Lu, S., Feng, Z., Tang, D., Liu, S., Zhou, L., Duan, N., Svyatkovskiy, A., Fu, S., Tufano, M., Clement, C., Drain, D., Sundaresan, N., Yin, J., Jiang, D., &amp; Zhou, M.</strong> (2021). GraphCodeBERT: Pre-training Code Representations with Data Flow. <em>International Conference on Learning Representations (ICLR 2021)</em>. arXiv:2009.08366. [CORE A* / Top-tier] <a href="#fnref19" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn20" class="footnote-item"><p><strong>Ali, M., Taha, Z., &amp; Morsey, M. M.</strong> (2026). Ontology-grounded knowledge graphs for mitigating hallucinations in large language models for clinical question answering. <em>Journal of Biomedical Informatics</em>. doi:10.1016/j.jbi.2026.104993. [Q1, IF ~5.62] <a href="#fnref20" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+</div>
+</body>
+</html>
