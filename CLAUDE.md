@@ -34,8 +34,10 @@ This repo runs under the SDLC harness conventions. Assets live in
 
 Follow `.claude/rules/workflow.md` (the 8-step flow). Quick map:
 
-1. Workplan → 2. Design (`@design-pipeline`, `@design-review`,
-   `@test-design`) → 3. TDD Build (`/tdd` router → `@tdd-go` /
+1. Workplan → 2. Design (`@design-pipeline` / `@sw-designpipeline`,
+   `@design-review`, `@test-design`) → 2.5. DDD 7L Scaffold
+   (`@ddd-7l-scaffold` for DDD-shaped features; reviewed via
+   `@scaffold-review`) → 3. TDD Build (`/tdd` router → `@tdd-go` /
    `@tdd-flutter`; plus `@test-functional`, `@integration-test`) →
 4. Code review (`@code-review`) → 5. Feature completion
    (`@feature-completion` / `@verify`) → 6. Commit (`@commit`) →
@@ -53,7 +55,12 @@ only) instead of re-running PRD-driven story generation. See ADR-013.
 ## Project Conventions
 
 - **Tests first.** Every new behavior lands with a failing test before
-  the implementing commit (`.claude/rules/tdd-rules.md`).
+  the implementing commit (`.claude/rules/tdd-rules.md`). **Narrow
+  exception:** `@ddd-7l-scaffold` may emit structural shells (folders,
+  empty interfaces, classes with `NotImplemented` method bodies, test
+  skeletons with skip markers) before TDD; the first real test is
+  written by `/tdd` when it activates a skeleton in the GREEN phase.
+  Shells contain no behaviour. See ADR-016.
 - **Cyclomatic complexity ≤ 5** per function. Split helpers when it
   grows.
 - **Conventional commits** with workitem traceability via `@commit`.

@@ -61,6 +61,78 @@ After stories exist (from biz or holistic flow):
 | **Consumer** | N02+ (uses existing ports) | Step 2, now | Ports exist, fakes ready before TDD |
 | **Foundational** | N01 (building ports) | Step 3, after port tasks | Can't fake interfaces that don't exist yet |
 
+## Step 2: Design — DDD Tactical Enrichment (optional)
+
+After `@sw-designpipeline` completes, optionally run `@ddd-7l-scaffold` to
+add DDD tactical patterns (aggregates, value objects, domain events,
+invariants, policies) to the design.
+
+```
+@sw-designpipeline done?
+  feature has bounded contexts / aggregates / domain logic?
+    yes → @ddd-7l-scaffold (7-section ddd-design.md + traceability additions)
+    no  → skip directly to @design-review and User Gate
+```
+
+Output is design-only: `.workitems/<F>/ddd-design.md` plus append-only
+additions to `acm_nodes` / `acm_edges` / `de_to_hld` in `traceability.yaml`.
+No source files. No ontology writes (sw-designpipeline retains sole writer).
+Reviewed by `@design-review` (not `@code-review`, whose Phase 1 quality
+gate runs `pytest`/`go test` and would block on intentional design
+artifacts). The existing **User Gate** covers approval — no new HITL gate.
+
+The skill walks 7 layers as sections of `ddd-design.md`: L1 bounded
+context scope · L2 port responsibilities · L3 tactical model
+(aggregates, VOs, events) [mandatory self-check] · L4 invariants and
+policies · L5 anti-corruption layer points · L6 application services ·
+L7 traceability additions [mandatory self-check].
+
+## Step 2.5: DDD 7L Scaffold (DDD-shaped features only)
+
+After the Step 2 User Gate clears, optionally run `@ddd-7l-scaffold` to
+transform the approved design into a production-grade, layered code
+scaffold ready for TDD.
+
+```
+@sw-designpipeline done + Step 2 User Gate approved?
+  feature has bounded contexts / aggregates / ports?
+    yes → @ddd-7l-scaffold
+            L1 (structure) → L2 (contracts) → @scaffold-review Gate 1
+            L3 (domain)                    → @scaffold-review Gate 2  ★ most important
+            L4 (behaviour) → L5 (TDD shell)→ @scaffold-review Gate 3
+            L6 (runtime)   → L7 (traceability)
+                                            → @scaffold-review Gate 4 (final)
+                                            → Final Scaffold Review HITL
+                                            → /tdd
+    no  → /tdd directly
+```
+
+**Output**: real code under the project's source tree (`tirvi/`,
+`flutter_app/lib/`, etc.) — folders, interfaces, classes with
+`NotImplemented` bodies, test skeletons, route shells, plus the
+`bounded_contexts` block in `.workitems/<F>/traceability.yaml`.
+
+**Language portability**: SKILL.md uses TypeScript canonical examples;
+per-language reference shapes at
+`.claude/skills/ddd-7l-scaffold/references/{python,go,dart}.md`. The
+agent inspects the project at L1 to pick the right reference.
+
+**Review skill**: `@scaffold-review` (NOT `@code-review` — Phase 1
+quality gates would block on intentional `NotImplemented` failures).
+
+**Hooks during Step 2.5**:
+
+| Hook | Effect |
+|---|---|
+| `require-workitem.sh` | Passes when feature is next-unchecked in PLAN.md |
+| `enforce-tdd-separation.sh` | Silent — TDD marker not set until Step 3 |
+| `check-complexity.sh` | Passes — `NotImplemented` shells are CC = 1 |
+| `check-workitems-length.sh` | Applies to `.workitems/*.md` only |
+| `auto-ruff-format.sh` | Formats Python scaffold output |
+
+See `docs/ADR/ADR-016-ddd-7l-scaffold.md` for integration decisions and
+deferred follow-up work (schema bridge, ontology coordination).
+
 ## Step 3: TDD Build — Three Tracks
 
 ### Foundational Feature Sequence

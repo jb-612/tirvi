@@ -39,9 +39,56 @@ and HITL gates defined inline.
    | **Foundational** (building ports) | Step 3, after port tasks | Can't fake interfaces that don't exist yet |
    | **Consumer** (using existing ports) | Step 2, during design | Ports exist, fakes ready before TDD |
 
+   **DDD tactical enrichment (optional):** When `@sw-designpipeline` produces
+   a design that implies bounded contexts, aggregates, or domain events, run
+   `@ddd-7l-scaffold` after sw-designpipeline and before the User Gate. It
+   produces `.workitems/<F>/ddd-design.md` (≤ 200 lines) and appends to
+   `traceability.yaml` (existing schema only — `acm_nodes.specs[]`,
+   `acm_edges[]`, `de_to_hld{}`). No source code is generated; no ontology
+   writes (sw-designpipeline retains sole writer status). Reviewed by
+   `@design-review` (not `@code-review` — its Phase 1 quality gate would
+   block on intentional design artifacts). The existing User Gate covers
+   approval. Skip for hotfixes, docs-only, config-only, or simple features
+   with no domain modelling.
+
    HITL gates: **Design Review R2** (mandatory if Critical concerns remain),
    **User Gate** (mandatory approval before TDD build).
    For changes touching 3+ modules: **Design approval** (mandatory).
+
+2.5. **DDD 7L Scaffold** (optional — DDD-shaped features only) — After
+   the Step 2 User Gate clears, use `@ddd-7l-scaffold` to transform
+   approved design artefacts into a production-grade, layered code
+   scaffold: folders, empty modules, interfaces, port / DTO / result
+   types, aggregates / entities / value-objects / events / policies
+   (with `NotImplemented` bodies and AC-linked TODOs), test skeleton
+   files, DI wiring with fakes, runtime route / handler shells, and the
+   `bounded_contexts` block in `traceability.yaml`. **Strict rule:** no
+   business logic. The codebase compiles, every test skip is
+   intentional, every TODO maps to an AC.
+
+   Skill is portable: `SKILL.md` uses TypeScript as canonical examples;
+   per-language reference files at
+   `.claude/skills/ddd-7l-scaffold/references/{python,go,dart}.md`
+   provide concrete code shapes for that language.
+
+   **Reviews:** 4 staged gates via `@scaffold-review` (NOT
+   `@code-review` — its Phase 1 quality gate would block on intentional
+   `NotImplemented` failures).
+
+   | Gate | After | Depth | Mandatory |
+   |------|-------|-------|-----------|
+   | 1 | L1 + L2 (structure + contracts) | Medium | Yes |
+   | 2 | L3 (domain model) | Deep | **Yes — most important** |
+   | 3 | L4 + L5 (behaviour + TDD readiness) | Deep | Yes |
+   | 4 | L6 + L7 (runtime + traceability, final) | Deep | **Yes** |
+
+   **Skip** for: `@hotfix`, docs-only, config-only, trivial features
+   with no DDD model (no aggregates, no ports), or features that
+   qualify as "scaffolding" per the disqualifiers below.
+
+   HITL gate: **Final Scaffold Review** (Gate 4 above) — TDD cannot
+   start until the user approves Gate 4 output. See ADR-016 for
+   integration details and deferred ecosystem work.
 
 3. **TDD Build** — Three parallel tracks, dependency-ordered:
 
@@ -143,6 +190,7 @@ self-classified as scaffolding. See
 | Design Review R2 | 2 | Critical concerns remain after R1 revision |
 | User Gate | 2 | Mandatory approval before TDD build |
 | Design approval | 2 | Changes touching 3+ modules |
+| Final Scaffold Review | 2.5 | DDD 7L scaffold complete; mandatory before TDD starts |
 | Phase Gate | 5 | All features in phase complete |
 | TDD Mode Selection | 3 | Per task — agent recommends bundled or strict |
 | Refactor approval | 3 | Advisory — after TDD refactor phase |
