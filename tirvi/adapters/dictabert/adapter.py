@@ -6,6 +6,8 @@ Spec: N02/F17. AC: US-01/AC-01.
 from tirvi.ports import NLPBackend
 from tirvi.results import NLPResult
 
+from .inference import analyze as _analyze
+
 
 class DictaBERTAdapter(NLPBackend):
     """DictaBERT-based Hebrew NLP adapter.
@@ -17,10 +19,7 @@ class DictaBERTAdapter(NLPBackend):
     """
 
     def __init__(self, model_revision: str = "default") -> None:
-        # TODO US-01/AC-01: lazy-init transformers model + tokenizer
         self._model_revision = model_revision
 
     def analyze(self, text: str, lang: str) -> NLPResult:
-        # TODO INV-DICTA-001: load_model() with module-level LRU cache
-        # TODO INV-DICTA-002: tokenize, predict POS, map UD labels
-        raise NotImplementedError
+        return _analyze(text, lang=lang, revision=self._model_revision)
