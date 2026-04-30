@@ -1,15 +1,17 @@
 flowchart LR
     DR["DiacritizationResult\nfrom F19 (NFD nikud)"]
-    LOAD["DE-01\nload_phonikud\n(in-process, ADR-022)"]
-    SKIP["DE-04\ntoken-skip filter\n(NUM / EN / punct)"]
-    INF["DE-02\nPhonikud G2P\nIPA + stress"]
-    SHVA["DE-03\nvocal-shva passthrough"]
-    HINT["DE-05\nPronunciationHint\n(ipa, stress, shva)"]
-    RES["G2PResult\nprovider=phonikud"]
-    DR --> SKIP
-    SKIP -->|skip| RES
-    SKIP -->|g2p| INF
-    LOAD -.-> INF
-    INF --> SHVA
-    SHVA --> HINT
-    HINT --> RES
+    LOAD["DE-01\nload_phonikud\nlazy import, lru_cache\n(ADR-022, ADR-029)"]
+    SHORT["DE-04\nempty input\nshort-circuit"]
+    PHON["DE-02\nphonikud.phonemize\nschema=modern\npredict_stress=True\npredict_vocal_shva=True"]
+    FB["fallback_g2p\nidentity emit"]
+    RES_EMPTY["G2PResult\nphonemes=[]\nprovider=phonikud"]
+    RES_OK["G2PResult\nphonemes=[ipa_string]\nprovider=phonikud"]
+    RES_FB["G2PResult\nphonemes=[text]\nprovider=phonikud-fallback"]
+
+    DR --> SHORT
+    SHORT -- empty --> RES_EMPTY
+    SHORT -- non-empty --> PHON
+    LOAD -. module loaded .-> PHON
+    LOAD -. ImportError .-> FB
+    FB --> RES_FB
+    PHON --> RES_OK

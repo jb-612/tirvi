@@ -1,115 +1,137 @@
 ---
 feature_id: N02/F20
 feature_type: domain
-status: drafting
+status: designed
 hld_refs:
   - HLD-§4/AdapterInterfaces
   - HLD-§5.2/Processing
 prd_refs:
   - "PRD §6.4 — Reading plan"
-adr_refs: [ADR-003, ADR-022]
+adr_refs: [ADR-003, ADR-022, ADR-028, ADR-029]
 biz_corpus: true
 biz_corpus_e_id: E05-F02
 ---
 
-# Feature: Phonikud G2P Adapter — IPA + stress
+# Feature: Phonikud G2P Adapter — IPA emission via `phonemize()`
 
 ## Overview
 
-Concrete `G2PBackend` adapter wrapping Phonikud G2P over diacritized
-Hebrew tokens. Emits per-token IPA + stress; vocal-shva is passed
-through only when Phonikud emits it (POC does not synthesize). POC
-drops the rule-based fallback (E05-F02 / S02): a single Phonikud path
-only. ADR-003 anchors the Nakdan + Phonikud diacritization-and-G2P
-stack; ADR-022 records the in-process loader topology, mirroring
-ADR-020 / ADR-021.
+Concrete `G2PBackend` adapter wrapping Phonikud over diacritized
+Hebrew text. The current Phonikud package (≥ 0.4) exposes
+`phonikud.phonemize(text) -> str` — a whole-text IPA string with
+inline stress markers — instead of the per-token `transliterate(text)`
+API the original design assumed. **ADR-028** records this API pivot
+and defers per-token IPA emission to MVP. POC scope: emit a single
+whole-text IPA string per `G2PResult` so downstream stages (F23 SSML,
+F22 reading plan) have an inspectable phonetic artefact for the F33
+debug viewer; Wavenet `he-IL-Wavenet-D` does not consume IPA via
+`<phoneme>` SSML tags reliably for Hebrew, so per-token granularity
+adds cost without audio-quality gain in POC. ADR-003 anchors the
+Nakdan + Phonikud stack; ADR-022 records the in-process loader.
 
 ## Dependencies
 
 - Upstream: N00/F03 (`G2PBackend` port + `G2PResult` value type — locked),
-  N02/F19 (diacritized tokens with NFC/NFD normalization).
+  N02/F19 (diacritized text after NFC/NFD normalization — input).
 - Adapter ports consumed: `tirvi.ports.G2PBackend` (this feature
   implements it).
-- External services: Phonikud (open-source Python package).
-- Downstream: F22 (reading plan stamps `pronunciation_hint`), F23 (SSML
-  emits `<phoneme>` per token where the voice profile supports it).
+- External services: Phonikud (open-source Python package; lazy import
+  per ADR-022 and ADR-029).
+- Downstream: F22 (reading plan stamps `pronunciation_hint` for debug
+  visibility; not consumed by Wavenet POC), F23 (SSML — POC does NOT
+  inject `<phoneme>` tags; left for MVP when voice support is verified),
+  F33 debug viewer (consumes `G2PResult` for human inspection of the
+  pronunciation pipeline).
 
 ## Interfaces
 
 | Module | Symbol | Kind | Notes |
 |--------|--------|------|-------|
-| `tirvi.adapters.phonikud` | `PhonikudG2PAdapter` | class | implements `G2PBackend.transliterate(text) -> G2PResult` |
-| `tirvi.adapters.phonikud` | `PhonikudG2PAdapter.transliterate_diacritized(tokens)` | method | per-token overload used by the pipeline |
-| `tirvi.adapters.phonikud.loader` | `load_phonikud()` | function | in-process load; cached on first call (ADR-022) |
-| `tirvi.adapters.phonikud.shape` | `PronunciationHint(ipa, stress, shva)` | dataclass | typed per-token hint |
+| `tirvi.adapters.phonikud` | `PhonikudG2PAdapter` | class | implements `G2PBackend.grapheme_to_phoneme(text, lang) -> G2PResult` |
+| `tirvi.adapters.phonikud.inference` | `grapheme_to_phoneme(text, lang)` | function | calls `phonikud.phonemize(text, schema="modern")` |
+| `tirvi.adapters.phonikud.loader` | `load_phonikud()` | function | lazy `import phonikud`; `lru_cache(maxsize=1)`; returns `None` on `ImportError` |
+| `tirvi.adapters.phonikud.loader` | `fallback_g2p(text)` | function | identity emit when Phonikud unavailable; provider stamp `phonikud-fallback` |
 
-`G2PResult.provider == "phonikud"`. Each `Token.pronunciation_hint`
-carries `ipa: str`, `stress: int | None` (1-based syllable index), and
-`shva: list[bool] | None` (per-shva voiced flag, only when Phonikud
-outputs it).
+`G2PResult.provider == "phonikud"` on success or
+`"phonikud-fallback"` when the package is missing. POC emits
+`G2PResult.phonemes = [ipa_string]` (single-element list) — one IPA
+string for the whole input. Per-token IPA splitting is deferred to MVP
+per ADR-028.
 
 ## Approach
 
-1. **DE-01**: Phonikud loader — module-level cache; lazy import (`import
-   phonikud`) to avoid hard fail if not installed in test env.
-2. **DE-02**: Per-token IPA + stress emission — call Phonikud per
-   diacritized token; map output dataclass into `PronunciationHint`.
-3. **DE-03**: Vocal-shva passthrough — copy Phonikud's voiced-shva
-   indication when present; emit `shva=None` when Phonikud is silent
-   (no synthesis attempt).
-4. **DE-04**: Token-skip filter — pass-through for NUM / EN-tagged /
-   pure-punctuation tokens; emit `pronunciation_hint=None`.
-5. **DE-05**: PronunciationHint shape — frozen dataclass attached to
-   `Token.pronunciation_hint` (extends F18's Token).
-6. **DE-06**: Adapter contract conformance — assert via F03's
-   `assert_adapter_contract`; provider stamp on result; IPA chars
-   escaped properly when serialized to JSON downstream (F22).
+1. **DE-01**: Phonikud loader — lazy `import phonikud`; cached via
+   `lru_cache`; `None` on `ImportError` (matches ADR-022 graceful
+   degradation pattern). Existing `tirvi/adapters/phonikud/loader.py`
+   already implements this — no change.
+2. **DE-02**: `phonemize()` invocation — `module.phonemize(text,
+   schema="modern", predict_stress=True, predict_vocal_shva=True)`
+   returns the whole-text IPA string with inline stress markers and
+   vocal-shva resolution. Replaces the broken `module.transliterate()`
+   call from the original design.
+3. **DE-03**: Vocal-shva resolution — handled by Phonikud's
+   `predict_vocal_shva=True` parameter (Phonikud emits the resolved
+   form inline). No separate field.
+4. **DE-04**: Empty / non-Hebrew input — short-circuit to
+   `G2PResult(phonemes=[], confidence=None)` when `text.strip() == ""`.
+   Phonikud handles ASCII passthrough internally for mixed input.
+5. **DE-05**: PronunciationHint shape — `G2PResult.phonemes` is a list
+   of IPA strings; for POC the list has length 1 (whole-text). MVP
+   per-token splitting will populate per-token entries.
+6. **DE-06**: Adapter contract conformance — `isinstance` check against
+   the `runtime_checkable` `G2PBackend` Protocol; provider stamp on
+   every result; tests mock `load_phonikud()` to inject a fake module
+   exposing the `phonemize` attribute.
 
 ## Design Elements
 
 - DE-01: phonikudLoader (ref: HLD-§5.2/Processing)
-- DE-02: ipaStressEmission (ref: HLD-§5.2/Processing)
-- DE-03: vocalShvaPassthrough (ref: HLD-§5.2/Processing)
-- DE-04: tokenSkipFilter (ref: HLD-§5.2/Processing)
+- DE-02: phonemizeInvocation (ref: HLD-§5.2/Processing)
+- DE-03: vocalShvaResolution (ref: HLD-§5.2/Processing)
+- DE-04: emptyInputShortCircuit (ref: HLD-§5.2/Processing)
 - DE-05: pronunciationHintShape (ref: HLD-§4/AdapterInterfaces)
 - DE-06: adapterContractConformance (ref: HLD-§4/AdapterInterfaces)
 
 ## Decisions
 
-- D-01: Diacritization + G2P stack = Nakdan + Phonikud → **ADR-003** (existing).
-- D-02: Phonikud loader topology for POC = in-process → **ADR-022**.
+- D-01: G2P stack = Phonikud → **ADR-003** (existing).
+- D-02: Phonikud loader topology for POC = in-process → **ADR-022** (existing).
+- D-03: Adopt Phonikud `phonemize()` API; per-token transliteration deferred → **ADR-028** (new).
 
 ## HLD Deviations
 
 | Element | Deviation | Rationale |
 |---------|-----------|-----------|
-| Rule-based fallback | Out of scope (POC has no fallback) | PLAN-POC.md F20 scope: Phonikud only |
-| Vocal-shva synthesis | POC passes through only what Phonikud emits | Out-of-Phonikud-output shva left None to avoid wrong heuristic |
-| SSML `<phoneme>` injection vs voice-specific | Resolved in F23 (SSML shaping) | F20 emits the hint; F23 decides how it lands in SSML |
-| Stress-accuracy bench | Deferred to N05 | POC has no quality bench |
+| Per-token IPA emission | POC emits whole-text IPA in a 1-element list | ADR-028 — Phonikud package API ships `phonemize()`, not per-token splitting |
+| `PlanToken.ipa` per-word population | **POC: all `PlanToken.ipa = None`**; the whole-text IPA lives only on the `G2PResult.phonemes[0]` artefact for F33 viewer | F22's `tirvi/plan/aggregates.py` indexes `g2p_result.phonemes[global_idx]`; with a 1-element list this would put the full page IPA on token-0 and `None` on every other token (asymmetric). T-07 short-circuits the per-token path in F22 to always emit `None`. Per-word IPA population unblocks when ADR-028 trigger fires |
+| `<phoneme>` SSML injection | POC does NOT inject IPA into SSML | Wavenet `he-IL` voice support for `<phoneme>` is unverified; F23 owns that decision |
+| Vocal-shva synthesis when Phonikud is silent | Out of scope (Phonikud handles via `predict_vocal_shva`) | Phonikud's API parameter resolves this in-band |
+| Rule-based fallback (E05-F02 / S02) | Identity passthrough only | PLAN-POC.md F20 scope; full rule-based fallback deferred MVP |
 
 ## HLD Open Questions
 
-- SSML `<phoneme>` vs voice-specific protocol → resolved in F23 (the
-  shaping feature owns delivery format).
-- Fallback rate alert threshold → deferred MVP (no fallback in POC).
+- SSML `<phoneme>` vs voice-specific delivery → F23 owns the decision; POC defers.
+- Fallback rate alert threshold → deferred MVP.
+- Per-token IPA granularity → deferred MVP per ADR-028.
 
 ## Risks
 
 | Risk | Mitigation |
 |------|-----------|
-| Phonikud not installed in test env | DE-01 lazy import; tests use `PhonikudG2PFake` from F03 fakes |
-| IPA characters mangled in JSON serialization | DE-06 covers IPA escape; F22 reading plan is JSON-clean |
-| Stress index off-by-one across syllabification rules | DE-02 honors Phonikud's 1-based convention; documented in PronunciationHint |
+| Phonikud not installed | DE-01 returns `None`; `fallback_g2p` emits identity result; downstream tolerates |
+| Phonikud API changes again | DE-02 wraps a single call; one place to adapt |
+| IPA stress markers surprise downstream JSON serialization | DE-05 emits as plain `str`; standard JSON encode is sufficient |
+| Wavenet ignores IPA in SSML — POC investment wasted | POC scope is explicit: G2P is for **debug visibility** in F33, not for SSML emission. Decision capturable in F23 design (Wave 3) |
 
 ## Diagrams
 
-- `docs/diagrams/N02/F20/phonikud-adapter.mmd` — diacritized tokens → Phonikud → IPA + stress + shva → G2PResult
+- `docs/diagrams/N02/F20/phonikud-adapter.mmd` — diacritized text → loader → `phonemize()` → IPA string → G2PResult; fallback path on ImportError
 
 ## Out of Scope
 
-- Rule-based fallback (deferred MVP).
-- Vocal-shva synthesis when Phonikud is silent (deferred MVP).
-- SSML format choice (lives in F23).
-- Custom IPA override path / lexicon (deferred to F25 / E05-F03).
-- Stress-accuracy bench (deferred to N05).
+- Per-token IPA splitting (deferred MVP per ADR-028).
+- Rule-based fallback content (identity-only POC).
+- Vocal-shva synthesis post-Phonikud (deferred MVP).
+- SSML `<phoneme>` injection (lives in F23).
+- Custom IPA override / lexicon (lives in F21 / F25 — homograph + content templates).
+- Stress-accuracy bench (deferred N05).

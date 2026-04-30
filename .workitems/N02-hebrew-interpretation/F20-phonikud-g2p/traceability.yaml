@@ -10,6 +10,8 @@ prd_refs:
 adr_refs:
   - ADR-003
   - ADR-022
+  - ADR-028
+  - ADR-029
 
 biz_source:
   functional_test_plan_path: ./functional-test-plan.md
@@ -50,6 +52,9 @@ acm_nodes:
     - task:N02/F20/T-04
     - task:N02/F20/T-05
     - task:N02/F20/T-06
+    - task:N02/F20/T-07
+    - task:N02/F20/T-07b
+    - task:N02/F20/T-08
   diagrams:
     - diagram:N02/F20/phonikud-adapter
 
@@ -62,6 +67,7 @@ acm_edges:
   - {from: spec:N02/F20/DE-06, to: HLD-§4/AdapterInterfaces, type: TRACED_TO}
   - {from: spec:N02/F20/DE-01, to: adr:003, type: INFLUENCED_BY}
   - {from: spec:N02/F20/DE-01, to: adr:022, type: INFLUENCED_BY}
+  - {from: spec:N02/F20/DE-02, to: adr:028, type: INFLUENCED_BY}
   - {from: story:N02/F20/US-01, to: criterion:N02/F20/US-01/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F20/US-02, to: criterion:N02/F20/US-02/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F20/US-01, to: spec:N02/F20/DE-02, type: VERIFIED_BY}
@@ -89,6 +95,9 @@ acm_edges:
   - {from: task:N02/F20/T-04, to: spec:N02/F20/DE-04, type: IMPLEMENTED_BY}
   - {from: task:N02/F20/T-05, to: spec:N02/F20/DE-05, type: IMPLEMENTED_BY}
   - {from: task:N02/F20/T-06, to: spec:N02/F20/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F20/T-07, to: spec:N02/F20/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N02/F20/T-07b, to: spec:N02/F20/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N02/F20/T-08, to: spec:N02/F20/DE-05, type: IMPLEMENTED_BY}
 
 de_to_hld:
   DE-01: HLD-§5.2/Processing
@@ -107,17 +116,23 @@ task_to_de:
   T-04: DE-04
   T-05: DE-05
   T-06: DE-06
+  T-07: DE-04
+  T-07b: DE-05
+  T-08: DE-05
 ac_to_story:
   US-01/AC-01: US-01
   US-02/AC-01: US-02
 
 tests:
-  - {ontology_id: "task:N02/F20/T-01", test_path: tests/unit/test_phonikud_loader.py, status: pending}
+  - {ontology_id: "task:N02/F20/T-01", test_path: tests/unit/test_phonikud_loader.py, status: green}
   - {ontology_id: "task:N02/F20/T-02", test_path: tests/unit/test_phonikud_inference.py, status: pending}
-  - {ontology_id: "task:N02/F20/T-03", test_path: tests/unit/test_vocal_shva.py, status: pending}
-  - {ontology_id: "task:N02/F20/T-04", test_path: tests/unit/test_g2p_skip_filter.py, status: pending}
-  - {ontology_id: "task:N02/F20/T-05", test_path: tests/unit/test_pronunciation_hint.py, status: pending}
+  - {ontology_id: "task:N02/F20/T-03", test_path: tests/unit/test_phonikud_inference.py, status: pending}
+  - {ontology_id: "task:N02/F20/T-04", test_path: tests/unit/test_phonikud_inference.py, status: green}
+  - {ontology_id: "task:N02/F20/T-05", test_path: tests/unit/test_phonikud_inference.py, status: pending}
   - {ontology_id: "task:N02/F20/T-06", test_path: tests/unit/test_phonikud_adapter.py, status: pending}
+  - {ontology_id: "task:N02/F20/T-07", test_path: tests/unit/test_pipeline.py, status: pending}
+  - {ontology_id: "task:N02/F20/T-07b", test_path: tests/unit/test_build_plan.py, status: pending}
+  - {ontology_id: "task:N02/F20/T-08", test_path: tests/unit/test_fakes.py, status: pending}
 
 bounded_contexts:
   Pronunciation:
@@ -129,7 +144,7 @@ bounded_contexts:
         acceptance_criteria: [US-01/AC-01]
         domain_layer:
           aggregates: []
-          value_objects: [PronunciationHint]
+          value_objects: []   # PronunciationHint deleted by T-05 per ADR-028 (whole-text IPA — no per-token VO)
         ports:
           implements: [G2PBackend]
         adapters:
@@ -137,10 +152,10 @@ bounded_contexts:
         vendor_sdks: [phonikud]
         tests:
           unit:
-            - tests/unit/test_phonikud_loader.py
-            - tests/unit/test_phonikud_inference.py
-            - tests/unit/test_pronunciation_hint.py
-            - tests/unit/test_vocal_shva.py
-            - tests/unit/test_g2p_skip_filter.py
-            - tests/unit/test_phonikud_adapter.py
+            - tests/unit/test_phonikud_loader.py     # T-01 lazy loader
+            - tests/unit/test_phonikud_inference.py  # T-02/T-03/T-04/T-05 phonemize + empty-input
+            - tests/unit/test_phonikud_adapter.py    # T-06 contract
+            - tests/unit/test_pipeline.py            # T-07 pipeline rewire (extension)
+            - tests/unit/test_fakes.py               # T-08 G2P fake update
+            # Deleted by ADR-028 cleanup (T-04 / T-05): test_pronunciation_hint.py, test_vocal_shva.py, test_g2p_skip_filter.py
         runtime: {api_routes: [], cli_handlers: []}
