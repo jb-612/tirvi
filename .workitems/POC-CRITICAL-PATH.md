@@ -228,14 +228,43 @@ That's a 35% reduction from the original ~110h estimate. Wall-clock
 with bundled TDD + AI authorship + parallel cloud sessions: 20–30
 hours of agent time, distributed.
 
-## Verification before kicking off
+## Verification before kicking off — RESOLVED 2026-04-30
 
-Before Phase 2 starts:
-1. **Open `docs/example/Economy.pdf`** and visually answer the four
-   "MAYBE" rows above (lang_hint, line-break rejoin, stray punct,
-   long sentences). Most likely defers 2–3 more tasks.
-2. **Confirm the demo is single-page** — yes per `.workitems/PLAN-POC.md`.
-3. **Confirm no per-block voice routing** — yes per PLAN-POC.md.
+Inspected `docs/example/Economy.pdf` p.1 (Hebrew accountant-board exam
+intro). All four MAYBE rows defer:
+
+| Task | Decision | Why |
+|---|---|---|
+| F08-T-04 lang_hint | ❌ DEFER | Page is pure Hebrew; no inline English |
+| F14-T-03 line-break rejoin | ❌ DEFER | Paragraphs flow normally; no hyphenated line breaks |
+| F14-T-04 stray punct repair | ❌ DEFER (provisional) | PDF is OCR-clean; budget 30 min if Tesseract introduces stray quote marks during real run |
+| F17-T-05 long-sentence chunking | ❌ DEFER | Longest sentence ~30 words, well within DictaBERT 512-token context |
+
+**Phase totals after PDF inspection: ~50 demo-critical tasks, ~64h.**
+
+### PDF observations relevant to Phase A TDD
+
+- **Block types observed**: heading (red, bold, underlined),
+  paragraph, **numbered list (1–6)**. F11's POC taxonomy is
+  `["heading", "paragraph", "question_stem"]`. Numbered list items
+  don't match any of the 3 — F11 classifier should treat them as
+  `paragraph` (acceptable: the audio reads them; no special handling
+  needed). Verify in F11-T-03 (block classifier) test fixture.
+- **Red text** is used for visual emphasis ("הנכונה ביותר", "מצב
+  הבחינה", etc.). OCR drops color; for the demo the text content alone
+  suffices.
+- **Footer** (copyright, page number, version) sits at the page
+  bottom — Tesseract will pick it up. F11 will treat it as another
+  block; F22 will include it in the reading plan; the audio will read
+  it aloud. Acceptable for POC; visually marker box stops there.
+- **No tables, figures, math, answer-options** on this page —
+  matches F11's POC scope cleanly. `BlockTypeOutOfScope` shouldn't
+  fire on this PDF.
+
+### Other confirmations
+
+- Single-page demo — yes per `.workitems/PLAN-POC.md`
+- No per-block voice routing — yes per PLAN-POC.md
 
 ## Handoff to `/tdd`
 
