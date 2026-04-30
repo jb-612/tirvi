@@ -3,7 +3,11 @@
 **Parent plan:** `.workitems/PLAN.md` (canonical 47-feature MVP).
 **Scope:** subset for proof-of-concept; ~14 features, ~30% of MVP.
 **Created:** 2026-04-29
-**Status:** Planning complete; first feature (F08) up next.
+**Status:** Planning + scaffold complete (F03 + 14 features L1–L7 landed
+as of 2026-04-30; commits `97b34a3..b71351d`). TDD scope cut documented
+in **`POC-CRITICAL-PATH.md`** — ~55 demo-critical task slots, ~30
+deferred. F03 effective TDD load is 0h (scaffold covers it). Phase A
+(F08+F10+F11) is the first actual TDD batch.
 
 ## POC Objective
 
@@ -85,7 +89,7 @@ canonical PLAN.md).
 ### Phase E — Web UI
 
 - [ ] F35-word-sync-highlight — Web Audio API + word-timing JSON, moving marker box (POC scope: single-page; vanilla HTML acceptable)
-- [ ] F36-accessibility-controls — play / pause / continue / reset (POC scope: 4 buttons; no speed/font/contrast controls)
+- [ ] F36-accessibility-controls — **DEFERRED to v0.1** (2026-04-30 scope cut); POC ships F35 + a single play button (T-01 only). Pause / restart / replay / keyboard shortcuts / ARIA all v0.1. Detail: `POC-CRITICAL-PATH.md`.
 
 ## Features Deferred (33)
 
