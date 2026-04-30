@@ -68,6 +68,13 @@ class NLPToken:
     Per F17 DE-04: ``confidence`` is the per-attribute (top-1 minus top-2)
     margin emitted by the joint POS head; ``None`` when the model did not
     surface a confidence score (never ``0.0`` per biz S01).
+
+    Per F18 DE-02: ``morph_features`` is a whitelisted Hebrew UD morph dict
+    (gender / number / person / tense / def / case). ``None`` when the
+    provider emitted no features.
+
+    Per F18 DE-03: ``ambiguous`` is set when ``pick_sense`` saw two
+    candidates whose top-1 / top-2 score margin was below the threshold.
     """
 
     text: str
@@ -75,6 +82,8 @@ class NLPToken:
     lemma: str | None = None
     prefix_segments: tuple[str, ...] | None = None
     confidence: float | None = None
+    morph_features: dict[str, str] | None = None
+    ambiguous: bool = False
 
 
 @dataclass(frozen=True)
