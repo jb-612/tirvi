@@ -67,8 +67,14 @@ def _detect_mark_truncation(ssml: str, timepoint_count: int) -> bool:
 
 
 def _count_input_marks(ssml: str) -> int:
-    """Count ``<mark `` occurrences in SSML (POC: substring; ET-based later)."""
-    return ssml.count("<mark ")
+    """Count ``<mark`` element openings in SSML.
+
+    Matches both ``<mark name="..."/>`` (with attrs) and ``<mark/>``
+    (bare self-close). The plain word ``mark`` in text content does NOT
+    match because we require ``<`` immediately before. POC: substring
+    counter; ElementTree-based count for hardening if needed.
+    """
+    return ssml.count("<mark ") + ssml.count("<mark/>")
 
 
 def _extract_duration_s(response: Any) -> float | None:
