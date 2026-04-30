@@ -15,6 +15,17 @@ class TimingInvariantError(AdapterError):
     """
 
 
+class BlockScopeError(AdapterError):
+    """Raised when a TTSResult crosses block boundaries.
+
+    F30 expects one TTSResult per PlanBlock (one synthesize() call per
+    block). Defensive against future F26 evolution that might
+    accidentally concatenate blocks.
+
+    Spec: N03/F30 DE-03.
+    """
+
+
 def assert_marks_monotonic(marks: list[WordMark]) -> None:
     """Assert ``marks[i].start_ms <= marks[i+1].start_ms`` for every i.
 

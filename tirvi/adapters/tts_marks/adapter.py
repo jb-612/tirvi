@@ -7,7 +7,7 @@ from tirvi.errors import MarkCountMismatchError
 from tirvi.ports import WordTimingProvider
 from tirvi.results import TTSResult, WordMark, WordTiming, WordTimingResult
 
-from .invariants import assert_marks_monotonic
+from .invariants import BlockScopeError, assert_marks_monotonic
 
 # Fallback span when audio_duration_s is None (post-review C8): the last
 # mark's end_s defaults to start_s + this many seconds.
@@ -38,6 +38,11 @@ class TTSEmittedTimingAdapter(WordTimingProvider):
         if self._tts_result is None:
             raise ValueError(
                 "TTSEmittedTimingAdapter requires a TTSResult; pass via __init__"
+            )
+        if self._tts_result.voice_meta.get("concatenated_blocks"):
+            raise BlockScopeError(
+                "INV-MARKS-SCOPE-001 (DE-03): TTSResult.voice_meta indicates "
+                "concatenated blocks; F30 expects one TTSResult per PlanBlock"
             )
         marks = self._tts_result.word_marks or []
         assert_marks_monotonic(marks)
