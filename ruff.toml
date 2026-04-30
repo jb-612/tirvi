@@ -1,0 +1,15 @@
+target-version = "py311"
+line-length = 100
+
+[lint]
+select = ["E", "F", "W", "I", "B", "TID"]
+
+[lint.flake8-tidy-imports.banned-api]
+"google.cloud".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
+"transformers".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
+"torch".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
+"huggingface_hub".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
+
+[lint.per-file-ignores]
+"tirvi/adapters/**" = ["TID251"]
+"tests/**" = ["TID251"]
