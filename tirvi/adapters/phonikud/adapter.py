@@ -6,6 +6,8 @@ Spec: N02/F20. AC: US-01/AC-01.
 from tirvi.ports import G2PBackend
 from tirvi.results import G2PResult
 
+from .inference import grapheme_to_phoneme as _g2p
+
 
 class PhonikudG2PAdapter(G2PBackend):
     """Phonikud-based grapheme-to-phoneme adapter.
@@ -17,10 +19,7 @@ class PhonikudG2PAdapter(G2PBackend):
     """
 
     def __init__(self) -> None:
-        # TODO US-01/AC-01: lazy-import phonikud (deferred until first call)
-        self._phonikud_available: bool | None = None
+        pass
 
     def grapheme_to_phoneme(self, text: str, lang: str) -> G2PResult:
-        # TODO INV-PHON-001: import phonikud or raise ImportError → caller falls back to fake
-        # TODO INV-PHON-002: per-token transliterate; assemble PronunciationHints
-        raise NotImplementedError
+        return _g2p(text, lang=lang)
