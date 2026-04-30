@@ -9,6 +9,7 @@ prd_refs:
   - "PRD §6.3 — Hebrew normalization"
 adr_refs:
   - ADR-019
+  - ADR-029  # vendor-boundary discipline — N/A by construction (F14 has no vendor calls); cited for traceability
 
 biz_source:
   functional_test_plan_path: ./functional-test-plan.md
@@ -130,9 +131,13 @@ bounded_contexts:
           value_objects: [NormalizedText, Span, RepairLogEntry]
           errors: [NormalizationError]
           invariants:
+            - "INV-NORM-001 (DE-01): NormalizedText is frozen and total over input"
             - "INV-NORM-002 (DE-02): union of span.src_word_indices = every input word"
             - "INV-NORM-003 (DE-04): repair_log records every applied transformation"
             - "INV-NORM-SPAN-001 (DE-02): src_word_indices non-empty"
+            - "INV-NORM-SPAN-002 (DE-05): Span.text == NormalizedText.text[start_char:end_char]"
+            - "INV-NORM-LOG-001 (DE-06): one RepairLogEntry per applied rule"
+            - "INV-NORM-LOG-002 (DE-06): RepairLogEntry.position is a valid char offset in NormalizedText.text"
         ports: {implements: [], defined: []}
         tests:
           unit:

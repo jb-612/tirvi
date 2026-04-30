@@ -1,0 +1,128 @@
+# Ontology delta — N02/F14 Normalization pass
+# Owner: tm-f14 (wave2-sw-design team)
+# Target: ontology/technical-implementation.yaml (merged serially by team-lead)
+#
+# Schema: matches ontology/schemas/technical-implementation.schema.yaml plus
+#   the "tasks" section convention used by the master file.
+# Idempotency: nodes are additive; lead deduplicates on `id` during merge.
+# F14 has NO vendor calls — no new ports, services, or adapters contributed.
+
+version: 1
+feature_id: N02/F14
+
+# Modules — coarse-grained code groupings.
+modules:
+  - id: MOD-N02-F14
+    name: tirvi.normalize
+    description: pipeline normalize stage — pass-through + minimum repair (POC); pure domain logic, no vendor I/O
+    feature_refs: [N02/F14]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/normalize/
+    status: designed
+
+# Services — runtime processes (none for F14; pure-domain).
+services: []
+
+# Ports — abstract interfaces (none for F14; consumes no ports, defines no ports).
+ports: []
+
+# Adapters — concrete vendor implementations (none for F14; ADR-029 N/A by construction).
+adapters: []
+
+# Classes — value-object types contributed by F14.
+classes:
+  - id: CLS-N02-F14-NormalizedText
+    name: NormalizedText
+    description: frozen value object — text + spans tuple + repair_log tuple; output of the normalize stage; consumed by F17 / F22 / F35
+    feature_refs: [N02/F14]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/results.py
+    status: designed
+  - id: CLS-N02-F14-Span
+    name: Span
+    description: frozen value object — char_start, char_end, src_word_indices (tuple of ints); preserves bbox→text provenance
+    feature_refs: [N02/F14]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/results.py
+    status: designed
+  - id: CLS-N02-F14-RepairLogEntry
+    name: RepairLogEntry
+    description: frozen value object — rule_id, span, before, after; emitted by every applied repair rule for downstream auditing (BT-066)
+    feature_refs: [N02/F14]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/diff.py
+    status: designed
+
+# Functions — top-level callable entry points contributed by F14.
+functions:
+  - id: FN-N02-F14-normalize
+    name: normalize
+    description: pure function (OCRResult) -> NormalizedText; deterministic over the same input; sequence pass-through → line-break-rejoin → stray-punct-drop → bbox-span-map → repair-log-emit
+    feature_refs: [N02/F14]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/__init__.py
+    status: designed
+
+# ADR decisions — F14 is influenced by ADR-019 (existing in master); no new ADR claimed.
+adr_decisions:
+  - id: adr:019
+    name: Normalization uses deterministic rules for POC; ML repair deferred
+    description: 2-rule deterministic normalizer; ML denoiser deferred to MVP. Influences DE-03, DE-04.
+    feature_refs: [N02/F14]
+    bounded_context: hebrew_nlp
+    source_path: docs/ADR/ADR-019-hebrew-nlp-normalization-rule-strategy.md
+    status: proposed
+
+# Tasks — atomic work items (status updated to "implemented" by TDD phase).
+tasks:
+  - id: task:N02/F14/T-01
+    name: normalized-text-type
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-01]
+    test_path: tests/unit/test_normalized_text.py
+    status: designed
+  - id: task:N02/F14/T-02
+    name: pass-through-joiner
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-02]
+    test_path: tests/unit/test_normalize_passthrough.py
+    status: designed
+  - id: task:N02/F14/T-03
+    name: line-break-rejoin
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-03]
+    test_path: tests/unit/test_line_break_rejoin.py
+    status: designed
+  - id: task:N02/F14/T-04
+    name: stray-punctuation-drop
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-04]
+    test_path: tests/unit/test_stray_punct.py
+    status: designed
+  - id: task:N02/F14/T-05
+    name: bbox-span-roundtrip
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-05]
+    test_path: tests/unit/test_bbox_span_map.py
+    status: designed
+  - id: task:N02/F14/T-06
+    name: repair-log-emitter
+    feature_refs: [N02/F14]
+    spec_refs: [spec:N02/F14/DE-06]
+    test_path: tests/unit/test_repair_log.py
+    status: designed
+
+# Notes for merger:
+# - All MOD/CLS/FN nodes are NEW (additive); F14 module exists in master, classes/functions do not.
+# - Master already has adr:019 and the 6 task nodes from a prior sw-designpipeline pass — included
+#   here for completeness so the lead can verify drift; idempotent merge expected.
+# - No new ADR claimed for Wave 2 (ADR-019 fully covers F14's deterministic-vs-ML decision; ADR-029
+#   is N/A because F14 makes no vendor calls — see design.md "Vendor-boundary discipline" section).
+# - bounded_context naming: this delta uses "hebrew_nlp" (underscore) to match the project ontology
+#   convention (see modules MOD-01..MOD-06, MOD-N02-F17, MOD-N02-F18). The legacy adr:019 entry in
+#   the master uses "hebrew-interpretation" (hyphen) — flagging for lead awareness; not changing in
+#   this delta to avoid stomping on master.
