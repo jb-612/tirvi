@@ -5,10 +5,17 @@ line-length = 100
 select = ["E", "F", "W", "I", "B", "TID"]
 
 [lint.flake8-tidy-imports.banned-api]
+# Established by F03 (DE-06, ADR-014). Extended for the 14-feature horizontal
+# scaffold: pdf2image / pypdfium2 / pytesseract / cv2 (F08), phonikud (F20).
 "google.cloud".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
 "transformers".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
 "torch".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
 "huggingface_hub".msg = "Vendor SDK — only allowed inside tirvi/adapters/** (DE-06, ADR-014)"
+"pdf2image".msg = "OCR vendor — only allowed inside tirvi/adapters/tesseract/** (F08)"
+"pypdfium2".msg = "OCR vendor — only allowed inside tirvi/adapters/tesseract/** (F08)"
+"pytesseract".msg = "OCR vendor — only allowed inside tirvi/adapters/tesseract/** (F08)"
+"cv2".msg = "OCR vendor (opencv-python) — only allowed inside tirvi/adapters/tesseract/** (F08)"
+"phonikud".msg = "G2P vendor — only allowed inside tirvi/adapters/phonikud/** (F20)"
 
 [lint.per-file-ignores]
 "tirvi/adapters/**" = ["TID251"]

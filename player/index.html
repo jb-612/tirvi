@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--
+  F35 + F36 — vanilla HTML/JS player shell.
+
+  Spec: N04/F35 (word-sync highlight), N04/F36 (accessibility controls).
+  Bounded context: bc:audio_delivery.
+  Per ADR-023: vanilla HTML + Web Audio API; no framework. MVP migration to
+  Next.js deferred.
+
+  Wire contracts (read-only consumers):
+    - audio.json — docs/schemas/audio.schema.json (produced by F30)
+    - page.json  — docs/schemas/page.schema.json (produced by F22 DE-07)
+-->
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tirvi POC reader</title>
+    <link rel="stylesheet" href="player.css" />
+  </head>
+  <body>
+    <main id="player-root">
+      <!-- TODO US-01/AC-01 (F35 T-01): page image + .marker overlay div -->
+      <!-- TODO US-01/AC-01 (F36 T-02): 4 controls — play, pause, restart, replay -->
+      <!-- TODO F35 DE-02 (post-review C2): non-blocking error banner slot -->
+      <div id="error-banner" hidden></div>
+      <figure id="page-figure">
+        <!-- page.png + bbox overlays injected by player.js -->
+      </figure>
+      <div id="controls" role="toolbar" aria-label="Player controls">
+        <!-- buttons injected by controls.js -->
+      </div>
+      <audio id="audio-element" preload="auto"></audio>
+    </main>
+    <script type="module" src="js/player.js"></script>
+    <script type="module" src="js/timing.js"></script>
+    <script type="module" src="js/highlight.js"></script>
+    <script type="module" src="js/controls.js"></script>
+  </body>
+</html>
