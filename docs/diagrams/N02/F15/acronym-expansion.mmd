@@ -1,0 +1,36 @@
+flowchart LR
+    NT["NormalizedText\nfrom F14\n(text + spans + repair_log)"]
+    LEX["Lexicon\nfrom YAML (DE-02)\nversion + entries[]"]
+
+    URL["DE-05\nURL skip filter\n(://, www., x.y)"]
+    MATCH["DE-03\nwhole-token matcher\nstrip-and-reattach .,?:!"]
+    LOOKUP{"Lexicon._index\nlookup hit?"}
+    CAND{"DE-06\nis_acronym_candidate?\ngeresh / gershayim / Latin"}
+
+    EMIT["DE-04\nexpansion emitter\noriginal_form + expansion\nspell_out=false"]
+    SPELL["DE-06\nspell_out=true\n(unknown acronym)"]
+    PASS["pass-through span\n(no log entry)"]
+
+    SPAN["DE-07\nbbox->span round-trip\npreserves src_word_indices"]
+    STAMP["DE-08\nlexicon_version stamp"]
+    EXP["ExpandedText\ntext + spans + repair_log\n+ expansion_log + lexicon_version"]
+
+    NT --> URL
+    URL -- url match --> PASS
+    URL -- not a url --> MATCH
+    LEX --> MATCH
+    MATCH --> LOOKUP
+    LOOKUP -- yes --> EMIT
+    LOOKUP -- no --> CAND
+    CAND -- yes --> SPELL
+    CAND -- no --> PASS
+
+    EMIT --> SPAN
+    SPELL --> SPAN
+    PASS --> SPAN
+    SPAN --> STAMP
+    STAMP --> EXP
+
+    EXP -. spell_out flag .-> F23["F23 SSML\nper-letter break"]
+    EXP -. expanded text .-> F17["F17 DictaBERT\nNLP on expanded form"]
+    EXP -. original_form .-> F22["F22 ReadingPlan\nplayer feedback affordance"]

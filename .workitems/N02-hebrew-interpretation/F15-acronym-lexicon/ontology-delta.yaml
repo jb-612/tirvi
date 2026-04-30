@@ -1,0 +1,184 @@
+# Ontology delta — N02/F15 Acronym lexicon & expansion.
+# ADDITIVE nodes/edges F15 contributes to ontology/technical-implementation.yaml.
+# The lead merges this delta serially after all 4 wave-2 feature deltas land.
+# Schema: ontology/schemas/technical-implementation.schema.yaml.
+#
+# This file is the broker output — F15 does NOT write the project-level
+# ontology directly per the Wave 2 coordination protocol.
+
+version: 1
+feature_ref: N02/F15
+
+modules:
+  - id: MOD-N02-F15
+    name: tirvi.acronym
+    description: deterministic Hebrew acronym/abbreviation expansion stage — YAML-backed lexicon, whole-token matcher, spell-out fallback, version stamp. Sits between F14 normalize and F17 NLP per ADR-030.
+    feature_refs: [N02/F15]
+    bounded_context: hebrew_text
+    source_path: tirvi/acronym/
+    status: designed
+
+  - id: MOD-N02-F15-lint
+    name: tirvi.acronym.lint
+    description: CLI lint entry point for the acronym lexicon YAML (maintainer PR workflow per BT-072).
+    feature_refs: [N02/F15]
+    bounded_context: hebrew_text
+    source_path: tirvi/acronym/lint.py
+    status: designed
+
+# F15 introduces no new services, no new ports, no new adapters.
+services: []
+ports: []
+adapters: []
+
+classes:
+  - id: CLS-N02-F15-Lexicon
+    name: Lexicon
+    description: aggregate root — versioned, immutable collection of AcronymEntry; built once from YAML at module load via mtime cache.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+
+  - id: CLS-N02-F15-AcronymEntry
+    name: AcronymEntry
+    description: value object — (form, expansion, source, context_tags). context_tags reserved for MVP domain-aware disambiguation; v1 ignores.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+
+  - id: CLS-N02-F15-ExpandedText
+    name: ExpandedText
+    description: value object — extends F14 NormalizedText shape with expansion_log + lexicon_version stamp; consumed by F17 / F22 / F23.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/results.py
+    status: designed
+
+  - id: CLS-N02-F15-ExpansionLogEntry
+    name: ExpansionLogEntry
+    description: value object — per-token provenance (original_form, expansion, src_word_indices, spell_out flag); enables player feedback affordance and SSML per-letter routing.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/results.py
+    status: designed
+
+functions:
+  - id: FN-N02-F15-expand
+    name: expand
+    description: top-level entry — `expand(text, lexicon) -> ExpandedText`; thin wrapper around tag_and_expand for the pipeline.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/__init__.py
+    status: designed
+
+  - id: FN-N02-F15-tag_and_expand
+    name: tag_and_expand
+    description: core emitter — walks NormalizedText.spans, applies URL skip / matcher / lookup / fallback, returns ExpandedText with provenance.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/tagger.py
+    status: designed
+
+  - id: FN-N02-F15-is_acronym_candidate
+    name: is_acronym_candidate
+    description: heuristic — token contains geresh `׳` / gershayim `״`, or matches `^[A-Z]{2,6}$`. Used by DE-06 fallback path.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/matcher.py
+    status: designed
+
+  - id: FN-N02-F15-lookup
+    name: Lexicon.lookup
+    description: exact whole-token lookup against `_index` built at YAML load.
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+
+  - id: FN-N02-F15-from_yaml
+    name: Lexicon.from_yaml
+    description: YAML loader (ADR-017 pattern); mtime-cached; raises LexiconLoadError on schema mismatch (DE-02 + DE-08).
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+
+  - id: FN-N02-F15-lint
+    name: tirvi.acronym.lint.main
+    description: CLI lint entry point — exit 0 on valid YAML, non-zero with error on malformed (BT-072).
+    feature_refs: [N02/F15]
+    module_ref: MOD-N02-F15-lint
+    source_path: tirvi/acronym/lint.py
+    status: designed
+
+adr_decisions:
+  - id: adr:030
+    name: Acronym expansion runs upstream of NLP
+    description: Pipeline position decision — F15 expands acronyms after F14 normalize and before F17 DictaBERT NLP, so DictaBERT operates on expanded Hebrew tokens. Provenance round-trips via ExpandedText.
+    feature_refs: [N02/F15]
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-030-hebrew-nlp-acronym-expansion-pipeline-position.md
+    status: proposed
+
+# Tasks — append-only; lead merges into the project-level tasks: list.
+tasks:
+  - id: task:N02/F15/T-01
+    name: acronym-value-types
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-01]
+    test_path: tests/unit/test_acronym_types.py
+    status: designed
+  - id: task:N02/F15/T-02
+    name: yaml-lexicon-loader
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-02]
+    test_path: tests/unit/test_acronym_loader.py
+    status: designed
+  - id: task:N02/F15/T-03
+    name: whole-token-matcher
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-03]
+    test_path: tests/unit/test_acronym_matcher.py
+    status: designed
+  - id: task:N02/F15/T-04
+    name: expansion-emitter
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-04]
+    test_path: tests/unit/test_acronym_expand.py
+    status: designed
+  - id: task:N02/F15/T-05
+    name: url-skip-filter
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-05]
+    test_path: tests/unit/test_acronym_skip_filter.py
+    status: designed
+  - id: task:N02/F15/T-06
+    name: unknown-acronym-fallback
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-06]
+    test_path: tests/unit/test_acronym_fallback.py
+    status: designed
+  - id: task:N02/F15/T-07
+    name: bbox-span-roundtrip
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-07]
+    test_path: tests/unit/test_acronym_span_roundtrip.py
+    status: designed
+  - id: task:N02/F15/T-08
+    name: lexicon-version-stamp-and-lint
+    feature_refs: [N02/F15]
+    spec_refs: [spec:N02/F15/DE-08]
+    test_path: tests/unit/test_acronym_lint.py
+    status: designed
+
+# Cross-feature edges to add to ontology/dependencies.yaml on merge
+# (REALIZES sw->biz, CONSUMES sw->sw).
+new_dependency_edges:
+  - {from: feature:N02/F15, to: feature:N02/F14, type: CONSUMES, rationale: "F14 emits NormalizedText; F15 walks its spans"}
+  - {from: feature:N02/F17, to: feature:N02/F15, type: CONSUMES, rationale: "DictaBERT operates on the text field of ExpandedText, not raw NormalizedText"}
+  - {from: feature:N02/F22, to: feature:N02/F15, type: CONSUMES, rationale: "ReadingPlan stamps original_form + lexicon_version per token"}
+  - {from: feature:N02/F23, to: feature:N02/F15, type: CONSUMES, rationale: "SSML reads spell_out flag for per-letter break"}
+  - {from: feature:N02/F15, to: bo:Lexicon, type: REALIZES}
+  - {from: feature:N02/F15, to: bo:AcronymEntry, type: REALIZES}

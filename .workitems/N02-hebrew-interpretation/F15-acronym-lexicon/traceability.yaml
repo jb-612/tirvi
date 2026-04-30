@@ -1,27 +1,192 @@
-# Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+# Traceability index — N02/F15 Acronym lexicon & expansion.
+feature_id: N02/F15
+status: designed
 
-feature_id: TBD
-status: scaffolded
+hld_refs:
+  - HLD-§5.2/Processing
+  - HLD-§5.1/Input
+prd_refs:
+  - "PRD §6.3 — Hebrew normalization"
+adr_refs:
+  - ADR-017
+  - ADR-019
+  - ADR-030
 
-# Source-document references
-hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
-prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
-adr_refs: []        # e.g. ["ADR-001"]
+biz_source:
+  functional_test_plan_path: ./functional-test-plan.md
+  behavioural_test_plan_path: ./behavioural-test-plan.md
+  corpus_e_id: E03-F03
+  imported_at: 2026-04-30T20:52:00Z
+  source_sha: 2af7279d515d1177f3f9774c0aeae63996e2b2e7
 
-# ACM nodes
+ontology_refs:
+  - persona:P01
+  - persona:P02
+  - persona:P11
+  - bo:AcronymEntry
+  - bo:Lexicon
+  - bo:NormalizedText
+  - bc:hebrew_text
+  - co:CO11        # Lexicon Maintainer
+  - asm:ASM01
+
 acm_nodes:
-  feature: feature:TBD
-  specs: []         # spec:<feature_id>/DE-NN
-  user_stories: []  # story:<feature_id>/US-NN
-  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
-  tasks: []         # task:<feature_id>/T-NN
+  feature: feature:N02/F15
+  specs:
+    - spec:N02/F15/DE-01
+    - spec:N02/F15/DE-02
+    - spec:N02/F15/DE-03
+    - spec:N02/F15/DE-04
+    - spec:N02/F15/DE-05
+    - spec:N02/F15/DE-06
+    - spec:N02/F15/DE-07
+    - spec:N02/F15/DE-08
+  user_stories:
+    - story:N02/F15/US-01
+    - story:N02/F15/US-02
+  acceptance_criteria:
+    - criterion:N02/F15/US-01/AC-01
+    - criterion:N02/F15/US-02/AC-01
+  tasks:
+    - task:N02/F15/T-01
+    - task:N02/F15/T-02
+    - task:N02/F15/T-03
+    - task:N02/F15/T-04
+    - task:N02/F15/T-05
+    - task:N02/F15/T-06
+    - task:N02/F15/T-07
+    - task:N02/F15/T-08
+  diagrams:
+    - diagram:N02/F15/acronym-expansion
 
-# ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+acm_edges:
+  - {from: spec:N02/F15/DE-01, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-02, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-03, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-04, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-05, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-06, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-07, to: HLD-§5.1/Input, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-08, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F15/DE-02, to: adr:017, type: INFLUENCED_BY}
+  - {from: spec:N02/F15/DE-03, to: adr:019, type: INFLUENCED_BY}
+  - {from: spec:N02/F15/DE-04, to: adr:019, type: INFLUENCED_BY}
+  - {from: spec:N02/F15/DE-04, to: adr:030, type: INFLUENCED_BY}
+  - {from: spec:N02/F15/DE-06, to: adr:030, type: INFLUENCED_BY}
+  - {from: feature:N02/F15, to: feature:N02/F14, type: CONSUMES}
+  - {from: feature:N02/F17, to: feature:N02/F15, type: CONSUMES}
+  - {from: feature:N02/F23, to: feature:N02/F15, type: CONSUMES}
+  - {from: feature:N02/F22, to: feature:N02/F15, type: CONSUMES}
+  - {from: story:N02/F15/US-01, to: criterion:N02/F15/US-01/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F15/US-02, to: criterion:N02/F15/US-02/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F15/US-01, to: spec:N02/F15/DE-03, type: VERIFIED_BY}
+  - {from: story:N02/F15/US-01, to: spec:N02/F15/DE-04, type: VERIFIED_BY}
+  - {from: story:N02/F15/US-01, to: spec:N02/F15/DE-08, type: VERIFIED_BY}
+  - {from: story:N02/F15/US-02, to: spec:N02/F15/DE-06, type: VERIFIED_BY}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-01, type: CONTAINS}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-02, type: CONTAINS}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-03, type: CONTAINS}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-04, type: CONTAINS}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-05, type: CONTAINS}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-06, type: CONTAINS}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-07, type: CONTAINS}
+  - {from: feature:N02/F15, to: spec:N02/F15/DE-08, type: CONTAINS}
+  - {from: spec:N02/F15/DE-01, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F15/DE-02, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F15/DE-03, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F15/DE-04, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F15/DE-05, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F15/DE-06, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F15/DE-07, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F15/DE-08, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: "diagram:N02/F15/acronym-expansion", to: spec:N02/F15/DE-04, type: EXPLAINS}
+  - {from: "diagram:N02/F15/acronym-expansion", to: spec:N02/F15/DE-06, type: EXPLAINS}
+  - {from: task:N02/F15/T-01, to: spec:N02/F15/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:N02/F15/T-02, to: spec:N02/F15/DE-02, type: IMPLEMENTED_BY}
+  - {from: task:N02/F15/T-03, to: spec:N02/F15/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:N02/F15/T-04, to: spec:N02/F15/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N02/F15/T-05, to: spec:N02/F15/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N02/F15/T-06, to: spec:N02/F15/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F15/T-07, to: spec:N02/F15/DE-07, type: IMPLEMENTED_BY}
+  - {from: task:N02/F15/T-08, to: spec:N02/F15/DE-08, type: IMPLEMENTED_BY}
 
-# Per-element traces (denormalized for quick lookup)
-de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
-story_to_prd: {}    # US-NN -> PRD §X.Y
-task_to_de: {}      # T-NN -> DE-NN
-ac_to_story: {}     # AC-NN -> US-NN
+de_to_hld:
+  DE-01: HLD-§5.2/Processing
+  DE-02: HLD-§5.2/Processing
+  DE-03: HLD-§5.2/Processing
+  DE-04: HLD-§5.2/Processing
+  DE-05: HLD-§5.2/Processing
+  DE-06: HLD-§5.2/Processing
+  DE-07: HLD-§5.1/Input
+  DE-08: HLD-§5.2/Processing
+story_to_prd:
+  US-01: "PRD §6.3 — Hebrew normalization"
+  US-02: "PRD §6.3 — Hebrew normalization"
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-04
+  T-05: DE-05
+  T-06: DE-06
+  T-07: DE-07
+  T-08: DE-08
+ac_to_story:
+  US-01/AC-01: US-01
+  US-02/AC-01: US-02
+
+tests:
+  - {ontology_id: "task:N02/F15/T-01", test_path: tests/unit/test_acronym_types.py, status: pending}
+  - {ontology_id: "task:N02/F15/T-02", test_path: tests/unit/test_acronym_loader.py, status: pending}
+  - {ontology_id: "task:N02/F15/T-03", test_path: tests/unit/test_acronym_matcher.py, status: pending}
+  - {ontology_id: "task:N02/F15/T-04", test_path: tests/unit/test_acronym_expand.py, status: pending}
+  - {ontology_id: "task:N02/F15/T-05", test_path: tests/unit/test_acronym_skip_filter.py, status: pending}
+  - {ontology_id: "task:N02/F15/T-06", test_path: tests/unit/test_acronym_fallback.py, status: pending}
+  - {ontology_id: "task:N02/F15/T-07", test_path: tests/unit/test_acronym_span_roundtrip.py, status: pending}
+  - {ontology_id: "task:N02/F15/T-08", test_path: tests/unit/test_acronym_lint.py, status: pending}
+
+# Functional / behavioural test mappings (biz corpus -> tasks)
+ft_to_task:
+  FT-106: [T-04]    # ד״ר → דוקטור
+  FT-107: [T-04]    # עמ׳ → עמוד
+  FT-108: [T-04]    # ת״א ambiguity (top lexicon pick — domain-aware deferred)
+  FT-109: [T-03]    # acronym at sentence end with `?` — punctuation reattach
+  FT-110: [T-06]    # unknown → letter-by-letter (spell_out flag; SSML at F23)
+  FT-111: [T-08]    # lexicon version stamped on output
+bt_to_task:
+  BT-071: [T-04]    # original_form provenance enables player feedback affordance
+  BT-072: [T-08]    # maintainer adds entries; lint validates
+  BT-073: [T-06]    # Yiddish acronym → spell-out fallback
+  BT-074: []        # E11-F05 player feedback affordance — out of scope F15
+
+bounded_contexts:
+  HebrewText:
+    features:
+      AcronymExpansion:
+        feature_id: N02/F15
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06, DE-07, DE-08]
+        user_stories: [US-01, US-02]
+        acceptance_criteria: [US-01/AC-01, US-02/AC-01]
+        domain_layer:
+          aggregates: [Lexicon]
+          value_objects: [AcronymEntry, ExpandedText, ExpansionLogEntry]
+          errors: [LexiconLoadError]
+          invariants:
+            - "INV-ACR-001 (DE-07): union of ExpandedText spans.src_word_indices = union of NormalizedText spans.src_word_indices"
+            - "INV-ACR-002 (DE-08): every ExpandedText carries a non-empty lexicon_version stamp"
+            - "INV-ACR-003 (DE-06): is_acronym_candidate + lookup-miss ⇒ ExpansionLogEntry.spell_out=true"
+        ports: {implements: [], defined: []}
+        tests:
+          unit:
+            - tests/unit/test_acronym_types.py
+            - tests/unit/test_acronym_loader.py
+            - tests/unit/test_acronym_matcher.py
+            - tests/unit/test_acronym_expand.py
+            - tests/unit/test_acronym_skip_filter.py
+            - tests/unit/test_acronym_fallback.py
+            - tests/unit/test_acronym_span_roundtrip.py
+            - tests/unit/test_acronym_lint.py
+        runtime:
+          api_routes: []
+          cli_handlers:
+            - "python -m tirvi.acronym.lint <path>  # T-08"
