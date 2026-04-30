@@ -1,27 +1,169 @@
-# Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+# Traceability index — N02/F16 Mixed-Language Run Detection.
+feature_id: N02/F16
+status: designed
 
-feature_id: TBD
-status: scaffolded
+hld_refs:
+  - HLD-§5.1/Input
+  - HLD-§5.2/Processing
+prd_refs:
+  - "PRD §6.3 — Reading aloud / language switching"
+adr_refs:
+  - ADR-019
+  - ADR-029
+  - ADR-031
 
-# Source-document references
-hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
-prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
-adr_refs: []        # e.g. ["ADR-001"]
+biz_source:
+  functional_test_plan_path: ./functional-test-plan.md
+  behavioural_test_plan_path: ./behavioural-test-plan.md
+  corpus_e_id: E03-F04
+  imported_at: 2026-04-30T17:52:50Z
+  source_sha: 2af7279d515d1177f3f9774c0aeae63996e2b2e7
 
-# ACM nodes
+ontology_refs:
+  - persona:P01
+  - persona:P02
+  - persona:P08
+  - bo:LanguageSpan
+  - bo:NormalizedText
+  - bc:hebrew_text
+
 acm_nodes:
-  feature: feature:TBD
-  specs: []         # spec:<feature_id>/DE-NN
-  user_stories: []  # story:<feature_id>/US-NN
-  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
-  tasks: []         # task:<feature_id>/T-NN
+  feature: feature:N02/F16
+  specs:
+    - spec:N02/F16/DE-01
+    - spec:N02/F16/DE-02
+    - spec:N02/F16/DE-03
+    - spec:N02/F16/DE-04
+    - spec:N02/F16/DE-05
+    - spec:N02/F16/DE-06
+    - spec:N02/F16/DE-07
+  user_stories:
+    - story:N02/F16/US-01
+    - story:N02/F16/US-02
+  acceptance_criteria:
+    - criterion:N02/F16/US-01/AC-01
+    - criterion:N02/F16/US-02/AC-01
+  tasks:
+    - task:N02/F16/T-01
+    - task:N02/F16/T-02
+    - task:N02/F16/T-03
+    - task:N02/F16/T-04
+    - task:N02/F16/T-05
+    - task:N02/F16/T-06
+    - task:N02/F16/T-07
+  diagrams:
+    - diagram:N02/F16/lang-spans-detector
 
-# ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+acm_edges:
+  - {from: spec:N02/F16/DE-01, to: HLD-§5.1/Input, type: TRACED_TO}
+  - {from: spec:N02/F16/DE-02, to: HLD-§5.1/Input, type: TRACED_TO}
+  - {from: spec:N02/F16/DE-03, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F16/DE-04, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F16/DE-05, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F16/DE-06, to: HLD-§5.1/Input, type: TRACED_TO}
+  - {from: spec:N02/F16/DE-07, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F16/DE-01, to: adr:031, type: INFLUENCED_BY}
+  - {from: spec:N02/F16/DE-05, to: adr:031, type: INFLUENCED_BY}
+  - {from: spec:N02/F16/DE-06, to: adr:029, type: INFLUENCED_BY}
+  - {from: spec:N02/F16/DE-01, to: adr:019, type: INFLUENCED_BY}
+  - {from: spec:N02/F16/DE-07, to: feature:N02/F14, type: CONSUMES}
+  - {from: spec:N02/F16/DE-07, to: feature:N02/F15, type: CONSUMES}
+  - {from: feature:N02/F22, to: spec:N02/F16/DE-06, type: CONSUMES}
+  - {from: feature:N02/F24, to: spec:N02/F16/DE-06, type: CONSUMES}
+  - {from: feature:N02/F25, to: spec:N02/F16/DE-05, type: CONSUMES}
+  - {from: story:N02/F16/US-01, to: criterion:N02/F16/US-01/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F16/US-02, to: criterion:N02/F16/US-02/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F16/US-01, to: spec:N02/F16/DE-01, type: VERIFIED_BY}
+  - {from: story:N02/F16/US-01, to: spec:N02/F16/DE-03, type: VERIFIED_BY}
+  - {from: story:N02/F16/US-01, to: spec:N02/F16/DE-04, type: VERIFIED_BY}
+  - {from: story:N02/F16/US-01, to: spec:N02/F16/DE-05, type: VERIFIED_BY}
+  - {from: story:N02/F16/US-01, to: spec:N02/F16/DE-06, type: VERIFIED_BY}
+  # US-02 (dev consumes the contract for split-and-stitch) is satisfied
+  # downstream by F24's stitch logic, not by F16. F16 emits the spans;
+  # F24 verifies. SUPPORTS instead of VERIFIED_BY captures that role.
+  - {from: story:N02/F16/US-02, to: spec:N02/F16/DE-06, type: SUPPORTS}
+  - {from: feature:N02/F16, to: spec:N02/F16/DE-01, type: CONTAINS}
+  - {from: feature:N02/F16, to: spec:N02/F16/DE-02, type: CONTAINS}
+  - {from: feature:N02/F16, to: spec:N02/F16/DE-03, type: CONTAINS}
+  - {from: feature:N02/F16, to: spec:N02/F16/DE-04, type: CONTAINS}
+  - {from: feature:N02/F16, to: spec:N02/F16/DE-05, type: CONTAINS}
+  - {from: feature:N02/F16, to: spec:N02/F16/DE-06, type: CONTAINS}
+  - {from: feature:N02/F16, to: spec:N02/F16/DE-07, type: CONTAINS}
+  - {from: spec:N02/F16/DE-01, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F16/DE-02, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F16/DE-03, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F16/DE-04, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F16/DE-05, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F16/DE-06, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F16/DE-07, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: "diagram:N02/F16/lang-spans-detector", to: spec:N02/F16/DE-01, type: EXPLAINS}
+  - {from: "diagram:N02/F16/lang-spans-detector", to: spec:N02/F16/DE-02, type: EXPLAINS}
+  - {from: "diagram:N02/F16/lang-spans-detector", to: spec:N02/F16/DE-06, type: EXPLAINS}
+  - {from: task:N02/F16/T-01, to: spec:N02/F16/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F16/T-02, to: spec:N02/F16/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:N02/F16/T-03, to: spec:N02/F16/DE-02, type: IMPLEMENTED_BY}
+  - {from: task:N02/F16/T-04, to: spec:N02/F16/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:N02/F16/T-05, to: spec:N02/F16/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N02/F16/T-06, to: spec:N02/F16/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N02/F16/T-07, to: spec:N02/F16/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F16/T-07, to: spec:N02/F16/DE-07, type: IMPLEMENTED_BY}
 
-# Per-element traces (denormalized for quick lookup)
-de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
-story_to_prd: {}    # US-NN -> PRD §X.Y
-task_to_de: {}      # T-NN -> DE-NN
-ac_to_story: {}     # AC-NN -> US-NN
+de_to_hld:
+  DE-01: HLD-§5.1/Input
+  DE-02: HLD-§5.1/Input
+  DE-03: HLD-§5.2/Processing
+  DE-04: HLD-§5.2/Processing
+  DE-05: HLD-§5.2/Processing
+  DE-06: HLD-§5.1/Input
+  DE-07: HLD-§5.2/Processing
+story_to_prd:
+  US-01: "PRD §6.3 — Reading aloud / language switching"
+  US-02: "PRD §6.3 — Reading aloud / language switching"
+task_to_de:
+  T-01: DE-06
+  T-02: DE-01
+  T-03: DE-02
+  T-04: DE-03
+  T-05: DE-04
+  T-06: DE-05
+  T-07: DE-06
+ac_to_story:
+  US-01/AC-01: US-01
+  US-02/AC-01: US-02
+
+tests:
+  - {ontology_id: "task:N02/F16/T-01", test_path: tests/unit/test_lang_spans_results.py, status: pending}
+  - {ontology_id: "task:N02/F16/T-02", test_path: tests/unit/test_lang_spans_classify.py, status: pending}
+  - {ontology_id: "task:N02/F16/T-03", test_path: tests/unit/test_lang_spans_aggregate.py, status: pending}
+  - {ontology_id: "task:N02/F16/T-04", test_path: tests/unit/test_lang_spans_heuristics.py, status: pending}
+  - {ontology_id: "task:N02/F16/T-05", test_path: tests/unit/test_lang_spans_heuristics.py, status: pending}
+  - {ontology_id: "task:N02/F16/T-06", test_path: tests/unit/test_lang_spans_heuristics.py, status: pending}
+  - {ontology_id: "task:N02/F16/T-07", test_path: tests/unit/test_lang_spans_detect.py, status: pending}
+
+bounded_contexts:
+  HebrewText:
+    features:
+      MixedLanguageDetector:
+        feature_id: N02/F16
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06, DE-07]
+        user_stories: [US-01, US-02]
+        acceptance_criteria: [US-01/AC-01, US-02/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: [LanguageSpan, LanguageSpansResult]
+        ports:
+          implements: []   # no port; pure deterministic module
+        adapters: []
+        vendor_sdks: []   # stdlib only
+        invariants:
+          - "INV-LANGSPANS-001 (DE-06): result spans sorted by start; deterministic for same input"
+          - "INV-LANGSPANS-002 (DE-05): math symbols folded into lang='num' (ADR-031)"
+          - "INV-LANGSPANS-003 (DE-03): single-Latin inside Hebrew word reclassified to he"
+        tests:
+          unit:
+            - tests/unit/test_lang_spans_results.py
+            - tests/unit/test_lang_spans_classify.py
+            - tests/unit/test_lang_spans_aggregate.py
+            - tests/unit/test_lang_spans_heuristics.py
+            - tests/unit/test_lang_spans_detect.py
+        runtime: {api_routes: [], cli_handlers: []}

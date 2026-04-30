@@ -1,0 +1,193 @@
+# Ontology delta — N02/F16 Mixed-Language Run Detection.
+# Additive contribution to ontology/technical-implementation.yaml.
+# Lead will merge with peer deltas (F14/F15/F18) post-Wave-2.
+
+version: 1
+
+modules:
+  - id: MOD-N02-F16
+    name: tirvi.lang_spans
+    description: |
+      Pure-Python mixed-language run detector. Emits LanguageSpan[]
+      (start, end, lang ∈ {he, en, num}, confidence) from normalized
+      Hebrew text using Unicode-script classification + curated
+      heuristics. No vendor SDK; stdlib only. Per ADR-031.
+    feature_refs: [N02/F16]
+    bounded_context: hebrew_text
+    source_path: tirvi/lang_spans/
+    status: designed
+
+ports: []   # F16 introduces no new port (no vendor swap surface).
+
+adapters: []   # No adapters; pure module.
+
+classes:
+  - id: CLS-N02-F16-result
+    name: LanguageSpansResult
+    description: |
+      Frozen dataclass: spans (tuple[LanguageSpan, ...]) + provider
+      ("tirvi-rules-v1") + aggregate confidence. Reuses biz
+      bo:LanguageSpan value object.
+    feature_refs: [N02/F16]
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/results.py
+    status: designed
+
+functions:
+  - id: FN-N02-F16-detect
+    name: detect_language_spans
+    description: |
+      Public entry point. Chains classify_char → aggregate_runs →
+      apply_transliteration_rule → apply_hyphen_bridge_rule →
+      apply_num_unification → LanguageSpansResult. Pure; deterministic.
+    feature_refs: [N02/F16]
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/__init__.py
+    status: designed
+  - id: FN-N02-F16-classify
+    name: classify_char
+    description: per-codepoint script tag (HE / LATIN / DIGIT / SYMBOL / WS / OTHER)
+    feature_refs: [N02/F16]
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/classify.py
+    status: designed
+  - id: FN-N02-F16-aggregate
+    name: aggregate_runs
+    description: run-length collapse over per-char tags; whitespace absorbed into prior lang span
+    feature_refs: [N02/F16]
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/aggregate.py
+    status: designed
+  - id: FN-N02-F16-translit
+    name: apply_transliteration_rule
+    description: single-Latin run inside a Hebrew word reclassified to `he` (DE-03)
+    feature_refs: [N02/F16]
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/heuristics.py
+    status: designed
+  - id: FN-N02-F16-hyphen
+    name: apply_hyphen_bridge_rule
+    description: LATIN-hyphen-LATIN merges into single `en` span (DE-04, e.g. p-value)
+    feature_refs: [N02/F16]
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/heuristics.py
+    status: designed
+  - id: FN-N02-F16-num
+    name: apply_num_unification
+    description: DIGIT + SYMBOL runs collapse into one `num` span (DE-05; ADR-031)
+    feature_refs: [N02/F16]
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/heuristics.py
+    status: designed
+
+adr_decisions:
+  - id: adr:031
+    name: F16 detector strategy — rule-based unicode + unified lang/math channel
+    description: |
+      POC adopts deterministic Unicode-script classifier + curated
+      heuristics; ML language identifier deferred MVP behind a future
+      LanguageDetectorBackend port. Resolves biz Open Question on
+      math/lang overlap by collapsing math symbols into lang='num';
+      per-character math segmentation belongs to F25. Composes with
+      ADR-019 (rule-strategy precedent) and ADR-029 (vendor boundary).
+    feature_refs: [N02/F16]
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-031-hebrew-nlp-mixed-language-detection-rule-strategy.md
+    status: proposed
+
+tasks:
+  - id: task:N02/F16/T-01
+    name: lang-spans-package-scaffold
+    feature_refs: [N02/F16]
+    spec_refs: [spec:N02/F16/DE-06]
+    test_path: tests/unit/test_lang_spans_results.py
+    status: designed
+  - id: task:N02/F16/T-02
+    name: unicode-script-classifier
+    feature_refs: [N02/F16]
+    spec_refs: [spec:N02/F16/DE-01]
+    test_path: tests/unit/test_lang_spans_classify.py
+    status: designed
+  - id: task:N02/F16/T-03
+    name: run-length-aggregation-with-ws-absorption
+    feature_refs: [N02/F16]
+    spec_refs: [spec:N02/F16/DE-02]
+    test_path: tests/unit/test_lang_spans_aggregate.py
+    status: designed
+  - id: task:N02/F16/T-04
+    name: transliteration-heuristic
+    feature_refs: [N02/F16]
+    spec_refs: [spec:N02/F16/DE-03]
+    test_path: tests/unit/test_lang_spans_heuristics.py
+    status: designed
+  - id: task:N02/F16/T-05
+    name: hyphen-bridge-rule
+    feature_refs: [N02/F16]
+    spec_refs: [spec:N02/F16/DE-04]
+    test_path: tests/unit/test_lang_spans_heuristics.py
+    status: designed
+  - id: task:N02/F16/T-06
+    name: num-math-unification
+    feature_refs: [N02/F16]
+    spec_refs: [spec:N02/F16/DE-05]
+    test_path: tests/unit/test_lang_spans_heuristics.py
+    status: designed
+  - id: task:N02/F16/T-07
+    name: detect-language-spans-pipeline
+    feature_refs: [N02/F16]
+    spec_refs: [spec:N02/F16/DE-06, spec:N02/F16/DE-07]
+    test_path: tests/unit/test_lang_spans_detect.py
+    status: designed
+
+# Edges to be merged into ontology/dependencies.yaml by lead:
+proposed_dependency_edges:
+  - id: DEP-N02-F16-A
+    source: { type: feature, id: N02/F14, name: NormalizedText producer }
+    target: { type: feature, id: N02/F16, name: Mixed-language detector }
+    relationship: requires
+    rationale: F16 reads normalized Hebrew text from F14 (post-acronym-expansion via F15).
+    strength: strong
+    direction: one_way
+    risk_if_broken: detector sees raw OCR; rule recall drops
+    related_files:
+      - path: docs/HLD.md
+  - id: DEP-N02-F16-B
+    source: { type: feature, id: N02/F15, name: Acronym lexicon }
+    target: { type: feature, id: N02/F16, name: Mixed-language detector }
+    relationship: orders-before
+    rationale: Acronym expansion runs before F16 so `ד״ר → דוקטור` arrives as Hebrew.
+    strength: medium
+    direction: one_way
+    risk_if_broken: acronyms classified as Latin spans
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F16-mixed-lang-detection/design.md
+  - id: DEP-N02-F16-C
+    source: { type: feature, id: N02/F16, name: Mixed-language detector }
+    target: { type: feature, id: N02/F22, name: Reading plan }
+    relationship: feeds
+    rationale: F22 copies lang_spans into per-block plan JSON.
+    strength: strong
+    direction: one_way
+    risk_if_broken: plan JSON omits lang routing data; F24 unable to act
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F16-mixed-lang-detection/design.md
+  - id: DEP-N02-F16-D
+    source: { type: feature, id: N02/F16, name: Mixed-language detector }
+    target: { type: feature, id: N02/F24, name: Lang-switch policy (Wave 3) }
+    relationship: feeds
+    rationale: F24 consumes LanguageSpansResult to decide Azure inline vs Google split-stitch.
+    strength: strong
+    direction: one_way
+    risk_if_broken: voice routing has no lang signal
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F16-mixed-lang-detection/design.md
+  - id: DEP-N02-F16-E
+    source: { type: feature, id: N02/F16, name: Mixed-language detector }
+    target: { type: feature, id: N02/F25, name: Content templates (Wave 3) }
+    relationship: feeds
+    rationale: F25 math template renders coarse `num` spans from F16 into spoken Hebrew.
+    strength: medium
+    direction: one_way
+    risk_if_broken: math read as flat number string
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F16-mixed-lang-detection/design.md

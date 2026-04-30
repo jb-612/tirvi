@@ -1,0 +1,25 @@
+flowchart LR
+    TEXT["NormalizedText\nfrom F14"]
+    LEX["F15 acronym lexicon\n(runs before F16)"]
+
+    CLASS["DE-01\nclassify_char\nHE / LATIN / DIGIT / SYMBOL / WS"]
+    AGG["DE-02\naggregate_runs\nrun-length collapse"]
+    TR["DE-03\napply_transliteration_rule\nsingle Latin in HE word -> he"]
+    HYPH["DE-04\napply_hyphen_bridge_rule\np-value -> single en span"]
+    NUM["DE-05\napply_num_unification\ndigits + math symbols -> num"]
+    EMIT["DE-06\nLanguageSpansResult\nprovider=tirvi-rules-v1"]
+
+    DOWN22["F22 reading plan\ncopies lang_spans into plan JSON"]
+    DOWN24["F24 lang-switch-policy (Wave 3)\nAzure inline vs Google split-stitch"]
+    DOWN25["F25 content-templates (Wave 3)\nmath read-aloud rendering"]
+
+    LEX -. expand acronyms .-> TEXT
+    TEXT --> CLASS
+    CLASS --> AGG
+    AGG --> TR
+    TR --> HYPH
+    HYPH --> NUM
+    NUM --> EMIT
+    EMIT --> DOWN22
+    EMIT -. consumed at Wave 3 .-> DOWN24
+    EMIT -. num spans only .-> DOWN25
