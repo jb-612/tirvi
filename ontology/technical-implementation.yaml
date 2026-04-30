@@ -75,10 +75,17 @@ modules:
     status: designed
   - id: MOD-N02-F17
     name: tirvi.adapters.dictabert
-    description: DictaBERT-large-joint adapter package (loader, inference, prefix split)
+    description: DictaBERT-morph adapter package (loader, inference, prefix split via BIO labels). Per ADR-026.
     feature_refs: [N02/F17]
     bounded_context: hebrew_nlp
     source_path: tirvi/adapters/dictabert/
+    status: designed
+  - id: MOD-N02-F26
+    name: tirvi.adapters.alephbert
+    description: AlephBERT+YAP fallback adapter package (YAP HTTP client, response parser, UD mapper). Per ADR-027.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/adapters/alephbert/
     status: designed
   - id: MOD-N02-F18
     name: tirvi.disambiguate
@@ -96,18 +103,18 @@ modules:
     status: designed
   - id: MOD-N02-F19
     name: tirvi.adapters.nakdan
-    description: Dicta-Nakdan adapter package (loader, context conditioning, NFC/NFD normalize)
+    description: Dicta-Nakdan REST adapter package (HTTP client, _pick priority, override hook, NFC/NFD normalize). Per ADR-025.
     feature_refs: [N02/F19]
     bounded_context: pronunciation
     source_path: tirvi/adapters/nakdan/
-    status: designed
+    status: implementing
   - id: MOD-N02-F20
     name: tirvi.adapters.phonikud
-    description: Phonikud G2P adapter package (loader, IPA + stress, shape)
+    description: Phonikud G2P adapter package (lazy loader, phonemize() invocation, fallback). Per ADR-028 — whole-text IPA emission; per-token IPA deferred MVP.
     feature_refs: [N02/F20]
     bounded_context: pronunciation
     source_path: tirvi/adapters/phonikud/
-    status: designed
+    status: drafting
   - id: MOD-N02-F22
     name: tirvi.plan
     description: reading-plan assembler combining blocks + NLP + diacritization + G2P
@@ -253,28 +260,36 @@ adapters:
     status: designed
   - id: ADP-N02-F17-dictabert
     name: DictaBERTAdapter
-    description: DictaBERT-large-joint NLP adapter (in-process loader, prefix segmentation)
+    description: DictaBERT-morph NLP adapter (in-process loader, prefix segmentation from BIO labels, F26 fallback). Per ADR-026.
     feature_refs: [N02/F17]
     bounded_context: hebrew_nlp
     port_ref: PORT-02
     source_path: tirvi/adapters/dictabert/__init__.py
     status: designed
+  - id: ADP-N02-F26-alephbert
+    name: AlephBertYapFallbackAdapter
+    description: YAP HTTP-server fallback NLP adapter; F17's degraded path. Per ADR-027.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    port_ref: PORT-02
+    source_path: tirvi/adapters/alephbert/__init__.py
+    status: designed
   - id: ADP-N02-F19-nakdan
     name: DictaNakdanAdapter
-    description: Dicta-Nakdan diacritization adapter (in-process loader, NLP-context tilt)
+    description: Dicta-Nakdan REST diacritization adapter (HTTP client, override hook, fconfident gate). Per ADR-025. provider=dicta-nakdan-rest.
     feature_refs: [N02/F19]
     bounded_context: pronunciation
     port_ref: PORT-03
     source_path: tirvi/adapters/nakdan/__init__.py
-    status: designed
+    status: implementing
   - id: ADP-N02-F20-phonikud
     name: PhonikudG2PAdapter
-    description: Phonikud G2P adapter (in-process loader, IPA + stress, vocal-shva passthrough)
+    description: Phonikud G2P adapter (in-process loader, phonemize() whole-text IPA emission, fallback path). Per ADR-028.
     feature_refs: [N02/F20]
     bounded_context: pronunciation
     port_ref: PORT-04
     source_path: tirvi/adapters/phonikud/__init__.py
-    status: designed
+    status: drafting
   - id: ADP-N03-F26-wavenet
     name: WavenetTTSAdapter
     description: Google Cloud TTS v1beta1 adapter for he-IL-Wavenet-D with mark timepoints
@@ -425,6 +440,41 @@ adr_decisions:
     feature_refs: [N04/F35, N04/F36]
     bounded_context: player
     source_path: docs/ADR/ADR-023-player-vanilla-html-poc.md
+    status: proposed
+  - id: adr:025
+    name: Dicta-Nakdan via REST API for POC; in-process model deferred
+    description: HF model is private (401); POC pivots to public Dicta REST endpoint. Supersedes ADR-021 for POC.
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-025-nakdan-rest-api-poc.md
+    status: proposed
+  - id: adr:026
+    name: F17 DictaBERT model identifier — pivot to dicta-il/dictabert-morph
+    description: Original spec named dictabert-large-joint which doesn't exist on HF; pivot to public dictabert-morph variant. Narrows ADR-002.
+    feature_refs: [N02/F17, N02/F26]
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-026-hebrew-nlp-dictabert-morph-pivot.md
+    status: proposed
+  - id: adr:027
+    name: F26 fallback uses YAP HTTP-server mode; AlephBERT integration deferred to MVP
+    description: YAP via local HTTP server (yap api); subprocess-per-call rejected; AlephBERT-Gimmel embeddings deferred. POC fallback path.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-027-hebrew-nlp-yap-http-server-fallback.md
+    status: proposed
+  - id: adr:028
+    name: F20 Phonikud phonemize() API pivot; per-token transliteration deferred
+    description: Phonikud package ships phonemize() returning whole-text IPA string, not transliterate() per-token dicts. POC adopts whole-text emission; per-token deferred MVP.
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-028-pronunciation-phonikud-phonemize-api-pivot.md
+    status: proposed
+  - id: adr:029
+    name: Vendor-boundary discipline — vendor SDK imports confined to tirvi.adapters.<vendor>.**
+    description: Captures the unwritten rule (previously mis-cited as "ADR-014 vendor boundary"). Vendor imports + types + URLs stay inside adapter packages; tests stub via sys.modules.setdefault. Composes with ADR-014.
+    feature_refs: [N01/F08, N02/F17, N02/F19, N02/F20, N02/F26]
+    bounded_context: platform
+    source_path: docs/ADR/ADR-029-platform-vendor-boundary-discipline.md
     status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
