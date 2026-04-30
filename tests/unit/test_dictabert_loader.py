@@ -6,37 +6,39 @@ BT-anchors: BT-086.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+import sys
+from unittest.mock import MagicMock
 
-from tirvi.adapters.dictabert import loader
+# Stub transformers before importing so the deferred import inside load_model()
+# resolves without the real package present (ADR-014 vendor boundary).
+# Read back from sys.modules so multiple test files share one stub object.
+if "transformers" not in sys.modules:
+    sys.modules["transformers"] = MagicMock()
+_stub_transformers = sys.modules["transformers"]
+
+from tirvi.adapters.dictabert import loader  # noqa: E402
 
 
 class TestDictaBERTLoader:
-    def test_us_01_ac_01_loader_is_lru_cached(self) -> None:
+    def setup_method(self, _method: object) -> None:
         loader.load_model.cache_clear()
+        _stub_transformers.AutoModelForTokenClassification.from_pretrained.reset_mock()
+        _stub_transformers.AutoTokenizer.from_pretrained.reset_mock()
+
+    def test_us_01_ac_01_loader_is_lru_cached(self) -> None:
         sentinel_model = MagicMock(name="model")
         sentinel_tokenizer = MagicMock(name="tokenizer")
-        with patch.object(
-            loader.AutoModelForTokenClassification,
-            "from_pretrained",
-            return_value=sentinel_model,
-        ) as model_mock, patch.object(
-            loader.AutoTokenizer,
-            "from_pretrained",
-            return_value=sentinel_tokenizer,
-        ) as tok_mock:
-            first = loader.load_model()
-            second = loader.load_model()
+        _stub_transformers.AutoModelForTokenClassification.from_pretrained.return_value = sentinel_model
+        _stub_transformers.AutoTokenizer.from_pretrained.return_value = sentinel_tokenizer
+
+        first = loader.load_model()
+        second = loader.load_model()
+
         assert first is second
-        assert model_mock.call_count == 1
-        assert tok_mock.call_count == 1
+        assert _stub_transformers.AutoModelForTokenClassification.from_pretrained.call_count == 1
+        assert _stub_transformers.AutoTokenizer.from_pretrained.call_count == 1
 
     def test_us_01_ac_01_loader_lazy_first_call(self) -> None:
-        loader.load_model.cache_clear()
-        with patch.object(
-            loader.AutoModelForTokenClassification,
-            "from_pretrained",
-        ) as model_mock, patch.object(loader.AutoTokenizer, "from_pretrained"):
-            model_mock.assert_not_called()
-            loader.load_model()
-            assert model_mock.call_count == 1
+        _stub_transformers.AutoModelForTokenClassification.from_pretrained.assert_not_called()
+        loader.load_model()
+        assert _stub_transformers.AutoModelForTokenClassification.from_pretrained.call_count == 1

@@ -15,11 +15,6 @@ import os
 from functools import lru_cache
 from typing import Any
 
-from transformers import (  # type: ignore[import-not-found]
-    AutoModelForTokenClassification,
-    AutoTokenizer,
-)
-
 _MODEL_NAME = "dicta-il/dictabert-large-joint"
 _DEFAULT_REVISION = "default"
 
@@ -35,8 +30,15 @@ def load_model(revision: str = _DEFAULT_REVISION) -> tuple[Any, Any]:
     """Return ``(model, tokenizer)`` for DictaBERT-large-joint, lazily.
 
     Pinned revision via the ``TIRVI_DICTABERT_REVISION`` env var when
-    ``revision == "default"`` (per ADR-020).
+    ``revision == "default"`` (per ADR-020). Vendor imports are deferred
+    inside this function so the module can be imported without
+    ``transformers`` installed (ADR-014 vendor boundary).
     """
+    from transformers import (  # type: ignore[import-not-found]
+        AutoModelForTokenClassification,
+        AutoTokenizer,
+    )
+
     rev = _resolved_revision(revision)
     model = AutoModelForTokenClassification.from_pretrained(_MODEL_NAME, revision=rev)
     tokenizer = AutoTokenizer.from_pretrained(_MODEL_NAME, revision=rev)

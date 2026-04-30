@@ -1,16 +1,23 @@
 flowchart LR
     NT["NormalizedText\nfrom F14"]
-    LOAD["DE-01\nload_model\n(in-process, ADR-020)"]
+    ANALYZE["DictaBERTAdapter.analyze\n(text, lang)"]
+    LOAD["DE-01\nload_model\ndicta-il/dictabert-morph\n(in-process, ADR-020, ADR-026)"]
     TOK["DE-02\nwhitespace tokenize"]
-    CHUNK["DE-05\nlong-sentence chunking\n(>200 tokens)"]
-    INF["DE-02\nDictaBERT joint head"]
-    PFX["DE-03\nprefix segmentation"]
-    CONF["DE-04\nper-attribute confidence"]
-    DEC["decode_morph\nUD-Hebrew labels"]
-    RES["NLPResult\nprovider=dictabert-large-joint"]
-    NT --> TOK
-    LOAD -.-> INF
-    TOK --> CHUNK
+    ENC["DE-02\nbatch encode\n(AutoTokenizer)"]
+    CHUNK["DE-05\nchunk on encoded length\n(>448 sub-tokens)"]
+    INF["DE-02\nDictaBERT-morph\ntoken classification head"]
+    PFX["DE-03\nprefix segmentation\nfrom BIO labels"]
+    CONF["DE-04\nper-attribute margins\nmin -> NLPToken.confidence"]
+    DEC["decode_morph\nPOS + UD-Hebrew morph_features"]
+    RES["NLPResult\nprovider=dictabert-morph"]
+    F26["F26 AlephBERT/YAP\nfallback (per ADR-027)"]
+    DEG["NLPResult\nprovider=degraded\ntokens=[]"]
+
+    NT --> ANALYZE
+    ANALYZE --> LOAD
+    LOAD --> TOK
+    TOK --> ENC
+    ENC --> CHUNK
     CHUNK --> INF
     INF --> PFX
     INF --> DEC
@@ -18,3 +25,6 @@ flowchart LR
     PFX --> RES
     DEC --> RES
     CONF --> RES
+    ANALYZE -. ImportError or OSError\n(DE-06 try/except) .-> F26
+    F26 -. happy path .-> RES
+    ANALYZE -. F26 also unavailable .-> DEG

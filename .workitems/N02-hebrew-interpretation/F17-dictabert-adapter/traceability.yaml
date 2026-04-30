@@ -12,6 +12,8 @@ adr_refs:
   - ADR-002
   - ADR-010
   - ADR-020
+  - ADR-026
+  - ADR-029
 
 biz_source:
   functional_test_plan_path: ./functional-test-plan.md
@@ -66,6 +68,9 @@ acm_edges:
   - {from: spec:N02/F17/DE-02, to: adr:002, type: INFLUENCED_BY}
   - {from: spec:N02/F17/DE-01, to: adr:010, type: INFLUENCED_BY}
   - {from: spec:N02/F17/DE-01, to: adr:020, type: INFLUENCED_BY}
+  - {from: spec:N02/F17/DE-01, to: adr:026, type: INFLUENCED_BY}
+  - {from: spec:N02/F17/DE-02, to: adr:026, type: INFLUENCED_BY}
+  - {from: spec:N02/F17/DE-06, to: feature:N02/F26, type: DEGRADES_TO}
   - {from: story:N02/F17/US-01, to: criterion:N02/F17/US-01/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F17/US-02, to: criterion:N02/F17/US-02/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F17/US-01, to: spec:N02/F17/DE-02, type: VERIFIED_BY}
