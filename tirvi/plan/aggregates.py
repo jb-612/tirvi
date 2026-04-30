@@ -3,7 +3,8 @@
 Spec: N02/F22 DE-01, DE-04, DE-06, DE-07. AC: US-01/AC-01, US-02/AC-01.
 """
 
-from dataclasses import dataclass
+import json
+from dataclasses import asdict, dataclass
 from typing import Any
 
 from tirvi.blocks import Block
@@ -65,9 +66,18 @@ class ReadingPlan:
         return cls(page_id=page_id, blocks=plan_blocks)
 
     def to_json(self) -> str:
-        # TODO US-01/AC-01 (T-06, INV-PLAN-003): json.dumps(asdict(self),
-        #                        sort_keys=True, ensure_ascii=False, indent=2)
-        raise NotImplementedError
+        """Serialize the plan to deterministic JSON (T-06, INV-PLAN-003).
+
+        Two runs over the same input produce byte-identical bytes — the
+        basis for the ``drafts/<reading-plan-sha>/`` content-hash
+        directory in PLAN-POC.md.
+        """
+        return json.dumps(
+            asdict(self),
+            sort_keys=True,
+            ensure_ascii=False,
+            indent=2,
+        )
 
     def to_page_json(self, ocr_result: Any) -> dict[str, Any]:
         # TODO US-01/AC-01 (T-07, post-review C4, INV-PLAN-004): build
