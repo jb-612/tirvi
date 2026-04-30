@@ -13,10 +13,10 @@ class DictaNakdanAdapter(DiacritizerBackend):
     """Dicta-Nakdan-based diacritization adapter.
 
     Invariants (named, TDD fills):
-      - INV-NAKDAN-001 (DE-01, ADR-021): module-level LRU-cached model load
-      - INV-NAKDAN-002 (DE-02): NLP context tilt feeds soft prior to homograph picks
+      - INV-NAKDAN-001 (DE-01, ADR-025): HTTP I/O confined to client.py submodule
+      - INV-NAKDAN-002 (DE-02): NLP context scoring picks among Dicta response options
       - INV-NAKDAN-003 (DE-05): unconditional NFC→NFD nikud normalization
-      - INV-NAKDAN-006 (DE-06, ADR-014): vendor SDK imports stay in this module
+      - INV-NAKDAN-006 (DE-06, ADR-029): Dicta endpoint URL constant lives only in client.py
     """
 
     def __init__(self, model_revision: str = "default") -> None:

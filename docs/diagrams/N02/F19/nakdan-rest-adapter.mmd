@@ -1,0 +1,22 @@
+flowchart LR
+    TEXT["NormalizedText\nfrom F14"]
+    NLP["NLPResult\nfrom F17 (when available)"]
+    OVR["F21 HOMOGRAPH_OVERRIDES\nlexicon"]
+
+    CLIENT["DE-01\nDicta REST client\nPOST nakdan-2-0.../api"]
+    PICK["DE-03\n_pick priority chain\n(matches as-built code)"]
+    SCORE["DE-02\nNLP-context option scoring"]
+    NORM["DE-05\nNFC -> NFD"]
+    RES["DiacritizationResult\nprovider=dicta-nakdan-rest"]
+
+    TEXT --> CLIENT
+    CLIENT --> PICK
+    NLP --> SCORE
+    SCORE -. when context present .-> PICK
+    OVR --> PICK
+    PICK -- a sep entry --> NORM
+    PICK -- b override hit --> NORM
+    PICK -- c options empty fallback --> NORM
+    PICK -- d fconfident=false fallback --> NORM
+    PICK -- e top option .replace pipe --> NORM
+    NORM --> RES

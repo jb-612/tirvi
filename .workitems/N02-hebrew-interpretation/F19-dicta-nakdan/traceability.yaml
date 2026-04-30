@@ -10,7 +10,10 @@ prd_refs:
   - "PRD §10 — Success metrics"
 adr_refs:
   - ADR-003
+  - ADR-014
   - ADR-021
+  - ADR-025
+  - ADR-029
 
 biz_source:
   functional_test_plan_path: ./functional-test-plan.md
@@ -63,6 +66,11 @@ acm_edges:
   - {from: spec:N02/F19/DE-06, to: HLD-§4/AdapterInterfaces, type: TRACED_TO}
   - {from: spec:N02/F19/DE-01, to: adr:003, type: INFLUENCED_BY}
   - {from: spec:N02/F19/DE-01, to: adr:021, type: INFLUENCED_BY}
+  - {from: spec:N02/F19/DE-01, to: adr:025, type: INFLUENCED_BY}
+  - {from: spec:N02/F19/DE-01, to: adr:014, type: INFLUENCED_BY}
+  - {from: spec:N02/F19/DE-01, to: adr:029, type: INFLUENCED_BY}
+  - {from: spec:N02/F19/DE-03, to: feature:N02/F21, type: CONSUMES}
+  - {from: spec:N02/F19/DE-02, to: feature:N02/F17, type: CONSUMES}
   - {from: story:N02/F19/US-01, to: criterion:N02/F19/US-01/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F19/US-02, to: criterion:N02/F19/US-02/AC-01, type: HAS_CRITERION}
   - {from: story:N02/F19/US-01, to: spec:N02/F19/DE-02, type: VERIFIED_BY}
@@ -113,12 +121,12 @@ ac_to_story:
   US-02/AC-01: US-02
 
 tests:
-  - {ontology_id: "task:N02/F19/T-01", test_path: tests/unit/test_nakdan_loader.py, status: pending}
+  - {ontology_id: "task:N02/F19/T-01", test_path: tests/unit/test_nakdan_client.py, status: green}
   - {ontology_id: "task:N02/F19/T-02", test_path: tests/unit/test_nakdan_context.py, status: pending}
-  - {ontology_id: "task:N02/F19/T-03", test_path: tests/unit/test_nakdan_inference.py, status: pending}
-  - {ontology_id: "task:N02/F19/T-04", test_path: tests/unit/test_token_skip_filter.py, status: pending}
-  - {ontology_id: "task:N02/F19/T-05", test_path: tests/unit/test_nikud_normalize.py, status: pending}
-  - {ontology_id: "task:N02/F19/T-06", test_path: tests/unit/test_nakdan_adapter.py, status: pending}
+  - {ontology_id: "task:N02/F19/T-03", test_path: tests/unit/test_nakdan_inference.py, status: green}
+  - {ontology_id: "task:N02/F19/T-04", test_path: tests/unit/test_nakdan_inference.py, status: green}
+  - {ontology_id: "task:N02/F19/T-05", test_path: tests/unit/test_nakdan_inference.py, status: green}
+  - {ontology_id: "task:N02/F19/T-06", test_path: tests/unit/test_nakdan_adapter.py, status: green}
 
 bounded_contexts:
   Pronunciation:
@@ -141,10 +149,9 @@ bounded_contexts:
           - "INV-NAKDAN-002 (DE-02): NLP context tilt as soft prior"
         tests:
           unit:
-            - tests/unit/test_nakdan_loader.py
-            - tests/unit/test_nakdan_context.py
-            - tests/unit/test_nakdan_inference.py
-            - tests/unit/test_token_skip_filter.py
-            - tests/unit/test_nikud_normalize.py
-            - tests/unit/test_nakdan_adapter.py
+            - tests/unit/test_nakdan_client.py        # T-01 REST client
+            - tests/unit/test_nakdan_inference.py     # T-03/T-04/T-05 _pick + skip filter + NFD
+            - tests/unit/test_nakdan_adapter.py       # T-06 contract conformance
+            - tests/unit/test_nakdan_context.py       # T-02 (gated on F17 reroute)
+            # test_nakdan_loader.py is parked per ADR-025 §Migration; not load-bearing for POC
         runtime: {api_routes: [], cli_handlers: []}

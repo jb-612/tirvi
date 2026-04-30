@@ -21,17 +21,17 @@ class TestDictaNakdanAdapter:
         assert isinstance(adapter, DiacritizerBackend)
 
     def test_us_01_ac_01_returns_diacritization_result(self) -> None:
+        # Per ADR-025 the adapter delegates to the Dicta REST client, not
+        # the in-process loader. Mock the API at the inference seam.
         adapter = DictaNakdanAdapter()
+        canned = [{"word": "שלום", "sep": False, "options": ["שָׁלוֹם"]}]
         with patch(
-            "tirvi.adapters.nakdan.inference.load_model",
-            return_value=(MagicMock(), MagicMock()),
-        ), patch(
-            "tirvi.adapters.nakdan.inference._run_diacritization",
-            return_value={"diacritized": "שָׁלוֹם", "confidence": 0.9},
+            "tirvi.adapters.nakdan.inference.diacritize_via_api",
+            return_value=canned,
         ):
             result = adapter.diacritize("שלום")
         assert isinstance(result, DiacritizationResult)
-        assert result.provider == "dicta-nakdan"
+        assert result.provider == "dicta-nakdan-rest"
 
     @pytest.mark.skip(reason="F03 T-08 assert_adapter_contract deferred per POC-CRITICAL-PATH")
     def test_us_01_ac_01_passes_assert_adapter_contract(self) -> None:
