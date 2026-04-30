@@ -1,0 +1,212 @@
+# F18 disambiguation — Wave-2 sw-design ontology delta (R2-revised).
+# Schema: matches ontology/technical-implementation.yaml shape (top-level
+# keyed lists). Additive only — lead will merge serially with peer feature
+# deltas (F14 / F15 / F16) into ontology/technical-implementation.yaml.
+#
+# R2 revision: module path corrected to `tirvi/nlp/` (path-a per lead);
+# T-00 migration task added; provider whitelist expanded; morph keys
+# UD TitleCase. ADR-002 dropped (file does not exist on disk; ADR-026
+# carries the binding decision).
+#
+# Note: existing rows already in canonical ontology (MOD-N02-F18,
+# MOD-N02-F18-fixtures, task:N02/F18/T-01..T-05) are re-stated with
+# wave-2 path corrections. Lead may dedupe by id and merge new fields.
+# The canonical ontology's `source_path: tirvi/disambiguate/` is STALE;
+# this delta corrects it to `tirvi/nlp/`.
+
+version: 1
+feature_id: N02/F18
+wave: 2
+revision: r2-survivors
+
+modules:
+  - id: MOD-N02-F18
+    name: tirvi.nlp
+    description: >-
+      Confidence-driven sense pick + NLPResult v1 invariants + morph-keyed
+      homograph override hook (Wave-2 refresh per ADR-026/027/029, GH#20).
+      Path-a migration: keeps wave-1 module path `tirvi/nlp/` (canonical
+      ontology entry's `tirvi/disambiguate/` was stale and is corrected
+      here).
+    feature_refs: [N02/F18]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/nlp/
+    status: designed
+  - id: MOD-N02-F18-fixtures
+    name: tirvi.fixtures.nlp
+    description: >-
+      YAML-driven NLPResult fixture builder (ADR-017). Net-new code in
+      Wave-2 (T-04 deferred for POC).
+    feature_refs: [N02/F18]
+    bounded_context: platform
+    source_path: tirvi/fixtures/nlp.py
+    status: designed
+  - id: MOD-N02-F18-overrides
+    name: tirvi.nlp.overrides
+    description: >-
+      Morph-keyed homograph override table (POC: empty stub; F21 ships
+      entries). Composes with F19 surface-keyed HOMOGRAPH_OVERRIDES at a
+      different layer (pre-Nakdan vs response-selection).
+    feature_refs: [N02/F18, N02/F21]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/nlp/overrides.py
+    status: designed
+
+services: []
+
+ports: []
+
+adapters: []
+
+classes:
+  - id: CLS-N02-F18-NLPToken
+    name: NLPToken
+    description: >-
+      Per-token value object enforced by F18 v1 invariants — pos (UD-Hebrew),
+      lemma str|None (POC tolerates None per ADR-026), morph_features
+      dict[str,str]|None (UD v2 TitleCase whitelist: Gender, Number, Person,
+      Tense, Definite, Case, VerbForm), prefix_segments tuple|None,
+      confidence float|None (range 0.0..1.0 when not None), ambiguous bool.
+    feature_refs: [N02/F18]
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
+  - id: CLS-N02-F18-MorphHomographOverride
+    name: MorphHomographOverride
+    description: >-
+      Lookup type for MORPH_HOMOGRAPH_OVERRIDES. Key is
+      (surface, frozenset((token.morph_features or {}).items())) — note
+      the `(x or {}).items()` Python idiom; NOT `x.items() or ()` which
+      raises AttributeError on None (R2 A-2). Value is an NLPToken to
+      substitute when F17 marks ambiguous=True. POC ships an empty mapping.
+    feature_refs: [N02/F18, N02/F21]
+    module_ref: MOD-N02-F18-overrides
+    source_path: tirvi/nlp/overrides.py
+    status: designed
+
+functions:
+  - id: FN-N02-F18-pick-sense-v2
+    name: pick_sense
+    description: >-
+      Wave-2 v2: context-aware morphological sense pick. token.ambiguous=False
+      ⇒ pass-through; token.ambiguous=True ⇒ probe MORPH_HOMOGRAPH_OVERRIDES;
+      override miss + candidates ⇒ top-1 by score (single NLPToken returned,
+      NOT the legacy tuple); override miss + no candidates ⇒ pass-through.
+      F17 owns the ambiguous flag; F18 trusts producer (R-4).
+    feature_refs: [N02/F18]
+    module_ref: MOD-N02-F18
+    source_path: tirvi/nlp/disambiguate.py
+    status: designed
+  - id: FN-N02-F18-legacy-pick-sense
+    name: _legacy_pick_sense
+    description: >-
+      Wave-1 alias preserved for the 6 existing tests in
+      tests/unit/test_disambiguate.py. Returns tuple[NLPToken, bool].
+      Decorated with @deprecated (or warnings.warn DeprecationWarning).
+      CI grep-gate ensures only the test file imports it.
+    feature_refs: [N02/F18]
+    module_ref: MOD-N02-F18
+    source_path: tirvi/nlp/disambiguate.py
+    status: designed
+  - id: FN-N02-F18-builder
+    name: NLPResultBuilder.from_yaml
+    description: >-
+      YAML-driven NLPResult builder (parallel to F10 OCR builder, ADR-017).
+      Net-new code; T-04 POC-deferred.
+    feature_refs: [N02/F18]
+    module_ref: MOD-N02-F18-fixtures
+    source_path: tirvi/fixtures/nlp.py
+    status: designed
+  - id: FN-N02-F18-assert-v1
+    name: assert_nlp_result_v1
+    description: >-
+      v1 invariant — provider in ALLOWED_PROVIDERS = {dictabert-morph,
+      alephbert+yap, alephbert-yap, fixture, degraded}; legacy
+      'dictabert-large-joint' raises SchemaContractError with substrings
+      'legacy provider' + 'ADR-026'. UD TitleCase morph keys; lemma is
+      None or str; confidence is None or 0.0..1.0; degraded path requires
+      tokens=() and confidence=None. Lifts the existing wave-1
+      NotImplemented stub at `tirvi/nlp/contracts.py` (path-a; A-4).
+    feature_refs: [N02/F18]
+    module_ref: MOD-N02-F18
+    source_path: tirvi/nlp/contracts.py
+    status: designed
+
+# F18 itself authors no new ADRs in Wave 2; it consumes Wave-1 ADRs only.
+# ADR-002 is intentionally NOT referenced here — file does not exist on disk;
+# ADR-026 carries the binding decision (R2 C-1).
+adr_decisions: []
+
+# F18 task rows. T-00 NEW (R2 C-4 + C-5 migration). Lead dedupes by id and
+# updates status fields; T-05 demo_critical promoted (R2 S-1).
+tasks:
+  - id: task:N02/F18/T-00
+    name: wave1-to-wave2-migration
+    feature_refs: [N02/F18]
+    spec_refs: []   # cross-cutting; resolves R2 C-4 + C-5 + R-2
+    test_path: tests/unit/test_disambiguate.py
+    status: designed
+    demo_critical: true
+  - id: task:N02/F18/T-01
+    name: nlp-per-token-fields
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-01]
+    test_path: tests/unit/test_nlp_result_fields.py
+    status: designed
+    demo_critical: true
+  - id: task:N02/F18/T-02
+    name: morph-dict-whitelist-ud-titlecase
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-02]
+    test_path: tests/unit/test_morph_dict.py
+    status: designed
+    demo_critical: true
+  - id: task:N02/F18/T-03
+    name: pick-sense-context-aware-v2
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-03]
+    test_path: tests/unit/test_disambiguate.py
+    status: designed
+    demo_critical: true
+  - id: task:N02/F18/T-04
+    name: nlp-yaml-fixture-builder
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-04]
+    test_path: tests/unit/test_nlp_fixture_builder.py
+    status: deferred-poc
+    demo_critical: false
+  - id: task:N02/F18/T-05
+    name: nlp-v1-invariants-and-provider-whitelist
+    feature_refs: [N02/F18]
+    spec_refs: [spec:N02/F18/DE-05, spec:N02/F18/DE-06]
+    test_path: tests/unit/test_nlp_v1_invariants.py
+    status: designed
+    demo_critical: true   # PROMOTED per R2 S-1
+
+# Cross-feature edges (additive — lead may merge into a global edge set
+# if/when one is introduced; the per-feature traceability.yaml is the
+# canonical home today).
+edges:
+  - {from: spec:N02/F18/DE-03, to: feature:N02/F17, type: CONSUMES}
+  - {from: spec:N02/F18/DE-03, to: feature:N02/F26, type: CONSUMES}
+  - {from: feature:N02/F18, to: feature:N02/F19, type: FEEDS}
+  - {from: spec:N02/F18/DE-03, to: feature:N02/F21, type: COLLABORATES_WITH}
+  - {from: feature:N02/F18, to: "issue:GH#20", type: TRIGGERED_BY}
+  - {from: spec:N02/F18/DE-01, to: adr:026, type: INFLUENCED_BY}
+  - {from: spec:N02/F18/DE-05, to: adr:026, type: INFLUENCED_BY}
+  - {from: spec:N02/F18/DE-06, to: adr:026, type: INFLUENCED_BY}
+  - {from: spec:N02/F18/DE-05, to: adr:027, type: INFLUENCED_BY}
+  - {from: spec:N02/F18/DE-06, to: adr:027, type: INFLUENCED_BY}
+  - {from: spec:N02/F18/DE-03, to: adr:029, type: INFLUENCED_BY}
+  - {from: criterion:N02/F18/US-01/AC-02, to: "issue:GH#20", type: VERIFIES_REGRESSION}
+  - {from: criterion:N02/F18/US-01/AC-03, to: "issue:GH#20", type: VERIFIES_REGRESSION}
+  - {from: criterion:N02/F18/US-01/AC-04, to: "issue:GH#20", type: VERIFIES_REGRESSION}
+
+# Notes for the lead's serial merge.
+merge_notes:
+  - "MOD-N02-F18 source_path corrected from tirvi/disambiguate/ to tirvi/nlp/ (R2 C-4 path-a)."
+  - "MOD-N02-F18-overrides path corrected to tirvi/nlp/overrides.py (R2 C-4 path-a)."
+  - "ALLOWED_PROVIDERS now includes alephbert+yap (with `+`) and degraded (R2 C-2)."
+  - "MORPH_KEYS_WHITELIST shifted from lowercase {gender,number,person,tense,def,case} to UD TitleCase {Gender,Number,Person,Tense,Definite,Case,VerbForm} (R2 R-3)."
+  - "T-00 added; T-05 demo_critical=true (R2 S-1 promotion)."
+  - "ADR-002 ref dropped from F18 — file does not exist on disk; coordinate Wave-2-wide cleanup if/when ADR-002 lands (R2 C-1)."

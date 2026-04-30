@@ -1,17 +1,45 @@
+%% F18 disambiguation — Wave-2 refresh, R2-revised.
+%% Module path: tirvi/nlp/ (path-a per lead; legacy alias preserved).
+%% Input: F17 dictabert-morph (primary) | F26 alephbert+yap | F26 degraded.
+%% Output: F19 Dicta-Nakdan REST diacritization (NLP-context conditioning).
+%% Trigger: GH#20 — gender / homograph regressions surfacing as wrong nikud at F19.
+%% Refs: ADR-014, ADR-017, ADR-026, ADR-027, ADR-029.
+
 flowchart LR
-    NLP["NLPResult\nfrom F17 (top-K candidates)"]
-    PICK["DE-03\npick_sense\n(margin >= 0.2)"]
-    AMB{"margin < 0.2?"}
-    SET_AMB["set ambiguous=true"]
-    SET_OK["set ambiguous=false"]
-    INV["DE-05\nassert_nlp_result_v1"]
-    OUT["NLPResult v1\nper-token POS+morph+lemma+ambiguous"]
-    BLD["DE-04\nNLPResultBuilder.from_yaml\n(ADR-017)"]
-    NLP --> PICK
-    PICK --> AMB
-    AMB -->|yes| SET_AMB
-    AMB -->|no| SET_OK
-    SET_AMB --> INV
-    SET_OK --> INV
+    F17["F17 DictaBERT-morph\nprovider=dictabert-morph\nNLPToken{pos, morph_features (UD TitleCase),\nlemma|None, confidence∈[0,1]|None,\nambiguous}"]
+    F26S["F26 AlephBERT/YAP success\nprovider=alephbert+yap\n(transitional alephbert-yap also accepted)"]
+    F26D["F26 graceful fallback\nprovider=degraded\ntokens=(), confidence=None"]
+    BLD["DE-04 NLPResultBuilder.from_yaml\nprovider=fixture (ADR-017)\n[POC-DEFERRED]"]
+
+    LEGACY["_legacy_pick_sense\n(wave-1 alias)\ntuple[NLPToken,bool]\nT-00 retains for 6 existing tests\nCI grep-gate: tests-only import"]
+
+    PICK["DE-03 pick_sense(token, candidates=None) -> NLPToken\n• ambiguous=False ⇒ pass-through\n• ambiguous=True ⇒ probe MORPH_HOMOGRAPH_OVERRIDES\n  key=(surface, frozenset((morph_features or {}).items()))\n  [Python idiom — A-2 fix]\n• miss + candidates ⇒ top-1 (single NLPToken)\n• miss + None ⇒ pass-through\nF17 owns ambiguous flag; F18 trusts producer (R-4)"]
+
+    OVR["MORPH_HOMOGRAPH_OVERRIDES\n(POC: empty stub at\ntirvi/nlp/overrides.py;\nF21 ships entries)"]
+
+    INV["DE-05 assert_nlp_result_v1 (PROMOTED demo-critical)\nALLOWED_PROVIDERS = {dictabert-morph,\n  alephbert+yap, alephbert-yap, fixture, degraded}\nlegacy 'dictabert-large-joint' ⇒ SchemaContractError\n  (substrings: 'legacy provider' + 'ADR-026')\ndegraded ⇒ tokens=() AND confidence=None\nelse: UD TitleCase morph keys\n  ⊆ {Gender,Number,Person,Tense,Definite,Case,VerbForm}\n  lemma is None or str\n  confidence is None or 0≤c≤1"]
+
+    OUT["NLPResult v1\nfeeds F19.diacritize_in_context\n(F19 DE-02 NLP context tilt)"]
+
+    F19["F19 Dicta-Nakdan REST\nGH#20 fix layer 2\n(surface-keyed HOMOGRAPH_OVERRIDES)"]
+
+    F17 --> PICK
+    F26S --> PICK
+    F26D --> INV
+    BLD -. POC-deferred .-> PICK
+    OVR -. consulted on ambiguous .-> PICK
+    PICK --> INV
     INV --> OUT
-    BLD --> OUT
+    OUT --> F19
+    LEGACY -. tests-only .-> PICK
+
+    classDef vendor fill:#fef3c7,stroke:#92400e
+    classDef domain fill:#dbeafe,stroke:#1e3a8a
+    classDef contract fill:#dcfce7,stroke:#14532d
+    classDef deferred fill:#f3f4f6,stroke:#6b7280,stroke-dasharray:4 2
+    classDef legacy fill:#fee2e2,stroke:#991b1b,stroke-dasharray:4 2
+    class F17,F26S,F26D vendor
+    class PICK,OVR domain
+    class INV,OUT contract
+    class BLD deferred
+    class LEGACY legacy
