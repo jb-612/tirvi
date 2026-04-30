@@ -63,7 +63,7 @@ canonical PLAN.md).
 
 ### Phase A — Adapter ports & OCR (foundation)
 
-- [ ] F03-adapter-ports — Storage / OCR / TTS / NLP / WordTimingProvider ports + in-memory fakes (POC scope: ports only; full fake registry comes later)
+- [BUILT] F03-adapter-ports — Storage / OCR / TTS / NLP / WordTimingProvider ports + in-memory fakes (POC scope: ports only; full fake registry comes later)
 - [ ] F08-tesseract-adapter — Tesseract `heb` (tessdata_best) on first page, layout post-processor (column detect, RTL fix-ups)
 - [ ] F10-ocr-result-contract — `OCRResult` with bboxes / per-page-block / language-hint / confidence
 - [ ] F11-block-segmentation — heading / paragraph / question_stem etc. (POC scope: minimum to get word-level bbox for highlight)

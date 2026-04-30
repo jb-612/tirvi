@@ -12,7 +12,7 @@ The first unchecked `F##` line is what `require-workitem.sh` gates production-so
 
 - [ ] F01-docker-compose — single-Docker dev environment (web/api/worker/models sidecar/fake-gcs-server) with `--profile models` for frontend-only runs
 - [ ] F02-cloud-skeleton — Cloud Run + Cloud Tasks + GCS Terraform, secrets via Secret Manager, scale-to-zero baseline
-- [ ] F03-adapter-ports — Storage / OCR / TTS / WordTimingProvider / NLP ports + in-memory fakes for tests
+- [BUILT] F03-adapter-ports — Storage / OCR / TTS / WordTimingProvider / NLP ports + in-memory fakes for tests
 - [ ] F04-ci-cd-gates — TDD gate, complexity gate (CC ≤ 5), security scan, formatter, hooks wired to settings.json
 
 ## N01 — Ingest & OCR (weeks 1–3)
