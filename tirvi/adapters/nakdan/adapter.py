@@ -6,6 +6,8 @@ Spec: N02/F19. AC: US-01/AC-01.
 from tirvi.ports import DiacritizerBackend
 from tirvi.results import DiacritizationResult
 
+from .inference import diacritize as _diacritize
+
 
 class DictaNakdanAdapter(DiacritizerBackend):
     """Dicta-Nakdan-based diacritization adapter.
@@ -18,11 +20,7 @@ class DictaNakdanAdapter(DiacritizerBackend):
     """
 
     def __init__(self, model_revision: str = "default") -> None:
-        # TODO US-01/AC-01: lazy-init transformers seq2seq model
         self._model_revision = model_revision
 
     def diacritize(self, text: str) -> DiacritizationResult:
-        # TODO INV-NAKDAN-001: model load
-        # TODO INV-NAKDAN-002: apply NLP context tilt
-        # TODO INV-NAKDAN-003: NFC→NFD normalize output
-        raise NotImplementedError
+        return _diacritize(text, revision=self._model_revision)
