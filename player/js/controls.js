@@ -1,30 +1,32 @@
-// F36 — 4-button player controls + state machine + keyboard shortcuts.
+// F36 T-01 — single play button mount (POC scope).
 //
-// Spec: N04/F36. AC: US-01/AC-01. Bounded context: bc:audio_delivery.
-//
-// State machine: "idle" → "playing" ↔ "paused" → "ended"; reset to "idle".
+// Spec: N04/F36 DE-01. AC: US-01/AC-01. Bounded context: bc:audio_delivery.
+// Language: vanilla JS (ADR-023). Per POC-CRITICAL-PATH.md, T-02..T-06
+// (full 4-button state machine, ARIA shortcuts, focus management, disabled
+// states) deferred to v0.1.
 
 /**
- * @typedef {"idle"|"playing"|"paused"|"ended"} PlayerStateName
+ * Mount a single play button into the toolbar; clicking it triggers
+ * audio.play(). Rejections from the audio API (e.g., autoplay-blocked
+ * before a user gesture) are swallowed so the click handler stays
+ * synchronous and never throws.
+ *
+ * @param {Object} args
+ * @param {HTMLAudioElement} args.audio - the page's <audio> element
+ * @param {HTMLElement} args.toolbar - the container to mount into
+ * @returns {HTMLButtonElement} the mounted button (useful for tests)
  */
-
-/**
- * Pure transition function. Invalid transitions silently return current state.
- * @param {PlayerStateName} state
- * @param {string} event — one of "play", "pause", "restart", "ended"
- * @returns {PlayerStateName}
- */
-export function nextState(state, event) {
-  // TODO INV-CTRL-001 (T-02): pure function; no side effects; no exceptions
-  throw new Error("F36 controls.js — not implemented (scaffold)");
-}
-
-/**
- * Mount the 4 control buttons into the toolbar; bind to <audio> element.
- * @param {Object} state — PlayerState from player.js
- */
-export function mountControls(state) {
-  // TODO INV-CTRL-002 (T-03): create play/pause/restart/replay buttons with ARIA labels
-  // TODO INV-CTRL-003 (T-04): bind keyboard shortcuts (Space=toggle, R=restart) with preventDefault on Space
-  throw new Error("F36 controls.js — not implemented (scaffold)");
+export function mountPlayButton({ audio, toolbar }) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = "Play";
+  btn.setAttribute("aria-label", "Play");
+  btn.addEventListener("click", () => {
+    // .play() returns a Promise; swallow rejection (autoplay policy etc.)
+    Promise.resolve(audio.play()).catch(() => {
+      /* noop — degraded path; downstream UI may surface the error */
+    });
+  });
+  toolbar.appendChild(btn);
+  return btn;
 }

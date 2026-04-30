@@ -50,3 +50,7 @@ Thumbs.db
 # Project-specific working dirs
 .acm_cognitive_workspace/
 drafts/
+
+# JS toolchain (player/)
+node_modules/
+package-lock.json
