@@ -46,15 +46,20 @@ class TTSEmittedTimingAdapter(WordTimingProvider):
             )
         marks = self._tts_result.word_marks or []
         assert_marks_monotonic(marks)
+        truncated = bool(
+            self._tts_result.voice_meta.get("tts_marks_truncated", False)
+        )
+        token_count = _count_transcript_tokens(transcript)
         timings = _project_marks(marks, self._tts_result.audio_duration_s)
+        timings = _reconcile_count(
+            timings, token_count=token_count, truncated=truncated
+        )
         return WordTimingResult(
             provider="tts-marks",
             source="tts-marks",
             timings=timings,
             audio_duration_s=self._tts_result.audio_duration_s,
-            tts_marks_truncated=bool(
-                self._tts_result.voice_meta.get("tts_marks_truncated", False)
-            ),
+            tts_marks_truncated=truncated,
         )
 
 
@@ -85,6 +90,43 @@ def _resolve_end_s(
     if audio_duration_s is not None:
         return audio_duration_s
     return marks[i].start_ms / 1000.0 + _LAST_MARK_FALLBACK_S
+
+
+def _count_transcript_tokens(transcript: str) -> int:
+    """Count whitespace-separated tokens in the transcript (POC convention)."""
+    return len(transcript.split())
+
+
+def _reconcile_count(
+    timings: list[WordTiming],
+    *,
+    token_count: int,
+    truncated: bool,
+) -> list[WordTiming]:
+    """Reconcile timing-count vs transcript-token-count per DE-05.
+
+    When count matches: pass through.
+    When count differs and truncation IS signalled: pad with synthetic
+    tail tokens (mark_id="tail-N", end_s=None) up to token_count.
+    When count differs and truncation NOT signalled: raise.
+    """
+    if len(timings) == token_count:
+        return timings
+    if not truncated:
+        raise MarkCountMismatchError(
+            f"INV-MARKS-006 (DE-05): {len(timings)} marks vs {token_count} "
+            f"transcript tokens; truncation flag NOT set; genuine adapter bug"
+        )
+    if len(timings) > token_count:
+        # More marks than tokens — defensive; trim
+        return timings[:token_count]
+    # Pad: synthetic tail tokens
+    last_start_s = timings[-1].start_s if timings else 0.0
+    tail = [
+        WordTiming(mark_id=f"tail-{i}", start_s=last_start_s, end_s=None)
+        for i in range(token_count - len(timings))
+    ]
+    return timings + tail
 
 
 __all__ = ["TTSEmittedTimingAdapter", "MarkCountMismatchError"]
