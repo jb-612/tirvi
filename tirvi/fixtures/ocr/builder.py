@@ -26,6 +26,6 @@ class OCRResultBuilder:
         raise NotImplementedError
 
     @classmethod
-    def from_dict(cls, data: dict) -> OCRResult:
+    def from_dict(cls, data: dict[str, object]) -> OCRResult:
         # TODO US-01/AC-01: same as from_yaml but accepts pre-parsed dict
         raise NotImplementedError

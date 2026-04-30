@@ -27,11 +27,11 @@ class ReadingPlan:
     def from_inputs(
         cls,
         page_id: str,
-        blocks: tuple,            # tirvi.blocks.Block tuple
-        normalized,               # tirvi.normalize.NormalizedText
-        nlp_result,               # tirvi.results.NLPResult
-        diacritization,           # tirvi.results.DiacritizationResult
-        g2p_result,               # tirvi.results.G2PResult
+        blocks: tuple[object, ...],   # tirvi.blocks.Block tuple
+        normalized: object,           # tirvi.normalize.NormalizedText
+        nlp_result: object,           # tirvi.results.NLPResult
+        diacritization: object,       # tirvi.results.DiacritizationResult
+        g2p_result: object,           # tirvi.results.G2PResult
     ) -> "ReadingPlan":
         # TODO US-01/AC-01 (T-01): assemble PlanBlocks + PlanTokens with stable IDs
         # TODO INV-PLAN-001: assert id uniqueness
@@ -43,7 +43,7 @@ class ReadingPlan:
         #                        sort_keys=True, ensure_ascii=False, indent=2)
         raise NotImplementedError
 
-    def to_page_json(self, ocr_result) -> dict:
+    def to_page_json(self, ocr_result: object) -> dict[str, object]:
         # TODO US-01/AC-01 (T-07, post-review C4, INV-PLAN-004): build
         #                        {page_image_url, words[], marks_to_word_index}
         # TODO words[].bbox from ocr_result; marks_to_word_index =
