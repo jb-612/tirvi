@@ -39,8 +39,12 @@ def _run_joint_predict(model: Any, tokenizer: Any, text: str) -> list[NLPToken]:
 
 def _decode_token(item: dict[str, Any]) -> NLPToken:
     syntax = item.get("syntax") or {}
+    prefix_raw = item.get("prefix_segments")
+    prefix = tuple(prefix_raw) if prefix_raw else None
     return NLPToken(
         text=item["token"],
         pos=syntax.get("pos"),
         lemma=item.get("lex"),
+        prefix_segments=prefix,
+        confidence=item.get("confidence"),
     )
