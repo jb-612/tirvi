@@ -13,6 +13,8 @@ from tirvi.results import (
     DiacritizationResult,
     G2PResult,
     NLPResult,
+    OCRResult,
+    OCRWord,
 )
 
 from .value_objects import PlanBlock, PlanToken
@@ -79,12 +81,49 @@ class ReadingPlan:
             indent=2,
         )
 
-    def to_page_json(self, ocr_result: Any) -> dict[str, Any]:
-        # TODO US-01/AC-01 (T-07, post-review C4, INV-PLAN-004): build
-        #                        {page_image_url, words[], marks_to_word_index}
-        # TODO words[].bbox from ocr_result; marks_to_word_index =
-        #                        {token.id: first(token.src_word_indices)}
-        raise NotImplementedError
+    def to_page_json(
+        self,
+        ocr_result: OCRResult,
+        page_image_url: str = "page-1.png",
+    ) -> dict[str, Any]:
+        """F35-consumed page projection (T-07, post-review C4, INV-PLAN-004).
+
+        Conforms to ``docs/schemas/page.schema.json``. POC reads only the
+        first OCR page (single-page demo). Bboxes convert from
+        OCRWord's ``(x0, y0, x1, y1)`` to schema's ``[x, y, w, h]``.
+        ``marks_to_word_index`` maps each token's stable id to its
+        first source word index.
+        """
+        page = ocr_result.pages[0]
+        return {
+            "page_image_url": page_image_url,
+            "words": [_word_to_schema_dict(w) for w in page.words],
+            "marks_to_word_index": _build_marks_to_word_index(self.blocks),
+        }
+
+
+def _word_to_schema_dict(word: OCRWord) -> dict[str, Any]:
+    """Convert an OCRWord to the page.schema.json word shape.
+
+    OCRWord.bbox is ``(x0, y0, x1, y1)`` per INV-OCR-W-001; the schema
+    wants ``[x, y, w, h]``. The conversion: w = x1 - x0; h = y1 - y0.
+    """
+    x0, y0, x1, y1 = word.bbox
+    return {
+        "text": word.text,
+        "bbox": [x0, y0, x1 - x0, y1 - y0],
+        "lang_hint": word.lang_hint,
+    }
+
+
+def _build_marks_to_word_index(blocks: tuple[PlanBlock, ...]) -> dict[str, int]:
+    """Map each PlanToken.id to its first src_word_index across all blocks."""
+    return {
+        token.id: token.src_word_indices[0]
+        for block in blocks
+        for token in block.tokens
+        if token.src_word_indices
+    }
 
 
 def _build_plan_block(
