@@ -3,8 +3,11 @@
 Spec: N02/F23 DE-01, DE-02, DE-03, DE-04. AC: US-01/AC-01.
 """
 
+from dataclasses import replace
+
 from tirvi.plan import PlanBlock, PlanToken, ReadingPlan
 
+from .breaks import inter_block_break
 from .escape import xml_escape
 
 
@@ -36,11 +39,33 @@ def _token_to_ssml_fragment(token: PlanToken) -> str:
 
 
 def populate_plan_ssml(plan: ReadingPlan) -> ReadingPlan:
-    """Return a new ReadingPlan with each block's ``ssml`` field populated.
+    """Return a new ReadingPlan with each block's ``ssml`` field populated (T-05).
 
-    Invariants (named, TDD fills):
-      - INV-SSML-006 (D-01): F22's ``ssml`` field is empty on input; this fills it
-      - INV-SSML-007 (T-05): uses ``dataclasses.replace`` to preserve immutability
+    Walks the plan in order. The first block's SSML is just
+    ``<speak xml:lang="he-IL">…body…</speak>``. Each subsequent block
+    leads with ``<break time="500ms"/>`` (T-03) inside the speak
+    wrapper, so Wavenet pauses between blocks.
+
+    Immutable: input plan is unchanged; new PlanBlock instances are
+    constructed via :func:`dataclasses.replace`.
+
+    Invariants:
+      - INV-SSML-006 (D-01): F22's empty ``ssml`` field is filled here
+      - INV-SSML-007: ``dataclasses.replace`` preserves frozenness
+      - INV-SSML-008 (T-03 wire): inter-block break is the canonical 500ms
     """
-    # TODO US-01/AC-01 (T-05): for each block, build ssml; rebuild plan via dataclasses.replace
-    raise NotImplementedError
+    new_blocks = tuple(
+        replace(
+            block,
+            ssml=_block_ssml_with_break(block, leading_break=(i > 0)),
+        )
+        for i, block in enumerate(plan.blocks)
+    )
+    return replace(plan, blocks=new_blocks)
+
+
+def _block_ssml_with_break(block: PlanBlock, *, leading_break: bool) -> str:
+    """Build a block's full SSML, optionally prefixed with a 500ms break."""
+    body = " ".join(_token_to_ssml_fragment(t) for t in block.tokens)
+    prefix = inter_block_break() if leading_break else ""
+    return f'<speak xml:lang="he-IL">{prefix}{body}</speak>'
