@@ -36,6 +36,8 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-027 | F26 fallback uses YAP HTTP-server mode; AlephBERT deferred to MVP | Proposed | hebrew-interpretation | F26 |
 | ADR-028 | F20 Phonikud `phonemize()` API pivot; per-token transliteration deferred | Proposed | pronunciation | F20 |
 | ADR-029 | Vendor-boundary discipline — vendor SDK imports confined to `tirvi.adapters.<vendor>.**` | Proposed | platform | F08, F17, F19, F20, F26 |
+| ADR-030 | Acronym expansion runs upstream of NLP (post-F14, pre-F17) | Proposed | hebrew-interpretation | F15 |
+| ADR-031 | F16 mixed-language detection — rule-based unicode + unified lang/math channel | Proposed | hebrew-interpretation | F16 |
 
 ## Conventions
 
