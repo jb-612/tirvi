@@ -9,7 +9,14 @@ Spec: N02/F22. Bounded contexts: ``bc:hebrew_nlp`` (DE-01..06),
 """
 
 from .aggregates import ReadingPlan
+from .contracts import assert_plan_v1
 from .errors import PlanInvariantError
 from .value_objects import PlanBlock, PlanToken
 
-__all__ = ["PlanBlock", "PlanInvariantError", "PlanToken", "ReadingPlan"]
+__all__ = [
+    "PlanBlock",
+    "PlanInvariantError",
+    "PlanToken",
+    "ReadingPlan",
+    "assert_plan_v1",
+]
