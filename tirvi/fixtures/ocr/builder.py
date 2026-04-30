@@ -4,6 +4,7 @@ Spec: N01/F10. AC: US-01/AC-01. FT-anchors: FT-005, FT-007.
 """
 
 from pathlib import Path
+from typing import Any
 
 from tirvi.results import OCRResult
 
@@ -26,6 +27,6 @@ class OCRResultBuilder:
         raise NotImplementedError
 
     @classmethod
-    def from_dict(cls, data: dict) -> OCRResult:
+    def from_dict(cls, data: dict[str, Any]) -> OCRResult:
         # TODO US-01/AC-01: same as from_yaml but accepts pre-parsed dict
         raise NotImplementedError
