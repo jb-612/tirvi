@@ -50,7 +50,14 @@ Thumbs.db
 # Project-specific working dirs
 .acm_cognitive_workspace/
 drafts/
+output/
 
 # JS toolchain (player/)
 node_modules/
 package-lock.json
+
+# MCP debug dumps
+.playwright-mcp/
+
+# UAT screenshots (transient)
+uat-*.png
