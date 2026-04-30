@@ -1,0 +1,26 @@
+// F36 — controls.js test skeleton (state machine + 4 buttons + keyboard).
+//
+// Spec: N04/F36. AC: US-01/AC-01. Bounded context: bc:audio_delivery.
+
+import { describe, it, expect } from "@jest/globals";
+import { nextState, mountControls } from "../js/controls.js";
+
+describe("F36 controls.js", () => {
+  describe("US-01/AC-01 — nextState pure function", () => {
+    it.todo("idle + play → playing");
+    it.todo("playing + pause → paused");
+    it.todo("paused + play → playing");
+    it.todo("playing + ended → ended");
+    it.todo("any + restart → idle");
+    it.todo("invalid transition silently returns current state (no exceptions)");
+  });
+
+  describe("US-01/AC-01 — mountControls binds 4 buttons + ARIA + keyboard", () => {
+    it.todo("4 buttons rendered: play, pause, restart, replay");
+    it.todo("buttons carry aria-label");
+    it.todo("Space toggles play/pause and preventDefault on long pages");
+    it.todo("R restarts to idle");
+    it.todo("focus-visible style applied on focus");
+    it.todo("disabled state on idle for pause button");
+  });
+});
