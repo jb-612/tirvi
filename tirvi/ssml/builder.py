@@ -69,3 +69,17 @@ def _block_ssml_with_break(block: PlanBlock, *, leading_break: bool) -> str:
     body = " ".join(_token_to_ssml_fragment(t) for t in block.tokens)
     prefix = inter_block_break() if leading_break else ""
     return f'<speak xml:lang="he-IL">{prefix}{body}</speak>'
+
+
+def build_page_ssml(plan: ReadingPlan) -> str:
+    """Single ``<speak>`` SSML document for the whole page (one TTS call).
+
+    Used by the demo orchestrator to synthesize all blocks in one Wavenet
+    request, producing a unified audio file and mark timeline. Blocks are
+    joined with ``<break time="500ms"/>`` (same cadence as per-block SSML).
+    """
+    parts: list[str] = []
+    for i, block in enumerate(plan.blocks):
+        body = " ".join(_token_to_ssml_fragment(t) for t in block.tokens)
+        parts.append((inter_block_break() if i > 0 else "") + body)
+    return f'<speak xml:lang="he-IL">{"".join(parts)}</speak>'

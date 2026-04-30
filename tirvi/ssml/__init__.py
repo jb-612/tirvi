@@ -7,6 +7,6 @@ elements (mark-format pin documented in F23 design HLD-deviations).
 Spec: N02/F23. Bounded context: ``bc:speech_synthesis``.
 """
 
-from .builder import build_block_ssml, populate_plan_ssml
+from .builder import build_block_ssml, build_page_ssml, populate_plan_ssml
 
-__all__ = ["build_block_ssml", "populate_plan_ssml"]
+__all__ = ["build_block_ssml", "build_page_ssml", "populate_plan_ssml"]
