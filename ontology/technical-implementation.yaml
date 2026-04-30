@@ -152,6 +152,47 @@ modules:
     status: designed
 
 # Services — runtime processes (none introduced by F03).
+  - id: MOD-N02-F15
+    name: tirvi.acronym
+    description: deterministic Hebrew acronym/abbreviation expansion stage — YAML-backed lexicon, whole-token matcher, spell-out fallback, version stamp. Sits between F14 normalize and F17 NLP per ADR-030.
+    feature_refs:
+    - N02/F15
+    bounded_context: hebrew_text
+    source_path: tirvi/acronym/
+    status: designed
+  - id: MOD-N02-F15-lint
+    name: tirvi.acronym.lint
+    description: CLI lint entry point for the acronym lexicon YAML (maintainer PR workflow per BT-072).
+    feature_refs:
+    - N02/F15
+    bounded_context: hebrew_text
+    source_path: tirvi/acronym/lint.py
+    status: designed
+  - id: MOD-N02-F16
+    name: tirvi.lang_spans
+    description: 'Pure-Python mixed-language run detector. Emits LanguageSpan[]
+    
+      (start, end, lang ∈ {he, en, num}, confidence) from normalized
+    
+      Hebrew text using Unicode-script classification + curated
+    
+      heuristics. No vendor SDK; stdlib only. Per ADR-031.
+    
+      '
+    feature_refs:
+    - N02/F16
+    bounded_context: hebrew_text
+    source_path: tirvi/lang_spans/
+    status: designed
+  - id: MOD-N02-F18-overrides
+    name: tirvi.nlp.overrides
+    description: 'Morph-keyed homograph override table (POC: empty stub; F21 ships entries). Composes with F19 surface-keyed HOMOGRAPH_OVERRIDES at a different layer (pre-Nakdan vs response-selection).'
+    feature_refs:
+    - N02/F18
+    - N02/F21
+    bounded_context: hebrew_nlp
+    source_path: tirvi/nlp/overrides.py
+    status: designed
 services: []
 
 # Ports — abstract interfaces.
@@ -353,6 +394,98 @@ classes:
     status: designed
 
 # Functions — explicit cross-references (most auto-discovered).
+  - id: CLS-N02-F14-NormalizedText
+    name: NormalizedText
+    description: frozen value object — text + spans tuple + repair_log tuple; output of the normalize stage; consumed by F17 / F22 / F35
+    feature_refs:
+    - N02/F14
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/results.py
+    status: designed
+  - id: CLS-N02-F14-Span
+    name: Span
+    description: frozen value object — char_start, char_end, src_word_indices (tuple of ints); preserves bbox→text provenance
+    feature_refs:
+    - N02/F14
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/results.py
+    status: designed
+  - id: CLS-N02-F14-RepairLogEntry
+    name: RepairLogEntry
+    description: frozen value object — rule_id, span, before, after; emitted by every applied repair rule for downstream auditing (BT-066)
+    feature_refs:
+    - N02/F14
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/diff.py
+    status: designed
+  - id: CLS-N02-F15-Lexicon
+    name: Lexicon
+    description: aggregate root — versioned, immutable collection of AcronymEntry; built once from YAML at module load via mtime cache.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+  - id: CLS-N02-F15-AcronymEntry
+    name: AcronymEntry
+    description: value object — (form, expansion, source, context_tags). context_tags reserved for MVP domain-aware disambiguation; v1 ignores.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+  - id: CLS-N02-F15-ExpandedText
+    name: ExpandedText
+    description: value object — extends F14 NormalizedText shape with expansion_log + lexicon_version stamp; consumed by F17 / F22 / F23.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/results.py
+    status: designed
+  - id: CLS-N02-F15-ExpansionLogEntry
+    name: ExpansionLogEntry
+    description: value object — per-token provenance (original_form, expansion, src_word_indices, spell_out flag); enables player feedback affordance and SSML per-letter routing.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/results.py
+    status: designed
+  - id: CLS-N02-F16-result
+    name: LanguageSpansResult
+    description: 'Frozen dataclass: spans (tuple[LanguageSpan, ...]) + provider
+    
+      ("tirvi-rules-v1") + aggregate confidence. Reuses biz
+    
+      bo:LanguageSpan value object.
+    
+      '
+    feature_refs:
+    - N02/F16
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/results.py
+    status: designed
+  - id: CLS-N02-F18-NLPToken
+    name: NLPToken
+    description: 'Per-token value object enforced by F18 v1 invariants — pos (UD-Hebrew), lemma str|None (POC tolerates None per ADR-026), morph_features dict[str,str]|None (UD v2 TitleCase whitelist: Gender,
+      Number, Person, Tense, Definite, Case, VerbForm), prefix_segments tuple|None, confidence float|None (range 0.0..1.0 when not None), ambiguous bool.'
+    feature_refs:
+    - N02/F18
+    module_ref: MOD-03
+    source_path: tirvi/results.py
+    status: designed
+  - id: CLS-N02-F18-MorphHomographOverride
+    name: MorphHomographOverride
+    description: Lookup type for MORPH_HOMOGRAPH_OVERRIDES. Key is (surface, frozenset((token.morph_features or {}).items())) — note the `(x or {}).items()` Python idiom; NOT `x.items() or ()` which raises
+      AttributeError on None (R2 A-2). Value is an NLPToken to substitute when F17 marks ambiguous=True. POC ships an empty mapping.
+    feature_refs:
+    - N02/F18
+    - N02/F21
+    module_ref: MOD-N02-F18-overrides
+    source_path: tirvi/nlp/overrides.py
+    status: designed
 functions:
   - id: FN-01
     name: assert_adapter_contract
@@ -363,6 +496,153 @@ functions:
     status: designed
 
 # ADR decisions — first-class graph nodes.
+  - id: FN-N02-F14-normalize
+    name: normalize
+    description: pure function (OCRResult) -> NormalizedText; deterministic over the same input; sequence pass-through → line-break-rejoin → stray-punct-drop → bbox-span-map → repair-log-emit
+    feature_refs:
+    - N02/F14
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F14
+    source_path: tirvi/normalize/__init__.py
+    status: designed
+  - id: FN-N02-F15-expand
+    name: expand
+    description: top-level entry — `expand(text, lexicon) -> ExpandedText`; thin wrapper around tag_and_expand for the pipeline.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/__init__.py
+    status: designed
+  - id: FN-N02-F15-tag_and_expand
+    name: tag_and_expand
+    description: core emitter — walks NormalizedText.spans, applies URL skip / matcher / lookup / fallback, returns ExpandedText with provenance.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/tagger.py
+    status: designed
+  - id: FN-N02-F15-is_acronym_candidate
+    name: is_acronym_candidate
+    description: heuristic — token contains geresh `׳` / gershayim `״`, or matches `^[A-Z]{2,6}$`. Used by DE-06 fallback path.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/matcher.py
+    status: designed
+  - id: FN-N02-F15-lookup
+    name: Lexicon.lookup
+    description: exact whole-token lookup against `_index` built at YAML load.
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+  - id: FN-N02-F15-from_yaml
+    name: Lexicon.from_yaml
+    description: YAML loader (ADR-017 pattern); mtime-cached; raises LexiconLoadError on schema mismatch (DE-02 + DE-08).
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15
+    source_path: tirvi/acronym/lexicon.py
+    status: designed
+  - id: FN-N02-F15-lint
+    name: tirvi.acronym.lint.main
+    description: CLI lint entry point — exit 0 on valid YAML, non-zero with error on malformed (BT-072).
+    feature_refs:
+    - N02/F15
+    module_ref: MOD-N02-F15-lint
+    source_path: tirvi/acronym/lint.py
+    status: designed
+  - id: FN-N02-F16-detect
+    name: detect_language_spans
+    description: 'Public entry point. Chains classify_char → aggregate_runs →
+    
+      apply_transliteration_rule → apply_hyphen_bridge_rule →
+    
+      apply_num_unification → LanguageSpansResult. Pure; deterministic.
+    
+      '
+    feature_refs:
+    - N02/F16
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/__init__.py
+    status: designed
+  - id: FN-N02-F16-classify
+    name: classify_char
+    description: per-codepoint script tag (HE / LATIN / DIGIT / SYMBOL / WS / OTHER)
+    feature_refs:
+    - N02/F16
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/classify.py
+    status: designed
+  - id: FN-N02-F16-aggregate
+    name: aggregate_runs
+    description: run-length collapse over per-char tags; whitespace absorbed into prior lang span
+    feature_refs:
+    - N02/F16
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/aggregate.py
+    status: designed
+  - id: FN-N02-F16-translit
+    name: apply_transliteration_rule
+    description: single-Latin run inside a Hebrew word reclassified to `he` (DE-03)
+    feature_refs:
+    - N02/F16
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/heuristics.py
+    status: designed
+  - id: FN-N02-F16-hyphen
+    name: apply_hyphen_bridge_rule
+    description: LATIN-hyphen-LATIN merges into single `en` span (DE-04, e.g. p-value)
+    feature_refs:
+    - N02/F16
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/heuristics.py
+    status: designed
+  - id: FN-N02-F16-num
+    name: apply_num_unification
+    description: DIGIT + SYMBOL runs collapse into one `num` span (DE-05; ADR-031)
+    feature_refs:
+    - N02/F16
+    module_ref: MOD-N02-F16
+    source_path: tirvi/lang_spans/heuristics.py
+    status: designed
+  - id: FN-N02-F18-pick-sense-v2
+    name: pick_sense
+    description: 'Wave-2 v2: context-aware morphological sense pick. token.ambiguous=False ⇒ pass-through; token.ambiguous=True ⇒ probe MORPH_HOMOGRAPH_OVERRIDES; override miss + candidates ⇒ top-1 by score
+      (single NLPToken returned, NOT the legacy tuple); override miss + no candidates ⇒ pass-through. F17 owns the ambiguous flag; F18 trusts producer (R-4).'
+    feature_refs:
+    - N02/F18
+    module_ref: MOD-N02-F18
+    source_path: tirvi/nlp/disambiguate.py
+    status: designed
+  - id: FN-N02-F18-legacy-pick-sense
+    name: _legacy_pick_sense
+    description: Wave-1 alias preserved for the 6 existing tests in tests/unit/test_disambiguate.py. Returns tuple[NLPToken, bool]. Decorated with @deprecated (or warnings.warn DeprecationWarning). CI grep-gate
+      ensures only the test file imports it.
+    feature_refs:
+    - N02/F18
+    module_ref: MOD-N02-F18
+    source_path: tirvi/nlp/disambiguate.py
+    status: designed
+  - id: FN-N02-F18-builder
+    name: NLPResultBuilder.from_yaml
+    description: YAML-driven NLPResult builder (parallel to F10 OCR builder, ADR-017). Net-new code; T-04 POC-deferred.
+    feature_refs:
+    - N02/F18
+    module_ref: MOD-N02-F18-fixtures
+    source_path: tirvi/fixtures/nlp.py
+    status: designed
+  - id: FN-N02-F18-assert-v1
+    name: assert_nlp_result_v1
+    description: v1 invariant — provider in ALLOWED_PROVIDERS = {dictabert-morph, alephbert+yap, alephbert-yap, fixture, degraded}; legacy 'dictabert-large-joint' raises SchemaContractError with substrings
+      'legacy provider' + 'ADR-026'. UD TitleCase morph keys; lemma is None or str; confidence is None or 0.0..1.0; degraded path requires tokens=() and confidence=None. Lifts the existing wave-1 NotImplemented
+      stub at `tirvi/nlp/contracts.py` (path-a; A-4).
+    feature_refs:
+    - N02/F18
+    module_ref: MOD-N02-F18
+    source_path: tirvi/nlp/contracts.py
+    status: designed
 adr_decisions:
   - id: adr:013
     name: SDLC harness — biz / sw design split + ACM ingestion
@@ -478,6 +758,34 @@ adr_decisions:
     status: proposed
 
 # Tasks — atomic work items; status updated to implemented by TDD phase.
+  - id: adr:030
+    name: Acronym expansion runs upstream of NLP
+    description: Pipeline position decision — F15 expands acronyms after F14 normalize and before F17 DictaBERT NLP, so DictaBERT operates on expanded Hebrew tokens. Provenance round-trips via ExpandedText.
+    feature_refs:
+    - N02/F15
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-030-hebrew-nlp-acronym-expansion-pipeline-position.md
+    status: proposed
+  - id: adr:031
+    name: F16 detector strategy — rule-based unicode + unified lang/math channel
+    description: 'POC adopts deterministic Unicode-script classifier + curated
+    
+      heuristics; ML language identifier deferred MVP behind a future
+    
+      LanguageDetectorBackend port. Resolves biz Open Question on
+    
+      math/lang overlap by collapsing math symbols into lang=''num'';
+    
+      per-character math segmentation belongs to F25. Composes with
+    
+      ADR-019 (rule-strategy precedent) and ADR-029 (vendor boundary).
+    
+      '
+    feature_refs:
+    - N02/F16
+    bounded_context: hebrew-interpretation
+    source_path: docs/ADR/ADR-031-hebrew-nlp-mixed-language-detection-rule-strategy.md
+    status: proposed
 tasks:
   - id: task:N00/F03/T-01
     name: scaffold-tirvi-package
@@ -1027,3 +1335,132 @@ tasks:
     spec_refs: [spec:N04/F36/DE-06]
     test_path: tests/unit/test_aria_focus.py
     status: designed
+  - id: task:N02/F15/T-01
+    name: acronym-value-types
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-01
+    test_path: tests/unit/test_acronym_types.py
+    status: designed
+  - id: task:N02/F15/T-02
+    name: yaml-lexicon-loader
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-02
+    test_path: tests/unit/test_acronym_loader.py
+    status: designed
+  - id: task:N02/F15/T-03
+    name: whole-token-matcher
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-03
+    test_path: tests/unit/test_acronym_matcher.py
+    status: designed
+  - id: task:N02/F15/T-04
+    name: expansion-emitter
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-04
+    test_path: tests/unit/test_acronym_expand.py
+    status: designed
+  - id: task:N02/F15/T-05
+    name: url-skip-filter
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-05
+    test_path: tests/unit/test_acronym_skip_filter.py
+    status: designed
+  - id: task:N02/F15/T-06
+    name: unknown-acronym-fallback
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-06
+    test_path: tests/unit/test_acronym_fallback.py
+    status: designed
+  - id: task:N02/F15/T-07
+    name: bbox-span-roundtrip
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-07
+    test_path: tests/unit/test_acronym_span_roundtrip.py
+    status: designed
+  - id: task:N02/F15/T-08
+    name: lexicon-version-stamp-and-lint
+    feature_refs:
+    - N02/F15
+    spec_refs:
+    - spec:N02/F15/DE-08
+    test_path: tests/unit/test_acronym_lint.py
+    status: designed
+  - id: task:N02/F16/T-01
+    name: lang-spans-package-scaffold
+    feature_refs:
+    - N02/F16
+    spec_refs:
+    - spec:N02/F16/DE-06
+    test_path: tests/unit/test_lang_spans_results.py
+    status: designed
+  - id: task:N02/F16/T-02
+    name: unicode-script-classifier
+    feature_refs:
+    - N02/F16
+    spec_refs:
+    - spec:N02/F16/DE-01
+    test_path: tests/unit/test_lang_spans_classify.py
+    status: designed
+  - id: task:N02/F16/T-03
+    name: run-length-aggregation-with-ws-absorption
+    feature_refs:
+    - N02/F16
+    spec_refs:
+    - spec:N02/F16/DE-02
+    test_path: tests/unit/test_lang_spans_aggregate.py
+    status: designed
+  - id: task:N02/F16/T-04
+    name: transliteration-heuristic
+    feature_refs:
+    - N02/F16
+    spec_refs:
+    - spec:N02/F16/DE-03
+    test_path: tests/unit/test_lang_spans_heuristics.py
+    status: designed
+  - id: task:N02/F16/T-05
+    name: hyphen-bridge-rule
+    feature_refs:
+    - N02/F16
+    spec_refs:
+    - spec:N02/F16/DE-04
+    test_path: tests/unit/test_lang_spans_heuristics.py
+    status: designed
+  - id: task:N02/F16/T-06
+    name: num-math-unification
+    feature_refs:
+    - N02/F16
+    spec_refs:
+    - spec:N02/F16/DE-05
+    test_path: tests/unit/test_lang_spans_heuristics.py
+    status: designed
+  - id: task:N02/F16/T-07
+    name: detect-language-spans-pipeline
+    feature_refs:
+    - N02/F16
+    spec_refs:
+    - spec:N02/F16/DE-06
+    - spec:N02/F16/DE-07
+    test_path: tests/unit/test_lang_spans_detect.py
+    status: designed
+  - id: task:N02/F18/T-00
+    name: wave1-to-wave2-migration
+    feature_refs:
+    - N02/F18
+    spec_refs: []
+    test_path: tests/unit/test_disambiguate.py
+    status: designed
+    demo_critical: true
