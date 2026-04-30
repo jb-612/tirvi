@@ -110,3 +110,30 @@ tests:
   - {ontology_id: "task:N01/F10/T-03", test_path: tests/unit/test_ocr_fixture_builder.py, status: pending}
   - {ontology_id: "task:N01/F10/T-04", test_path: tests/unit/test_ocr_v1_invariants.py, status: pending}
   - {ontology_id: "task:N01/F10/T-05", test_path: tests/unit/test_ocr_result_fields.py, status: pending}
+
+bounded_contexts:
+  Platform:
+    features:
+      OCRResultContract:
+        feature_id: N01/F10
+        scope_specs: [DE-01, DE-03, DE-04]    # platform-side semantic field schema
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: []   # extends F03-locked OCRResult semantically (ADR-014)
+        fixture_builders:
+          - OCRResultBuilder (tirvi/fixtures/ocr/builder.py — ADR-017)
+        tests:
+          unit:
+            - tests/unit/test_ocr_result_fields.py
+            - tests/unit/test_ocr_fixture_builder.py
+            - tests/unit/test_ocr_v1_invariants.py
+        runtime: {api_routes: [], cli_handlers: []}
+  Extraction:
+    features:
+      OCRResultContract:
+        feature_id: N01/F10
+        scope_specs: [DE-02, DE-05]            # extraction-side lang_hint + provider_version
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]

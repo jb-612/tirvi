@@ -121,3 +121,23 @@ tests:
   - {ontology_id: "task:N04/F36/T-04", test_path: tests/unit/test_button_enable.py, status: pending}
   - {ontology_id: "task:N04/F36/T-05", test_path: tests/unit/test_keyboard_shortcuts.py, status: pending}
   - {ontology_id: "task:N04/F36/T-06", test_path: tests/unit/test_aria_focus.py, status: pending}
+
+bounded_contexts:
+  AudioDelivery:
+    features:
+      AccessibilityControls:
+        feature_id: N04/F36
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        language: javascript          # ADR-023
+        source_tree: player/
+        type_alias: PlayerState (idle | playing | paused | ended)
+        invariants:
+          - "INV-CTRL-001: nextState pure function; invalid transitions return current state"
+          - "INV-CTRL-003: Space key preventDefault on long pages"
+        tests:
+          unit:
+            - player/test/controls.spec.js.skel
+        runtime:
+          js_modules: [js/controls.js]

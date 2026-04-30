@@ -116,3 +116,30 @@ tests:
   - {ontology_id: "task:N02/F14/T-04", test_path: tests/unit/test_stray_punct.py, status: pending}
   - {ontology_id: "task:N02/F14/T-05", test_path: tests/unit/test_bbox_span_map.py, status: pending}
   - {ontology_id: "task:N02/F14/T-06", test_path: tests/unit/test_repair_log.py, status: pending}
+
+bounded_contexts:
+  HebrewNlp:
+    features:
+      NormalizationPass:
+        feature_id: N02/F14
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: [NormalizedText, Span, RepairLogEntry]
+          errors: [NormalizationError]
+          invariants:
+            - "INV-NORM-002 (DE-02): union of span.src_word_indices = every input word"
+            - "INV-NORM-003 (DE-04): repair_log records every applied transformation"
+            - "INV-NORM-SPAN-001 (DE-02): src_word_indices non-empty"
+        ports: {implements: [], defined: []}
+        tests:
+          unit:
+            - tests/unit/test_normalize_passthrough.py
+            - tests/unit/test_bbox_span_map.py
+            - tests/unit/test_line_break_rejoin.py
+            - tests/unit/test_stray_punct.py
+            - tests/unit/test_repair_log.py
+            - tests/unit/test_normalized_text.py
+        runtime: {api_routes: [], cli_handlers: []}

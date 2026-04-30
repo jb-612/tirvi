@@ -122,3 +122,29 @@ tests:
   - {ontology_id: "task:N02/F17/T-04", test_path: tests/unit/test_per_attr_confidence.py, status: pending}
   - {ontology_id: "task:N02/F17/T-05", test_path: tests/unit/test_long_sentence_chunking.py, status: pending}
   - {ontology_id: "task:N02/F17/T-06", test_path: tests/unit/test_dictabert_adapter.py, status: pending}
+
+bounded_contexts:
+  HebrewNlp:
+    features:
+      DictaBERTAdapter:
+        feature_id: N02/F17
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: []   # extends F03-locked NLPToken with prefix_segments
+        ports:
+          implements: [NLPBackend]
+        adapters:
+          - DictaBERTAdapter (tirvi/adapters/dictabert/adapter.py)
+        vendor_sdks: [transformers, huggingface_hub]
+        tests:
+          unit:
+            - tests/unit/test_dictabert_loader.py
+            - tests/unit/test_dictabert_inference.py
+            - tests/unit/test_prefix_segmentation.py
+            - tests/unit/test_per_attr_confidence.py
+            - tests/unit/test_long_sentence_chunking.py
+            - tests/unit/test_dictabert_adapter.py
+        runtime: {api_routes: [], cli_handlers: []}

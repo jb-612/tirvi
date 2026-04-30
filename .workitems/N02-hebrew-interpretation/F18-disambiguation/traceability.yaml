@@ -115,3 +115,30 @@ tests:
   - {ontology_id: "task:N02/F18/T-03", test_path: tests/unit/test_disambiguate.py, status: pending}
   - {ontology_id: "task:N02/F18/T-04", test_path: tests/unit/test_nlp_fixture_builder.py, status: pending}
   - {ontology_id: "task:N02/F18/T-05", test_path: tests/unit/test_nlp_v1_invariants.py, status: pending}
+
+bounded_contexts:
+  HebrewNlp:
+    features:
+      Disambiguation:
+        feature_id: N02/F18
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: [DisambiguatedToken]
+          errors: [DisambiguationError]
+          invariants:
+            - "INV-DISAM-T-003 (DE-03): ambiguous=True when softmax margin < threshold"
+            - "INV-NLP-CONTRACT-001 (DE-05): UD-Hebrew POS whitelist enforced"
+        ports: {implements: [], defined: []}
+        contract_helpers:
+          - assert_nlp_result_v1 (tirvi/nlp/contracts.py)
+        tests:
+          unit:
+            - tests/unit/test_disambiguate.py
+            - tests/unit/test_morph_dict.py
+            - tests/unit/test_nlp_result_fields.py
+            - tests/unit/test_nlp_fixture_builder.py
+            - tests/unit/test_nlp_v1_invariants.py
+        runtime: {api_routes: [], cli_handlers: []}

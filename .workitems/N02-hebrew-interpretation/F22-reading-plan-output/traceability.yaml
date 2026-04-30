@@ -128,3 +128,44 @@ tests:
   - {ontology_id: "task:N02/F22/T-05", test_path: tests/unit/test_empty_block_skip.py, status: pending}
   - {ontology_id: "task:N02/F22/T-06", test_path: tests/unit/test_plan_serialization.py, status: pending}
   - {ontology_id: "task:N02/F22/T-07", test_path: tests/unit/test_page_json_projection.py, status: pending}
+
+bounded_contexts:
+  HebrewNlp:
+    features:
+      ReadingPlan:
+        feature_id: N02/F22
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: [ReadingPlan]
+          value_objects: [PlanBlock, PlanToken]
+          errors: [PlanInvariantError]
+          invariants:
+            - "INV-PLAN-001 (DE-04): every PlanToken.id unique across blocks"
+            - "INV-PLAN-002 (DE-04): block order matches reading order (RTL)"
+            - "INV-PLAN-003 (DE-06): to_json byte-identical across runs"
+            - "INV-PLAN-T-001 (DE-06): id == f'{block_id}-{position}' (e.g., b3-0)"
+            - "INV-PLAN-T-005 (F30 wire): id matches WordTimingResult.timings[].mark_id"
+        wire_artefacts_produced: [plan.json]
+        tests:
+          unit:
+            - tests/unit/test_plan_value_types.py
+            - tests/unit/test_build_plan.py
+            - tests/unit/test_plan_provenance.py
+            - tests/unit/test_plan_invariants.py
+            - tests/unit/test_empty_block_skip.py
+            - tests/unit/test_plan_serialization.py
+        runtime: {api_routes: [], cli_handlers: []}
+  AudioDelivery:
+    features:
+      ReadingPlanPageProjection:
+        feature_id: N02/F22
+        scope_specs: [DE-07]   # post-review C4 — page.json projection
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        wire_artefacts_produced: [page.json]   # docs/schemas/page.schema.json
+        consumed_by: [N04/F35]
+        tests:
+          unit:
+            - tests/unit/test_page_json_projection.py

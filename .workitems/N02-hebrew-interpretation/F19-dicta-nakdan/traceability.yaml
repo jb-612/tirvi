@@ -119,3 +119,32 @@ tests:
   - {ontology_id: "task:N02/F19/T-04", test_path: tests/unit/test_token_skip_filter.py, status: pending}
   - {ontology_id: "task:N02/F19/T-05", test_path: tests/unit/test_nikud_normalize.py, status: pending}
   - {ontology_id: "task:N02/F19/T-06", test_path: tests/unit/test_nakdan_adapter.py, status: pending}
+
+bounded_contexts:
+  Pronunciation:
+    features:
+      DictaNakdanAdapter:
+        feature_id: N02/F19
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: []   # extends F03-locked DiacritizationResult
+        ports:
+          implements: [DiacritizerBackend]
+        adapters:
+          - DictaNakdanAdapter (tirvi/adapters/nakdan/adapter.py)
+        vendor_sdks: [transformers]
+        invariants:
+          - "INV-NAKDAN-003 (DE-05): unconditional NFC→NFD nikud normalization"
+          - "INV-NAKDAN-002 (DE-02): NLP context tilt as soft prior"
+        tests:
+          unit:
+            - tests/unit/test_nakdan_loader.py
+            - tests/unit/test_nakdan_context.py
+            - tests/unit/test_nakdan_inference.py
+            - tests/unit/test_token_skip_filter.py
+            - tests/unit/test_nikud_normalize.py
+            - tests/unit/test_nakdan_adapter.py
+        runtime: {api_routes: [], cli_handlers: []}

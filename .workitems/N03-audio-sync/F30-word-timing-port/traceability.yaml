@@ -116,3 +116,33 @@ tests:
   - {ontology_id: "task:N03/F30/T-03", test_path: tests/unit/test_per_block_scope.py, status: pending}
   - {ontology_id: "task:N03/F30/T-04", test_path: tests/unit/test_marks_monotonic.py, status: pending}
   - {ontology_id: "task:N03/F30/T-05", test_path: tests/unit/test_word_timing_provider.py, status: pending}
+
+bounded_contexts:
+  AudioDelivery:
+    features:
+      TtsMarksTimingAdapter:
+        feature_id: N03/F30
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-02]
+        acceptance_criteria: [US-02/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: []   # uses F03-locked WordTimingResult, WordTiming
+          errors: []           # uses tirvi.errors.MarkCountMismatchError
+          invariants:
+            - "INV-MARKS-002 (DE-02): end_s = next_mark.start_s for token i"
+            - "INV-MARKS-005 (DE-05, post-review C2): graceful alignment when tts_marks_truncated"
+            - "INV-MARKS-006 (DE-05): MarkCountMismatchError raised only on genuine adapter bug"
+        ports:
+          implements: [WordTimingProvider]   # tts-marks slot only; forced-alignment deferred to F31
+        adapters:
+          - TTSEmittedTimingAdapter (tirvi/adapters/tts_marks/adapter.py)
+        wire_artefacts_consumed: [audio.json]   # docs/schemas/audio.schema.json
+        tests:
+          unit:
+            - tests/unit/test_mark_to_timing.py
+            - tests/unit/test_marks_monotonic.py
+            - tests/unit/test_per_block_scope.py
+            - tests/unit/test_tts_marks_adapter.py
+            # F30 also exercises tests/unit/test_word_timing_provider.py (F03-shared file)
+        runtime: {api_routes: [], cli_handlers: []}

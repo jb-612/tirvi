@@ -108,3 +108,29 @@ tests:
   - {ontology_id: "task:N02/F23/T-03", test_path: tests/unit/test_inter_block_break.py, status: pending}
   - {ontology_id: "task:N02/F23/T-04", test_path: tests/unit/test_xml_escape.py, status: pending}
   - {ontology_id: "task:N02/F23/T-05", test_path: tests/unit/test_ssml_shape.py, status: pending}
+
+bounded_contexts:
+  SpeechSynthesis:
+    features:
+      SsmlShaping:
+        feature_id: N02/F23
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []   # mutates F22's ReadingPlan via dataclasses.replace
+          value_objects: []
+          invariants:
+            - "INV-SSML-001 (DE-01): wraps content in <speak xml:lang='he-IL'>"
+            - "INV-SSML-002 (DE-02): every token gets <mark name='{token.id}'/> pre-emit"
+            - "INV-SSML-005 (F23 HLD-deviation): mark format {block_id}-{position}"
+        wire_contracts_pinned:
+          - "PlanToken.id format flows F22 → F23 → F26 → F30 → F35 unchanged"
+        tests:
+          unit:
+            - tests/unit/test_ssml_block_builder.py
+            - tests/unit/test_per_word_mark.py
+            - tests/unit/test_inter_block_break.py
+            - tests/unit/test_xml_escape.py
+            - tests/unit/test_ssml_shape.py
+        runtime: {api_routes: [], cli_handlers: []}

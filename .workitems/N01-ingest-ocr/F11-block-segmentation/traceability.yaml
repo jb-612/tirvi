@@ -111,3 +111,32 @@ tests:
   - {ontology_id: "task:N01/F11/T-03", test_path: tests/unit/test_block_classifier.py, status: pending}
   - {ontology_id: "task:N01/F11/T-04", test_path: tests/unit/test_block_classifier.py, status: pending}
   - {ontology_id: "task:N01/F11/T-05", test_path: tests/unit/test_block_bbox.py, status: pending}
+
+bounded_contexts:
+  Extraction:
+    features:
+      BlockSegmentation:
+        feature_id: N01/F11
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: [Block, PageStats]
+          taxonomy: [BlockType]   # Literal["heading","paragraph","question_stem"]
+          errors: [BlockTypeOutOfScope]
+          invariants:
+            - "INV-BLOCK-001 (FT-071): block_id format b{n}"
+            - "INV-BLOCK-002 (FT-072): every word in exactly one block"
+            - "INV-BLOCK-003 (DE-04): block bbox is union of child word bboxes"
+            - "INV-BLOCK-PS-001 (FT-070): median word height > 0"
+        ports:
+          implements: []
+          defined: []
+        tests:
+          unit:
+            - tests/unit/test_block_taxonomy.py
+            - tests/unit/test_page_statistics.py
+            - tests/unit/test_block_classifier.py
+            - tests/unit/test_block_bbox.py
+        runtime: {api_routes: [], cli_handlers: []}

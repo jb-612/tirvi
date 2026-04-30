@@ -114,3 +114,30 @@ tests:
   - {ontology_id: "task:N04/F35/T-04", test_path: tests/unit/test_lookup_word.py, status: pending}
   - {ontology_id: "task:N04/F35/T-05", test_path: tests/unit/test_marker_position.py, status: pending}
   - {ontology_id: "task:N04/F35/T-06", test_path: tests/unit/test_a11y_player.py, status: pending}
+
+bounded_contexts:
+  AudioDelivery:
+    features:
+      WordSyncHighlight:
+        feature_id: N04/F35
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        language: javascript          # ADR-023 — vanilla HTML+JS, NOT Python
+        source_tree: player/          # repo root, NOT under tirvi/
+        invariants:
+          - "INV-PLAYER-DEG-001 (post-review C2): degraded path on missing audio.json"
+          - "INV-PLAYER-DEG-002: fail loud on missing page.json"
+          - "INV-HL-003 (DE-05): retina-safe scale via image.naturalWidth"
+        wire_artefacts_consumed:
+          - "audio.json (docs/schemas/audio.schema.json)"
+          - "page.json (docs/schemas/page.schema.json)"
+        tests:
+          # JS skeletons; Jest/Vitest toolchain TBD pre-/tdd
+          unit:
+            - player/test/player.spec.js.skel
+            - player/test/timing.spec.js.skel
+            - player/test/highlight.spec.js.skel
+        runtime:
+          static_page: player/index.html
+          js_modules: [js/player.js, js/timing.js, js/highlight.js]

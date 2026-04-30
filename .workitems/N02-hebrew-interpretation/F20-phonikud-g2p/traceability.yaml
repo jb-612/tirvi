@@ -118,3 +118,29 @@ tests:
   - {ontology_id: "task:N02/F20/T-04", test_path: tests/unit/test_g2p_skip_filter.py, status: pending}
   - {ontology_id: "task:N02/F20/T-05", test_path: tests/unit/test_pronunciation_hint.py, status: pending}
   - {ontology_id: "task:N02/F20/T-06", test_path: tests/unit/test_phonikud_adapter.py, status: pending}
+
+bounded_contexts:
+  Pronunciation:
+    features:
+      PhonikudG2PAdapter:
+        feature_id: N02/F20
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: [PronunciationHint]
+        ports:
+          implements: [G2PBackend]
+        adapters:
+          - PhonikudG2PAdapter (tirvi/adapters/phonikud/adapter.py)
+        vendor_sdks: [phonikud]
+        tests:
+          unit:
+            - tests/unit/test_phonikud_loader.py
+            - tests/unit/test_phonikud_inference.py
+            - tests/unit/test_pronunciation_hint.py
+            - tests/unit/test_vocal_shva.py
+            - tests/unit/test_g2p_skip_filter.py
+            - tests/unit/test_phonikud_adapter.py
+        runtime: {api_routes: [], cli_handlers: []}

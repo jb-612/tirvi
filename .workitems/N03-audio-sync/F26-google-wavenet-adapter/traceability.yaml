@@ -116,3 +116,34 @@ tests:
   - {ontology_id: "task:N03/F26/T-04", test_path: tests/unit/test_mark_truncation.py, status: pending}
   - {ontology_id: "task:N03/F26/T-05", test_path: tests/unit/test_drafts_dir_write.py, status: pending}
   - {ontology_id: "task:N03/F26/T-06", test_path: tests/unit/test_wavenet_adapter.py, status: pending}
+
+bounded_contexts:
+  SpeechSynthesis:
+    features:
+      WavenetAdapter:
+        feature_id: N03/F26
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01]
+        acceptance_criteria: [US-01/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: []   # uses F03-locked TTSResult, WordMark
+          invariants:
+            - "INV-WAVENET-001 (DE-01): v1beta1 client for timepoints"
+            - "INV-WAVENET-004 (DE-04, post-review C2): mark truncation detection sets voice_meta['tts_marks_truncated']"
+            - "INV-WAVENET-005 (post-review C8): audio_duration_s extracted or None"
+        ports:
+          implements: [TTSBackend]
+        adapters:
+          - WavenetTTSAdapter (tirvi/adapters/wavenet/adapter.py)
+        vendor_sdks: [google-cloud-texttospeech]
+        wire_artefacts_produced: [audio.mp3, audio.json]
+        tests:
+          unit:
+            - tests/unit/test_wavenet_client.py
+            - tests/unit/test_wavenet_synthesize.py
+            - tests/unit/test_tts_result_assembly.py
+            - tests/unit/test_mark_truncation.py
+            - tests/unit/test_drafts_dir_write.py
+            - tests/unit/test_wavenet_adapter.py
+        runtime: {api_routes: [], cli_handlers: []}

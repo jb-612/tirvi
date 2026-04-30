@@ -122,3 +122,34 @@ tests:
   - {ontology_id: "task:N01/F08/T-04", test_path: tests/unit/test_lang_hint.py, status: pending}
   - {ontology_id: "task:N01/F08/T-05", test_path: tests/unit/test_deskew.py, status: pending}
   - {ontology_id: "task:N01/F08/T-06", test_path: tests/unit/test_tesseract_adapter.py, status: pending}
+
+# ---------------------------------------------------------------------------
+# DDD 7L scaffold output (L7 — appended by @ddd-7l-scaffold; ADR-016).
+# ---------------------------------------------------------------------------
+bounded_contexts:
+  Extraction:
+    features:
+      TesseractAdapter:
+        feature_id: N01/F08
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06]
+        user_stories: [US-01, US-02]
+        acceptance_criteria: [US-01/AC-01, US-02/AC-01]
+        domain_layer:
+          aggregates: []   # uses F03-locked OCRResult, OCRWord, OCRPage
+          value_objects: []
+          errors: []       # raises tirvi.errors.AdapterError on corrupt PDF
+        ports:
+          implements: [OCRBackend]
+        adapters:
+          - TesseractOCRAdapter (tirvi/adapters/tesseract/adapter.py)
+        vendor_sdks: [pdf2image, pypdfium2, pytesseract, cv2]
+        tests:
+          unit:
+            - tests/unit/test_pdf_rasterizer.py
+            - tests/unit/test_tesseract_adapter.py
+            - tests/unit/test_rtl_column_reorder.py
+            - tests/unit/test_lang_hint.py
+            - tests/unit/test_deskew.py
+        runtime:
+          api_routes: []
+          cli_handlers: []
