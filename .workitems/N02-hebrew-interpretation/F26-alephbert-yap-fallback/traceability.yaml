@@ -1,0 +1,177 @@
+# Traceability index — N02/F26 AlephBERT + YAP fallback.
+feature_id: N02/F26
+status: designed
+
+hld_refs:
+  - HLD-§3.3/Worker
+  - HLD-§4/AdapterInterfaces
+  - HLD-§5.2/Processing
+prd_refs:
+  - "PRD §6.4 — Reading plan"
+  - "PRD §9 — Constraints"
+adr_refs:
+  - ADR-002
+  - ADR-026
+  - ADR-027
+  - ADR-029
+
+biz_source:
+  functional_test_plan_path: ./functional-test-plan.md
+  behavioural_test_plan_path: ./behavioural-test-plan.md
+  corpus_e_id: E04-F02
+  imported_at: 2026-04-30T17:52:50Z
+  source_sha: 2af7279d515d1177f3f9774c0aeae63996e2b2e7
+
+ontology_refs:
+  - persona:P04
+  - persona:P08
+  - persona:P11
+  - bo:NLPResult
+  - bo:Token
+  - bc:hebrew_nlp
+  - co:HebrewNLPService
+  - asm:ASM04
+
+acm_nodes:
+  feature: feature:N02/F26
+  specs:
+    - spec:N02/F26/DE-01
+    - spec:N02/F26/DE-02
+    - spec:N02/F26/DE-03
+    - spec:N02/F26/DE-04
+    - spec:N02/F26/DE-05
+    - spec:N02/F26/DE-06
+    - spec:N02/F26/DE-07
+  user_stories:
+    - story:N02/F26/US-01
+    - story:N02/F26/US-02
+  acceptance_criteria:
+    - criterion:N02/F26/US-01/AC-01
+    - criterion:N02/F26/US-02/AC-01
+  tasks:
+    - task:N02/F26/T-01
+    - task:N02/F26/T-02
+    - task:N02/F26/T-03
+    - task:N02/F26/T-04
+    - task:N02/F26/T-05
+    - task:N02/F26/T-06
+    - task:N02/F26/T-07
+    - task:N02/F26/T-08
+    - task:N02/F26/T-09
+    - task:N02/F26/T-10
+  diagrams:
+    - diagram:N02/F26/alephbert-yap-fallback
+
+acm_edges:
+  - {from: spec:N02/F26/DE-01, to: HLD-§4/AdapterInterfaces, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-02, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-03, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-04, to: HLD-§4/AdapterInterfaces, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-04, to: HLD-§3.3/Worker, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-05, to: HLD-§3.3/Worker, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-06, to: HLD-§4/AdapterInterfaces, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-07, to: HLD-§3.3/Worker, type: TRACED_TO}
+  - {from: spec:N02/F26/DE-04, to: adr:002, type: INFLUENCED_BY}
+  - {from: spec:N02/F26/DE-01, to: adr:029, type: INFLUENCED_BY}
+  - {from: spec:N02/F26/DE-01, to: adr:027, type: INFLUENCED_BY}
+  - {from: spec:N02/F26/DE-04, to: adr:027, type: INFLUENCED_BY}
+  - {from: feature:N02/F26, to: feature:N02/F17, type: BACKS}
+  - {from: spec:N02/F17/DE-06, to: feature:N02/F26, type: DEGRADES_TO}
+  - {from: story:N02/F26/US-01, to: criterion:N02/F26/US-01/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F26/US-02, to: criterion:N02/F26/US-02/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F26/US-01, to: spec:N02/F26/DE-04, type: VERIFIED_BY}
+  - {from: story:N02/F26/US-01, to: spec:N02/F26/DE-05, type: VERIFIED_BY}
+  - {from: story:N02/F26/US-02, to: spec:N02/F26/DE-03, type: VERIFIED_BY}
+  - {from: feature:N02/F26, to: spec:N02/F26/DE-01, type: CONTAINS}
+  - {from: feature:N02/F26, to: spec:N02/F26/DE-02, type: CONTAINS}
+  - {from: feature:N02/F26, to: spec:N02/F26/DE-03, type: CONTAINS}
+  - {from: feature:N02/F26, to: spec:N02/F26/DE-04, type: CONTAINS}
+  - {from: feature:N02/F26, to: spec:N02/F26/DE-05, type: CONTAINS}
+  - {from: feature:N02/F26, to: spec:N02/F26/DE-06, type: CONTAINS}
+  - {from: spec:N02/F26/DE-01, to: bc:hebrew_nlp, type: BELONGS_TO}
+  - {from: spec:N02/F26/DE-02, to: bc:hebrew_nlp, type: BELONGS_TO}
+  - {from: spec:N02/F26/DE-03, to: bc:hebrew_nlp, type: BELONGS_TO}
+  - {from: spec:N02/F26/DE-04, to: bc:hebrew_nlp, type: BELONGS_TO}
+  - {from: spec:N02/F26/DE-05, to: bc:hebrew_nlp, type: BELONGS_TO}
+  - {from: spec:N02/F26/DE-06, to: bc:hebrew_nlp, type: BELONGS_TO}
+  - {from: ADP-N02-F26-alephbert, to: PORT-02, type: REALIZES}
+  - {from: "diagram:N02/F26/alephbert-yap-fallback", to: spec:N02/F26/DE-04, type: EXPLAINS}
+  - {from: "diagram:N02/F26/alephbert-yap-fallback", to: spec:N02/F26/DE-05, type: EXPLAINS}
+  - {from: task:N02/F26/T-01, to: spec:N02/F26/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-02, to: spec:N02/F26/DE-02, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-03, to: spec:N02/F26/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-04, to: spec:N02/F26/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-05, to: spec:N02/F26/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-06, to: spec:N02/F26/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-07, to: spec:N02/F26/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-08, to: spec:N02/F26/DE-07, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-09, to: spec:N02/F26/DE-02, type: IMPLEMENTED_BY}
+  - {from: task:N02/F26/T-10, to: spec:N02/F26/DE-05, type: IMPLEMENTED_BY}
+  - {from: feature:N02/F26, to: spec:N02/F26/DE-07, type: CONTAINS}
+  - {from: spec:N02/F26/DE-07, to: bc:hebrew_nlp, type: BELONGS_TO}
+
+de_to_hld:
+  DE-01: HLD-§4/AdapterInterfaces
+  DE-02: HLD-§5.2/Processing
+  DE-03: HLD-§5.2/Processing
+  DE-04: HLD-§4/AdapterInterfaces
+  DE-05: HLD-§3.3/Worker
+  DE-06: HLD-§4/AdapterInterfaces
+  DE-07: HLD-§3.3/Worker
+story_to_prd:
+  US-01: "PRD §9 — Constraints"
+  US-02: "PRD §6.4 — Reading plan"
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-04
+  T-05: DE-05
+  T-06: DE-06
+  T-07: DE-06
+  T-08: DE-07
+  T-09: DE-02
+  T-10: DE-05
+ac_to_story:
+  US-01/AC-01: US-01
+  US-02/AC-01: US-02
+
+tests:
+  - {ontology_id: "task:N02/F26/T-01", test_path: tests/unit/test_yap_client.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-02", test_path: tests/unit/test_yap_response_parser.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-03", test_path: tests/unit/test_yap_ud_mapper.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-04", test_path: tests/unit/test_alephbert_yap_adapter.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-05", test_path: tests/unit/test_yap_degraded_path.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-06", test_path: tests/integration/test_f17_to_f26_failover.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-07", test_path: tests/unit/test_alephbert_yap_adapter.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-08", test_path: tests/unit/test_yap_health_probe.py, status: pending}
+  - {ontology_id: "task:N02/F26/T-09", test_path: tests/fixtures/yap_lattice_sample.json, status: pending}
+  - {ontology_id: "task:N02/F26/T-10", test_path: tests/integration/test_f22_tolerates_degraded_nlp.py, status: pending}
+
+bounded_contexts:
+  HebrewNlp:
+    features:
+      AlephBertYapFallback:
+        feature_id: N02/F26
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-06, DE-07]
+        user_stories: [US-01, US-02]
+        acceptance_criteria: [US-01/AC-01, US-02/AC-01]
+        domain_layer:
+          aggregates: []
+          value_objects: []   # extends F03-locked NLPResult; no new VOs
+        ports:
+          implements: [NLPBackend]   # second implementer alongside F17
+        adapters:
+          - AlephBertYapFallbackAdapter (tirvi/adapters/alephbert/adapter.py)
+        external_services:
+          - YAP HTTP server (yap api) on 127.0.0.1:8000 (configurable via TIRVI_YAP_URL)
+        vendor_sdks: []   # POC: stdlib urllib.request only; transformers deferred to MVP
+        tests:
+          unit:
+            - tests/unit/test_yap_client.py
+            - tests/unit/test_yap_response_parser.py
+            - tests/unit/test_yap_ud_mapper.py
+            - tests/unit/test_alephbert_yap_adapter.py
+            - tests/unit/test_yap_degraded_path.py
+            - tests/unit/test_f17_to_f26_failover.py
+        runtime: {api_routes: [], cli_handlers: []}

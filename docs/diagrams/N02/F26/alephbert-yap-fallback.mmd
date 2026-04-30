@@ -1,0 +1,22 @@
+flowchart LR
+    F17["F17 DictaBERTAdapter\nanalyze() called"]
+    LOAD["F17 load_model()\ndictabert-morph"]
+    OK["F17 path returns\nNLPResult provider=dictabert-morph"]
+    F26ADAPTER["DE-04\nAlephBertYapFallbackAdapter"]
+    CLIENT["DE-01\nYAP HTTP client\nPOST 127.0.0.1:8000/api/v0/joint"]
+    YAP["YAP server\n(yap api, Bar-Ilan ONLP)"]
+    PARSE["DE-02\nlattice_md parser"]
+    MAP["DE-03\nUD-Hebrew label mapper"]
+    GOOD["NLPResult\nprovider=alephbert+yap"]
+    DEG["DE-05\nNLPResult\nprovider=degraded\ntokens=[]"]
+
+    F17 --> LOAD
+    LOAD --> OK
+    LOAD -. ImportError or OSError\n(per F17 DE-06 / ADR-027 / ADR-029) .-> F26ADAPTER
+    F26ADAPTER --> CLIENT
+    CLIENT -- POST .-> YAP
+    YAP -- 200 OK + JSON --> CLIENT
+    CLIENT --> PARSE
+    PARSE --> MAP
+    MAP --> GOOD
+    CLIENT -. URLError or timeout or non-200 .-> DEG
