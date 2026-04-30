@@ -7,6 +7,8 @@ from tirvi.errors import MarkCountMismatchError
 from tirvi.ports import WordTimingProvider
 from tirvi.results import TTSResult, WordMark, WordTiming, WordTimingResult
 
+from .invariants import assert_marks_monotonic
+
 # Fallback span when audio_duration_s is None (post-review C8): the last
 # mark's end_s defaults to start_s + this many seconds.
 _LAST_MARK_FALLBACK_S = 0.2
@@ -38,6 +40,7 @@ class TTSEmittedTimingAdapter(WordTimingProvider):
                 "TTSEmittedTimingAdapter requires a TTSResult; pass via __init__"
             )
         marks = self._tts_result.word_marks or []
+        assert_marks_monotonic(marks)
         timings = _project_marks(marks, self._tts_result.audio_duration_s)
         return WordTimingResult(
             provider="tts-marks",
