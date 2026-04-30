@@ -5,6 +5,8 @@ Spec: N02/F23 DE-01, DE-02, DE-03, DE-04. AC: US-01/AC-01.
 
 from tirvi.plan import PlanBlock, PlanToken, ReadingPlan
 
+from .escape import xml_escape
+
 
 def build_block_ssml(block: PlanBlock) -> str:
     """Build the SSML ``<speak>`` document for one PlanBlock (T-01).
@@ -28,9 +30,9 @@ def build_block_ssml(block: PlanBlock) -> str:
 
 
 def _token_to_ssml_fragment(token: PlanToken) -> str:
-    """Mark + surface form for one token. Diacritized text preferred."""
+    """Mark + escaped surface form for one token. Diacritized text preferred (T-02)."""
     surface = token.diacritized_text if token.diacritized_text else token.text
-    return f'<mark name="{token.id}"/>{surface}'
+    return f'<mark name="{token.id}"/>{xml_escape(surface)}'
 
 
 def populate_plan_ssml(plan: ReadingPlan) -> ReadingPlan:
