@@ -30,6 +30,7 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-021 | Dicta-Nakdan loaded in-process for POC; API path deferred | Proposed | pronunciation | F19 |
 | ADR-022 | Phonikud loaded in-process for POC; matching ADR-020/021 pattern | Proposed | pronunciation | F20 |
 | ADR-023 | POC player ships as vanilla HTML; Next.js deferred to MVP | Proposed | player | F35, F36 |
+| ADR-024 | Horizontal-mode `@ddd-7l-scaffold` (lessons from 14-feature POC prototype) | Proposed | sdlc | all (harness-wide) |
 
 ## Conventions
 
