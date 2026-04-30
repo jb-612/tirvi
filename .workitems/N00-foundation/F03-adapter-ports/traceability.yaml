@@ -176,3 +176,129 @@ tests:
   - {ontology_id: "task:N00/F03/T-07", test_path: tests/unit/test_fakes.py, status: pending}
   - {ontology_id: "task:N00/F03/T-08", test_path: tests/unit/test_contracts.py, status: pending}
   - {ontology_id: "task:N00/F03/T-09", test_path: tests/unit/test_import_boundary.py, status: pending}
+
+# ---------------------------------------------------------------------------
+# DDD 7L scaffold output (L7 — appended by @ddd-7l-scaffold; ADR-016).
+# Schema bridge to flat acm_nodes/acm_edges is deferred per ADR-016.
+# ---------------------------------------------------------------------------
+bounded_contexts:
+  Platform:
+    features:
+      AdapterPorts:
+        feature_id: N00/F03
+        scope_specs: [DE-01, DE-02, DE-04, DE-05, DE-06]
+        user_stories:
+          - US-01
+        acceptance_criteria:
+          - US-01/AC-01
+        domain_layer:
+          aggregates: []   # boundary-only feature — no aggregates
+          value_objects:
+            - OCRResult
+            - OCRPage
+            - OCRWord
+            - NLPResult
+            - NLPToken
+            - DiacritizationResult
+            - G2PResult
+            - TTSResult
+            - WordMark
+          errors:
+            - AdapterError
+            - SchemaContractError
+            - MarkCountMismatchError
+          invariants:
+            - "INV-OCR-001 (FT-011, BT-009): OCRResult never bytes"
+            - "INV-OCR-002 (biz S01): confidence None, never 0.0"
+            - "INV-OCR-W-001 (FT-011): OCRWord bbox is post-deskew pixel coords"
+            - "INV-OCR-W-002 (FT-011): OCRWord conf in [0,1] or None"
+            - "INV-MARK-001 (FT-012): WordMark start_ms <= end_ms"
+            - "INV-MARK-002 (FT-014): WordMark mark_id matches PlanToken.id (F22)"
+            - "INV-TTS-001 (FT-012, BT-009): TTSResult never bytes"
+            - "INV-TTS-002 (FT-013): word_marks=None is legitimate (mark-less providers)"
+            - "INV-TTS-003 (post-review C8, F30 DE-02): audio_duration_s=None is legitimate"
+            - "INV-CONTRACT-001 (BT-009): contract rejects bytes return"
+            - "INV-CONTRACT-002 (FT-016): contract asserts every required field"
+            - "INV-CONTRACT-003 (BT-011): contract catches schema drift after port evolution"
+            - "INV-PORT-OCR-001 (FT-011, BT-009): OCRBackend returns OCRResult"
+            - "INV-PORT-NLP-001 (FT-011): NLPBackend returns NLPResult with Hebrew UD tokens (F17)"
+            - "INV-PORT-DIA-001 (FT-011): DiacritizerBackend returns DiacritizationResult with NFC→NFD nikud (F19)"
+            - "INV-PORT-G2P-001 (FT-011): G2PBackend returns G2PResult with IPA/SAMPA per F20"
+            - "INV-PORT-TTS-001 (FT-012, BT-009): TTSBackend returns TTSResult"
+            - "INV-PORT-TTS-002 (FT-013): TTSBackend.word_marks=None legitimate"
+        ports:
+          interfaces:
+            - OCRBackend
+            - NLPBackend
+            - DiacritizerBackend
+            - G2PBackend
+            - TTSBackend
+        fakes:
+          - OCRBackendFake
+          - NLPBackendFake
+          - DiacritizerBackendFake
+          - G2PBackendFake
+          - TTSBackendFake
+        contract_harness:
+          - assert_adapter_contract
+        lint_rules:
+          - "ruff flake8-tidy-imports.banned-api: google.cloud, transformers, torch, huggingface_hub blocked outside tirvi/adapters/** (DE-06)"
+        tests:
+          unit:
+            - tests/unit/test_package_structure.py
+            - tests/unit/test_results.py
+            - tests/unit/test_ports.py
+            - tests/unit/test_fakes.py
+            - tests/unit/test_contracts.py
+            - tests/unit/test_import_boundary.py
+        runtime:
+          api_routes: []        # boundary-only feature — no runtime surface
+          cli_handlers: []
+          message_consumers: []
+          observability_hooks: []
+
+  AudioDelivery:
+    features:
+      WordTimingProviderPort:
+        feature_id: N00/F03
+        scope_specs: [DE-03]
+        user_stories:
+          - US-02
+        acceptance_criteria:
+          - US-02/AC-01
+        domain_layer:
+          aggregates: []   # boundary-only feature — no aggregates
+          value_objects:
+            - WordTimingResult
+            - WordTiming
+          errors:
+            - WordTimingFallbackError
+          invariants:
+            - "INV-WT-001 (FT-014): WordTiming start_s <= end_s when both present"
+            - "INV-WT-002 (post-review C2, F30 DE-05): end_s may be None for tail tokens"
+            - "INV-WTR-001 (FT-014): timings count matches transcript_tokens unless tts_marks_truncated"
+            - "INV-WTR-002 (BT-012): source records which adapter produced the result"
+            - "INV-PORT-WT-001 (FT-014, BT-012): WordTimingProvider returns WordTimingResult"
+            - "INV-COORD-001 (FT-014): primary→fallback on schema mismatch"
+            - "INV-COORD-002 (FT-014): 3-predicate check — non-empty, count match, monotonic"
+            - "INV-COORD-003 (BT-012): both-fail raises WordTimingFallbackError (typed, not silent)"
+            - "INV-COORD-004 (ADR-015): timing_source metric emitted on every call"
+            - "INV-COORD-005 (ADR-015): TIRVI_TTS_MARK_RELIABILITY=low skips primary"
+        ports:
+          interfaces:
+            - WordTimingProvider
+        coordinators:
+          - WordTimingCoordinator
+        fakes:
+          - WordTimingProviderFake
+        tests:
+          unit:
+            - tests/unit/test_word_timing_provider.py
+            - tests/unit/test_fakes.py
+        runtime:
+          api_routes: []        # boundary-only feature — no runtime surface
+          cli_handlers: []
+          message_consumers: []
+          observability_hooks:
+            - "metric:timing_source (emitted by WordTimingCoordinator per call)"
+
