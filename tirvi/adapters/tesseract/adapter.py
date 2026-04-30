@@ -31,9 +31,14 @@ class TesseractOCRAdapter(OCRBackend):
         self._deskew = deskew
 
     def ocr_pdf(self, pdf_bytes: bytes) -> OCRResult:
-        # TODO INV-TESS-001 (T-01 PDF page rasterizer): pdf2image at 300 dpi
-        # TODO INV-TESS-005 (T-02 Tesseract invoker): pytesseract.image_to_data, psm 6, lang heb
-        # TODO INV-TESS-003 (T-03 RTL column reorder): cluster x-centers, sort columns desc
-        # TODO INV-TESS-002 (T-04 inline lang_hint): per-word lang detection
-        # TODO INV-TESS-004 (T-05): raise tirvi.errors.AdapterError on corrupt PDF
-        raise NotImplementedError
+        from tirvi.results import OCRPage
+
+        from .invoker import invoke_tesseract
+        from .layout import reorder_rtl_columns
+        from .rasterizer import rasterize_pdf
+
+        pages = []
+        for image in rasterize_pdf(pdf_bytes, dpi=self._dpi):
+            words = invoke_tesseract(image, lang=self._lang)
+            pages.append(OCRPage(words=reorder_rtl_columns(words)))
+        return OCRResult(provider="tesseract", pages=pages)
