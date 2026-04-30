@@ -31,6 +31,11 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-022 | Phonikud loaded in-process for POC; matching ADR-020/021 pattern | Proposed | pronunciation | F20 |
 | ADR-023 | POC player ships as vanilla HTML; Next.js deferred to MVP | Proposed | player | F35, F36 |
 | ADR-024 | Horizontal-mode `@ddd-7l-scaffold` (lessons from 14-feature POC prototype) | Proposed | sdlc | all (harness-wide) |
+| ADR-025 | Dicta-Nakdan via REST API for POC; in-process model deferred | Proposed | pronunciation | F19 |
+| ADR-026 | F17 DictaBERT model identifier — pivot to `dicta-il/dictabert-morph` | Proposed | hebrew-interpretation | F17, F26 |
+| ADR-027 | F26 fallback uses YAP HTTP-server mode; AlephBERT deferred to MVP | Proposed | hebrew-interpretation | F26 |
+| ADR-028 | F20 Phonikud `phonemize()` API pivot; per-token transliteration deferred | Proposed | pronunciation | F20 |
+| ADR-029 | Vendor-boundary discipline — vendor SDK imports confined to `tirvi.adapters.<vendor>.**` | Proposed | platform | F08, F17, F19, F20, F26 |
 
 ## Conventions
 
