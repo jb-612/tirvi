@@ -28,7 +28,7 @@ class TestOCRResultBuilder:
         word = result.pages[0].words[0]
         assert word.text == "שלום"
         assert word.bbox == (10, 20, 80, 60)
-        assert word.conf == 0.95
+        assert word.confidence == 0.95
         assert word.lang_hint == "he"
 
     def test_us_01_ac_01_from_yaml_preserves_page_lang_hints(self) -> None:

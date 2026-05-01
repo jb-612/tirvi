@@ -20,9 +20,9 @@ def _ocr_result() -> OCRResult:
         pages=[
             OCRPage(
                 words=[
-                    OCRWord(text="שלום", bbox=(10, 20, 50, 40), conf=0.9, lang_hint="he"),
-                    OCRWord(text="עולם", bbox=(60, 20, 100, 40), conf=0.85, lang_hint="he"),
-                    OCRWord(text="פרק", bbox=(10, 60, 40, 80), conf=0.95, lang_hint="he"),
+                    OCRWord(text="שלום", bbox=(10, 20, 50, 40), confidence=0.9, lang_hint="he"),
+                    OCRWord(text="עולם", bbox=(60, 20, 100, 40), confidence=0.85, lang_hint="he"),
+                    OCRWord(text="פרק", bbox=(10, 60, 40, 80), confidence=0.95, lang_hint="he"),
                 ],
                 lang_hints=["he"],
             ),

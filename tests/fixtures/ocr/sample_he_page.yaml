@@ -7,9 +7,9 @@ pages:
     words:
       - text: "שלום"
         bbox: [10, 20, 80, 60]
-        conf: 0.95
+        confidence: 0.95
         lang_hint: "he"
       - text: "עולם"
         bbox: [90, 20, 160, 60]
-        conf: 0.88
+        confidence: 0.88
         lang_hint: "he"

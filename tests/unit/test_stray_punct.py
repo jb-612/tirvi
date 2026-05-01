@@ -16,18 +16,18 @@ def _w(
     y0: int = 0,
     x1: int = 50,
     y1: int = 30,
-    conf: float | None = 1.0,
+    confidence: float | None = 1.0,
 ) -> OCRWord:
-    return OCRWord(text=text, bbox=(x0, y0, x1, y1), conf=conf)
+    return OCRWord(text=text, bbox=(x0, y0, x1, y1), confidence=confidence)
 
 
 class TestStrayPunct:
     def test_us_01_ac_01_drops_isolated_punct_tokens(self) -> None:
         # Stray comma alone on its own line, low confidence → dropped.
         words = [
-            _w("hello", y0=0, y1=20, conf=0.95),
-            _w(",", y0=40, y1=60, conf=0.2),
-            _w("world", y0=80, y1=100, conf=0.9),
+            _w("hello", y0=0, y1=20, confidence=0.95),
+            _w(",", y0=40, y1=60, confidence=0.2),
+            _w("world", y0=80, y1=100, confidence=0.9),
         ]
         result = drop_stray_punct(words)
         assert "," not in result.text
@@ -35,8 +35,8 @@ class TestStrayPunct:
 
     def test_us_01_ac_01_logs_repair_to_repair_log(self) -> None:
         words = [
-            _w("hello", y0=0, y1=20, conf=0.95),
-            _w(",", y0=40, y1=60, conf=0.2),
+            _w("hello", y0=0, y1=20, confidence=0.95),
+            _w(",", y0=40, y1=60, confidence=0.2),
         ]
         result = drop_stray_punct(words)
         assert len(result.repair_log) == 1
@@ -48,8 +48,8 @@ class TestStrayPunct:
     def test_drops_isolated_apostrophe(self) -> None:
         # ASCII apostrophe (U+0027) alone, low confidence → dropped.
         words = [
-            _w("alpha", y0=0, y1=20, conf=0.9),
-            _w("'", y0=40, y1=60, conf=0.1),
+            _w("alpha", y0=0, y1=20, confidence=0.9),
+            _w("'", y0=40, y1=60, confidence=0.1),
         ]
         result = drop_stray_punct(words)
         assert "'" not in result.text
@@ -58,7 +58,7 @@ class TestStrayPunct:
         # Hebrew geresh (U+05F3) survives even at low confidence.
         # Regression: מס׳ (mispar — "number") would lose its geresh otherwise.
         geresh = "׳"  # ׳
-        words = [_w(f"מס{geresh}", y0=0, y1=20, conf=0.3)]
+        words = [_w(f"מס{geresh}", y0=0, y1=20, confidence=0.3)]
         result = drop_stray_punct(words)
         assert f"מס{geresh}" in result.text
 
@@ -66,7 +66,7 @@ class TestStrayPunct:
         # Hebrew gershayim (U+05F4) survives even at low confidence.
         # Regression: ת״א (tel-aviv abbreviation) keeps its gershayim.
         gershayim = "״"  # ״
-        words = [_w(f"ת{gershayim}א", y0=0, y1=20, conf=0.3)]
+        words = [_w(f"ת{gershayim}א", y0=0, y1=20, confidence=0.3)]
         result = drop_stray_punct(words)
         assert f"ת{gershayim}א" in result.text
 
@@ -74,8 +74,8 @@ class TestStrayPunct:
         # Even an isolated geresh token at low confidence is preserved.
         geresh = "׳"
         words = [
-            _w("alpha", y0=0, y1=20, conf=0.9),
-            _w(geresh, y0=40, y1=60, conf=0.1),
+            _w("alpha", y0=0, y1=20, confidence=0.9),
+            _w(geresh, y0=40, y1=60, confidence=0.1),
         ]
         result = drop_stray_punct(words)
         assert geresh in result.text
@@ -83,8 +83,8 @@ class TestStrayPunct:
     def test_preserves_high_confidence_punct(self) -> None:
         # High-confidence stray comma → preserved (not stray, just isolated).
         words = [
-            _w("alpha", y0=0, y1=20, conf=0.9),
-            _w(",", y0=40, y1=60, conf=0.95),
+            _w("alpha", y0=0, y1=20, confidence=0.9),
+            _w(",", y0=40, y1=60, confidence=0.95),
         ]
         result = drop_stray_punct(words)
         assert "," in result.text
@@ -93,8 +93,8 @@ class TestStrayPunct:
         # Comma sitting next to text on the SAME line is sentence-final-ish
         # — preserved even at low confidence (it has neighbouring text).
         words = [
-            _w("alpha", x0=0, y0=0, x1=50, y1=20, conf=0.9),
-            _w(",", x0=55, y0=0, x1=60, y1=20, conf=0.2),
+            _w("alpha", x0=0, y0=0, x1=50, y1=20, confidence=0.9),
+            _w(",", x0=55, y0=0, x1=60, y1=20, confidence=0.2),
         ]
         result = drop_stray_punct(words)
         assert "," in result.text
@@ -102,8 +102,8 @@ class TestStrayPunct:
     def test_preserves_none_confidence(self) -> None:
         # conf is None → "no signal", not low-confidence; preserve.
         words = [
-            _w("alpha", y0=0, y1=20, conf=0.9),
-            _w(",", y0=40, y1=60, conf=None),
+            _w("alpha", y0=0, y1=20, confidence=0.9),
+            _w(",", y0=40, y1=60, confidence=None),
         ]
         result = drop_stray_punct(words)
         assert "," in result.text

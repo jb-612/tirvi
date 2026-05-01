@@ -27,7 +27,7 @@ from tirvi.results import (
 
 
 def _word(text: str = "שלום", x0: int = 10, y0: int = 20, x1: int = 60, y1: int = 40) -> OCRWord:
-    return OCRWord(text=text, bbox=(x0, y0, x1, y1), conf=0.9)
+    return OCRWord(text=text, bbox=(x0, y0, x1, y1), confidence=0.9)
 
 
 def _fake_deps() -> PipelineDeps:

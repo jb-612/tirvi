@@ -11,7 +11,7 @@ from tirvi.results import OCRWord
 
 def _w(text: str, idx: int) -> OCRWord:
     # Layout the words horizontally so each has a unique bbox tied to its index.
-    return OCRWord(text=text, bbox=(idx * 60, 0, idx * 60 + 50, 30), conf=1.0)
+    return OCRWord(text=text, bbox=(idx * 60, 0, idx * 60 + 50, 30), confidence=1.0)
 
 
 class TestBboxSpanMap:

@@ -17,7 +17,7 @@ biz-functional-design runs for N05.
 - design_element: DE-01, DE-02
 - acceptance_criteria: [AC-01]
 - estimate: 2h
-- test_file: tests/unit/test_ttl_cleanup.py
+- test_file: tests/unit/test_ttl_automation.py
 - dependencies: []
 - hints: Apply GCS lifecycle_rule for pdfs/, pages/, plans/, manifests/ prefixes
   with 7-day Age condition; exclude audio/; scripts/ops/verify_ttl.py checks rule is active.

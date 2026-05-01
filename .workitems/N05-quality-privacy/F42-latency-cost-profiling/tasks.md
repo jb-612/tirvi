@@ -17,7 +17,7 @@ biz-functional-design runs for N05.
 - design_element: DE-01, DE-02
 - acceptance_criteria: [AC-01]
 - estimate: 2h
-- test_file: tests/unit/test_latency_cost_profiler.py
+- test_file: tests/unit/test_profiling.py
 - dependencies: [F39/T-01]
 - hints: Timing context manager wraps OCRBackend/NLP/TTS calls; cost estimator
   reads prices.yaml and writes bench/{run_id}/cost.json to GCS.

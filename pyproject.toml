@@ -4,6 +4,10 @@ version = "0.0.0"
 description = "Hebrew exam PDF → audio reading accommodation"
 requires-python = ">=3.11"
 readme = "README.md"
+dependencies = [
+    "opencv-python-headless>=4.13.0.92",
+    "pytesseract>=0.3.13",
+]
 
 [build-system]
 requires = ["setuptools>=68"]

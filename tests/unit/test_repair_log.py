@@ -14,7 +14,7 @@ from tirvi.results import OCRWord
 
 
 def _w(text: str) -> OCRWord:
-    return OCRWord(text=text, bbox=(0, 0, 50, 30), conf=1.0)
+    return OCRWord(text=text, bbox=(0, 0, 50, 30), confidence=1.0)
 
 
 class TestRepairLog:
@@ -64,9 +64,9 @@ class TestRepairLogEmitter:
         # Two adjacent words across a line break (rejoin) plus a stray
         # comma alone on its own line (drop).
         words = [
-            OCRWord(text="hyph", bbox=(0, 0, 50, 20), conf=0.9),
-            OCRWord(text="enword", bbox=(0, 40, 50, 60), conf=0.9),
-            OCRWord(text=",", bbox=(0, 100, 10, 120), conf=0.2),
+            OCRWord(text="hyph", bbox=(0, 0, 50, 20), confidence=0.9),
+            OCRWord(text="enword", bbox=(0, 40, 50, 60), confidence=0.9),
+            OCRWord(text=",", bbox=(0, 100, 10, 120), confidence=0.2),
         ]
         result = normalize(words)
         rule_ids = [e.rule_id for e in result.repair_log]
@@ -77,10 +77,10 @@ class TestRepairLogEmitter:
         from tirvi.normalize.compose import normalize
 
         words = [
-            OCRWord(text="alpha", bbox=(0, 0, 50, 20), conf=0.9),
-            OCRWord(text=",", bbox=(0, 40, 10, 60), conf=0.2),
-            OCRWord(text="beta", bbox=(0, 80, 50, 100), conf=0.9),
-            OCRWord(text="gamma", bbox=(0, 120, 50, 140), conf=0.9),
+            OCRWord(text="alpha", bbox=(0, 0, 50, 20), confidence=0.9),
+            OCRWord(text=",", bbox=(0, 40, 10, 60), confidence=0.2),
+            OCRWord(text="beta", bbox=(0, 80, 50, 100), confidence=0.9),
+            OCRWord(text="gamma", bbox=(0, 120, 50, 140), confidence=0.9),
         ]
         result = normalize(words)
         keys = [(e.rule_id, e.position) for e in result.repair_log]
@@ -90,8 +90,8 @@ class TestRepairLogEmitter:
         from tirvi.normalize.compose import normalize
 
         words = [
-            OCRWord(text="hyph", bbox=(0, 0, 50, 20), conf=0.9),
-            OCRWord(text="enword", bbox=(0, 40, 50, 60), conf=0.9),
+            OCRWord(text="hyph", bbox=(0, 0, 50, 20), confidence=0.9),
+            OCRWord(text="enword", bbox=(0, 40, 50, 60), confidence=0.9),
         ]
         result = normalize(words)
         rejoin_entries = [

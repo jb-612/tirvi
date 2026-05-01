@@ -61,5 +61,5 @@ def _maybe_word(raw: dict[str, list[Any]], i: int) -> OCRWord | None:
     return OCRWord(
         text=text,
         bbox=(left, top, left + width, top + height),
-        conf=conf_raw / 100.0,
+        confidence=conf_raw / 100.0,
     )

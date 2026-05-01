@@ -39,11 +39,11 @@ class TestOCRResultFields:
     def test_us_01_ac_01_conf_none_default_not_zero(self) -> None:
         # biz S01 — distinguishes "no signal" from "low confidence"
         word = OCRWord(text="x", bbox=(0, 0, 1, 1))
-        assert word.conf is None
+        assert word.confidence is None
 
     def test_us_01_ac_01_conf_accepts_float_in_range(self) -> None:
-        word = OCRWord(text="x", bbox=(0, 0, 1, 1), conf=0.85)
-        assert word.conf == 0.85
+        word = OCRWord(text="x", bbox=(0, 0, 1, 1), confidence=0.85)
+        assert word.confidence == 0.85
 
     def test_us_01_ac_01_lang_hint_optional(self) -> None:
         word_he = OCRWord(text="שלום", bbox=(0, 0, 1, 1), lang_hint="he")

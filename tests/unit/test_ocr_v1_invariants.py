@@ -27,7 +27,7 @@ def _result(words: list[OCRWord], *, confidence: float | None = None) -> OCRResu
 class TestOCRv1Invariants:
     def test_us_01_ac_01_valid_result_passes(self) -> None:
         result = _result(
-            [OCRWord(text="שלום", bbox=(0, 0, 10, 10), conf=0.9, lang_hint="he")],
+            [OCRWord(text="שלום", bbox=(0, 0, 10, 10), confidence=0.9, lang_hint="he")],
             confidence=0.95,
         )
         assert_ocr_result_v1(result)  # no raise
@@ -50,12 +50,12 @@ class TestOCRv1Invariants:
     def test_us_01_ac_01_word_conf_out_of_range_raises(self) -> None:
         with pytest.raises(SchemaContractError):
             assert_ocr_result_v1(_result(
-                [OCRWord(text="x", bbox=(0, 0, 1, 1), conf=2.0)]
+                [OCRWord(text="x", bbox=(0, 0, 1, 1), confidence=2.0)]
             ))
 
     def test_us_01_ac_01_word_conf_none_passes(self) -> None:
         assert_ocr_result_v1(_result(
-            [OCRWord(text="x", bbox=(0, 0, 1, 1), conf=None)]
+            [OCRWord(text="x", bbox=(0, 0, 1, 1), confidence=None)]
         ))
 
     def test_us_01_ac_01_lang_hint_unknown_raises(self) -> None:

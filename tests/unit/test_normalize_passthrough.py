@@ -10,7 +10,7 @@ from tirvi.results import OCRWord
 
 
 def _w(text: str, x0: int = 0, y0: int = 0, x1: int = 50, y1: int = 30) -> OCRWord:
-    return OCRWord(text=text, bbox=(x0, y0, x1, y1), conf=1.0)
+    return OCRWord(text=text, bbox=(x0, y0, x1, y1), confidence=1.0)
 
 
 class TestNormalizePassthrough:

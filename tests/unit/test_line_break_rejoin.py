@@ -16,9 +16,9 @@ def _w(
     y0: int = 0,
     x1: int = 50,
     y1: int = 30,
-    conf: float = 1.0,
+    confidence: float = 1.0,
 ) -> OCRWord:
-    return OCRWord(text=text, bbox=(x0, y0, x1, y1), conf=conf)
+    return OCRWord(text=text, bbox=(x0, y0, x1, y1), confidence=confidence)
 
 
 class TestLineBreakRejoin:

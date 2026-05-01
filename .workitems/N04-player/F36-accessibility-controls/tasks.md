@@ -24,7 +24,7 @@ total_estimate_hours: 5.5
 - ft_anchors: [FT-249, FT-250]
 - bt_anchors: [BT-168]
 - estimate: 1.5h
-- test_file: tests/unit/test_player_state_machine.py
+- test_file: player/test/controls.spec.js
 - dependencies: []
 - hints: next_state(state, event); states = idle/playing/paused/ended; events = play/pause/continue/reset/audio_ended; invalid transitions return current state unchanged
 
@@ -34,7 +34,7 @@ total_estimate_hours: 5.5
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
-- test_file: tests/unit/test_button_handlers.py
+- test_file: player/test/controls.spec.js
 - dependencies: [T-01, T-02]
 - hints: Controls.bind(audio): each click -> dispatch event -> apply side effect (play/pause/currentTime=0); audio.addEventListener("ended", ...) feeds audio_ended
 
@@ -44,7 +44,7 @@ total_estimate_hours: 5.5
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
-- test_file: tests/unit/test_button_enable.py
+- test_file: player/test/controls.spec.js
 - dependencies: [T-02, T-03]
 - hints: idle -> Play enabled, others disabled; playing -> Pause enabled; paused -> Continue+Reset enabled; ended -> Play+Reset enabled; render after each transition
 
@@ -56,7 +56,7 @@ total_estimate_hours: 5.5
 - ft_anchors: [FT-253]
 - bt_anchors: [BT-169]
 - estimate: 0.5h
-- test_file: tests/unit/test_keyboard_shortcuts.py
+- test_file: player/test/controls.spec.js
 - dependencies: [T-03]
 - hints: Space -> if state in (idle,paused,ended) play; if playing pause; R -> always reset; preventDefault on focused player root
 
@@ -68,7 +68,7 @@ total_estimate_hours: 5.5
 - ft_anchors: [FT-252]
 - bt_anchors: [BT-171]
 - estimate: 0.5h
-- test_file: tests/unit/test_aria_focus.py
+- test_file: player/test/controls.spec.js
 - dependencies: [T-01]
 - hints: :focus-visible style always rendered; aria-labels in he+en (e.g., "Play / נגן"); palette tokens reuse F35's --highlight-bg/fg; contrast >= 4.5:1 measured via small contrast-ratio helper in test
 

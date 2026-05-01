@@ -46,7 +46,7 @@ total_estimate_hours: 7.0
 - ft_anchors: [FT-244]
 - bt_anchors: [BT-167]
 - estimate: 1h
-- test_file: tests/unit/test_lookup_word.py
+- test_file: player/test/highlight.spec.js
 - dependencies: [T-02]
 - hints: lookupWord(timings, t_seconds) returns mark_id where timings[i].start_s <= t < timings[i].end_s; binary search; return null when t before first or after last
 
@@ -58,7 +58,7 @@ total_estimate_hours: 7.0
 - ft_anchors: [FT-248]
 - bt_anchors: [BT-167]
 - estimate: 1.5h
-- test_file: tests/unit/test_marker_position.py
+- test_file: player/test/highlight.spec.js
 - dependencies: [T-04]
 - hints: positionMarker(bbox, image_natural, image_rendered): scale_x = rendered_w/natural_w; same for y; set CSS top/left/width/height; tests check pixel math for retina + non-retina
 
@@ -70,7 +70,7 @@ total_estimate_hours: 7.0
 - ft_anchors: [FT-246, FT-247]
 - bt_anchors: [BT-165, BT-166]
 - estimate: 1h
-- test_file: tests/unit/test_a11y_player.py
+- test_file: player/test/highlight.spec.js
 - dependencies: [T-05]
 - hints: query prefers-reduced-motion media; toggle `.no-animation` class; .marker palette uses --highlight-fg / --highlight-bg tokens with WCAG-compliant contrast; documented in README (deferred)
 

@@ -56,7 +56,7 @@ class TestTesseractAdapter:
         ):
             words = invoke_tesseract(img)
         assert len(words) == 1
-        assert words[0].conf == pytest.approx(0.75)
+        assert words[0].confidence == pytest.approx(0.75)
         assert words[0].text == "שלום"
         assert words[0].bbox == (10, 20, 40, 60)
 
@@ -73,7 +73,7 @@ class TestTesseractAdapter:
         assert "psm 6" in config
 
     def test_filters_non_word_levels_and_negative_conf(self) -> None:
-        # Tesseract emits page/block/para/line entries (level < 5) and conf=-1
+        # Tesseract emits page/block/para/line entries (level < 5) and confidence=-1
         # placeholders for missed words; only level==5 with conf >= 0 are real words.
         img = Image.new("RGB", (50, 50), "white")
         data: dict[str, list[object]] = {

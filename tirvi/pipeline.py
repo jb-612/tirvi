@@ -193,12 +193,12 @@ def _make_deps() -> PipelineDeps:
 # ---------------------------------------------------------------------------
 
 _STUB_WORDS = [
-    OCRWord(text="הבחינה", bbox=(820, 50, 940, 72), conf=0.95),
-    OCRWord(text="בחשבונאות", bbox=(660, 50, 815, 72), conf=0.95),
-    OCRWord(text="מועד", bbox=(940, 90, 1010, 112), conf=0.92),
-    OCRWord(text="א'", bbox=(870, 90, 935, 112), conf=0.90),
-    OCRWord(text="שנת", bbox=(790, 90, 865, 112), conf=0.92),
-    OCRWord(text="תשפ\"ה", bbox=(700, 90, 785, 112), conf=0.88),
+    OCRWord(text="הבחינה", bbox=(820, 50, 940, 72), confidence=0.95),
+    OCRWord(text="בחשבונאות", bbox=(660, 50, 815, 72), confidence=0.95),
+    OCRWord(text="מועד", bbox=(940, 90, 1010, 112), confidence=0.92),
+    OCRWord(text="א'", bbox=(870, 90, 935, 112), confidence=0.90),
+    OCRWord(text="שנת", bbox=(790, 90, 865, 112), confidence=0.92),
+    OCRWord(text="תשפ\"ה", bbox=(700, 90, 785, 112), confidence=0.88),
 ]
 
 

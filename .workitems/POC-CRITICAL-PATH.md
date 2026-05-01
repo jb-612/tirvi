@@ -198,19 +198,19 @@ clarifying semantics that ADR-014 says we test via contract tests
 | T-02 timing.js parser | ✅ | Sorts timings; binary-search ready |
 | T-03 highlight.js rAF loop | ✅ | The visible product |
 
-### F36 — accessibility controls (DEFERRED to v0.1)
+### F36 — accessibility controls (SHIPPED in MVP — all tasks complete)
 
 | T-ID | Demo? | Why |
 |---|---|---|
 | T-01 single play button | ✅ | One button gets the demo running |
-| T-02 4-button state machine | ❌ DEFER | Pause + restart + replay are polish |
-| T-03 button mount/ARIA | ❌ DEFER | A11y is v0.1 |
-| T-04 keyboard shortcuts | ❌ DEFER | Polish |
-| T-05 button enable states | ❌ DEFER | Polish |
-| T-06 focus management | ❌ DEFER | Polish |
+| T-02 4-button state machine | ✅ DONE (MVP) | Shipped in Wave 2 TDD |
+| T-03 button mount/ARIA | ✅ DONE (MVP) | Shipped in Wave 2 TDD |
+| T-04 keyboard shortcuts | ✅ DONE (MVP) | Shipped in Wave 2 TDD |
+| T-05 button enable states | ✅ DONE (MVP) | Shipped in Wave 2 TDD |
+| T-06 focus management | ✅ DONE (MVP) | Shipped in Wave 2 TDD |
 
-**F36 effective load: ~1h** for a one-button play control wired into
-F35's `<audio>` element. The remaining 5h of F36 ships in v0.1.
+**F36 effective load: all 6 tasks shipped in MVP. Full 4-button state machine,
+keyboard shortcuts, ARIA labels, and focus management delivered.
 
 ## Phase-level totals (after scope cut)
 

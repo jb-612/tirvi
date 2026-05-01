@@ -39,7 +39,7 @@ def _has_same_line_neighbour(words: list[OCRWord], idx: int) -> bool:
 
 def _is_stray(words: list[OCRWord], idx: int) -> bool:
     word = words[idx]
-    if word.conf is None or word.conf >= CONF_THRESHOLD:
+    if word.confidence is None or word.confidence >= CONF_THRESHOLD:
         return False
     if word.text not in DROPPABLE:
         return False

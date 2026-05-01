@@ -10,7 +10,7 @@ from tirvi.results import OCRWord
 
 
 def _w(text: str, x0: int, y0: int, x1: int, y1: int) -> OCRWord:
-    return OCRWord(text=text, bbox=(x0, y0, x1, y1), conf=1.0)
+    return OCRWord(text=text, bbox=(x0, y0, x1, y1), confidence=1.0)
 
 
 class TestRTLColumnReorder:

@@ -50,6 +50,6 @@ def _build_word(raw: dict[str, Any]) -> OCRWord:
     return OCRWord(
         text=raw["text"],
         bbox=tuple(bbox),  # type: ignore[arg-type]
-        conf=raw.get("conf"),
+        confidence=raw.get("confidence"),
         lang_hint=raw.get("lang_hint"),
     )

@@ -35,7 +35,7 @@ def _check_confidence(value: float | None, label: str) -> None:
 
 def _check_word(word: OCRWord, p_idx: int, w_idx: int) -> None:
     loc = f"pages[{p_idx}].words[{w_idx}]"
-    _check_confidence(word.conf, f"{loc}.conf")
+    _check_confidence(word.confidence, f"{loc}.confidence")
     if word.lang_hint not in _ALLOWED_LANG_HINTS:
         raise SchemaContractError(
             f"{loc}.lang_hint must be one of 'he', 'en', or None"

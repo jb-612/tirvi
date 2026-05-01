@@ -27,7 +27,7 @@ class OCRWord:
 
     text: str
     bbox: tuple[int, int, int, int]
-    conf: float | None = None
+    confidence: float | None = None
     lang_hint: str | None = None
 
 

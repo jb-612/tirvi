@@ -36,7 +36,7 @@ from tirvi.results import OCRResult, OCRWord  # noqa: E402
 
 
 def _fake_word(text: str = "שלום") -> OCRWord:
-    return OCRWord(text=text, bbox=(0, 0, 50, 20), conf=0.9)
+    return OCRWord(text=text, bbox=(0, 0, 50, 20), confidence=0.9)
 
 
 class TestOcrPdfWiring:
