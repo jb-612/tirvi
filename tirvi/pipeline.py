@@ -96,7 +96,24 @@ def run_pipeline(
         except Exception:
             pass
 
-    dia_result = deps.dia.diacritize(corrected_text)
+    # Use NLP-context diacritization when the adapter supports it (DictaNakdan
+    # has diacritize_in_context which scores morph against POS+features to pick
+    # the right candidate). Stub adapters fall back to plain diacritize().
+    if hasattr(deps.dia, "diacritize_in_context") and nlp_result and nlp_result.tokens:
+        dia_result = deps.dia.diacritize_in_context(corrected_text, nlp_result)
+    else:
+        dia_result = deps.dia.diacritize(corrected_text)
+
+    # Post-Nakdan kamatz-katan fix: replace kamatz with cholam in known
+    # kamatz-katan words so Phonikud emits /o/ instead of /a/.
+    from tirvi.normalize.kamatz_katan import fix_kamatz_katan
+    dia_text_fixed = fix_kamatz_katan(dia_result.diacritized_text)
+    dia_result = type(dia_result)(
+        provider=dia_result.provider,
+        diacritized_text=dia_text_fixed,
+        confidence=dia_result.confidence,
+    )
+
     g2p_result = deps.g2p.grapheme_to_phoneme(dia_result.diacritized_text, lang="he")
 
     plan = ReadingPlan.from_inputs(

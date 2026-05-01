@@ -83,10 +83,14 @@ class TestNakdanInference:
         assert result.confidence is None
         mock_api.assert_not_called()
 
-    def test_low_confidence_falls_back_to_plain_word(self) -> None:
-        """When Nakdan flags fconfident=false, prefer the undecorated word
-        over the unsure top-pick — Wavenet's default Hebrew handling
-        outperforms wrong-form nikud."""
+    def test_low_confidence_still_picks_top_option(self) -> None:
+        """Even when Nakdan flags fconfident=false, pick the top option.
+
+        Returning the un-vocalized word breaks TTS pronunciation: Wavenet
+        with no nikud guesses wrong stress and vowels. A best-guess nikud
+        from Nakdan beats no nikud, especially since diacritize_in_context
+        can override using NLP morphology when available.
+        """
         with patch(
             "tirvi.adapters.nakdan.inference.diacritize_via_api",
             return_value=[
@@ -94,9 +98,9 @@ class TestNakdanInference:
             ],
         ):
             result = diacritize("חלק")
-        assert "חֵלֶק" not in result.diacritized_text
-        assert "חָלָק" not in result.diacritized_text
-        assert "חלק" in result.diacritized_text
+        # NFD-normalised top option is present
+        import unicodedata
+        assert unicodedata.normalize("NFD", "חֵלֶק") in result.diacritized_text
 
     def test_high_confidence_uses_top_pick(self) -> None:
         """When Nakdan flags fconfident=true, trust the top pick."""

@@ -131,8 +131,14 @@ def _override_hit(word: str) -> str | None:
 
 
 def _confidence_gated(entry: dict[str, Any], word: str) -> str:
-    """Top option (prefix marker stripped) when confident; else word."""
+    """Pick top diacritized option even when confidence is low.
+
+    Previously: returned raw (un-vocalized) word when fconfident=False, which
+    left most words without nikud and broke TTS pronunciation. Now: always
+    pick the top option (Nakdan's best guess) — _pick_in_context uses NLP
+    tokens to override this when context is available.
+    """
     options = entry.get("options") or []
-    if not options or not entry.get("fconfident", True):
+    if not options:
         return word
     return str(options[0]).replace(_PREFIX_MARKER, "")

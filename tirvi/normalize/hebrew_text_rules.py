@@ -25,15 +25,48 @@ _LETTER_NAMES: dict[str, str] = {
     "ש": "שין",  "ת": "תא",
 }
 
-_GERESH_PAT = re.compile(r"([א-ת])" + GERESH)
+_GERESH_PAT = re.compile(r"([א-ת])[" + GERESH + r"']")
+
+# OCR commonly misreads א׳ as אי (alef-yod) when geresh is small. Recover
+# only when the bigram appears after an ordinal-context word.
+_ORDINAL_CONTEXT = ("חלק", "פרק", "סעיף", "מועד", "שאלה", "כיתה", "שלב", "מס")
+_ORDINAL_OCR_FIX = {
+    "אי": "אלף", "בי": "בית", "גי": "גימל", "די": "דלת", "הי": "הא",
+}
 
 
 def expand_geresh_ordinal(text: str) -> str:
-    """Replace letter+geresh with the Hebrew letter name.
+    """Replace letter+geresh (or letter+ASCII apostrophe) with the Hebrew letter name.
 
-    'חלק א׳' → 'חלק אלף'
+    'חלק א׳' → 'חלק אלף'        (Hebrew geresh U+05F3)
+    "חלק א'"  → 'חלק אלף'        (ASCII apostrophe — common in plain typing)
+    Also recovers Tesseract OCR errors where geresh is dropped (אי→א׳→אלף).
     """
-    return _GERESH_PAT.sub(lambda m: _LETTER_NAMES.get(m.group(1), m.group(1)), text)
+    text = _GERESH_PAT.sub(lambda m: _LETTER_NAMES.get(m.group(1), m.group(1)), text)
+    return _recover_ocr_ordinals(text)
+
+
+def _recover_ocr_ordinals(text: str) -> str:
+    """If 'אי' appears right after an ordinal-context word (חלק, פרק, ...),
+    treat it as a misread 'א׳' and expand to the letter name. Matches
+    prefixed forms like לחלק, בפרק, מסעיף, etc."""
+    tokens = text.split()
+    out: list[str] = []
+    for tok in tokens:
+        prev = out[-1] if out else ""
+        repl = _ORDINAL_OCR_FIX.get(tok) if _is_ordinal_context(prev) else None
+        out.append(repl if repl else tok)
+    return " ".join(out)
+
+
+def _is_ordinal_context(word: str) -> bool:
+    """True when ``word`` is an ordinal-context noun, possibly with a
+    single-letter Hebrew prefix (ל/ב/מ/כ/ה/ו/ש)."""
+    if word in _ORDINAL_CONTEXT:
+        return True
+    if len(word) > 2 and word[0] in "לבמכהוש" and word[1:] in _ORDINAL_CONTEXT:
+        return True
+    return False
 
 
 # -----------------------------------------------------------------------

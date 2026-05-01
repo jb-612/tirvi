@@ -152,14 +152,30 @@ export function startHighlightLoop(state) {
   };
 }
 
-// Wavenet timestamps lead perceived audio by ~300ms due to buffering.
-// Subtract this offset so the highlight matches what the listener hears.
+// Two corrections needed for accurate sync:
+//  1. Constant offset — Wavenet timestamps lead perceived audio (~300ms).
+//  2. Linear scale — MP3 silence padding makes audio.duration longer than
+//     the last mark's end_s, so audio.currentTime advances faster than
+//     Wavenet's clock. Without scaling, marker drifts ahead over time.
 const HIGHLIGHT_OFFSET_S = parseFloat(
   document.documentElement.dataset.highlightOffset ?? "0.3"
 );
 
+function _timeScale(state) {
+  // Cache the scale factor on first valid measurement.
+  if (state._scale !== undefined) return state._scale;
+  const dur = state.audio.duration;
+  const last = state.timings && state.timings.length
+    ? state.timings[state.timings.length - 1].end_s
+    : 0;
+  if (!isFinite(dur) || dur <= 0 || !last) return 1.0;
+  state._scale = last / dur;          // <1 when audio is longer than expected
+  return state._scale;
+}
+
 function _renderActiveWord(state) {
-  const t = Math.max(0, state.audio.currentTime - HIGHLIGHT_OFFSET_S);
+  const scale = _timeScale(state);
+  const t = Math.max(0, state.audio.currentTime * scale - HIGHLIGHT_OFFSET_S);
   const markId = findActiveMark(state.timings, t);
   // Notify inspector regardless of whether we can resolve a bbox.
   if (typeof state.onActiveMark === "function") state.onActiveMark(markId);
