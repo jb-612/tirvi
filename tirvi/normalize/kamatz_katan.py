@@ -43,9 +43,12 @@ def fix_kamatz_katan(diacritized_text: str) -> str:
     e.g. ``כָּל`` won't match inside ``כַּלְכָּלָה`` (kalkala).
     """
     result = diacritized_text
+    # Reject both Hebrew letters AND Hebrew diacritics flanking the match.
+    # Without diacritics, 'כָּל' would match inside 'כַּלְכָּלָה' because the
+    # preceding char is sheva (ְ), not a letter.
+    HEB = r"א-ת֑-ׇ"
     for wrong, right in _KAMATZ_KATAN_FIXES:
-        # (?<![א-ת]) and (?![א-ת]) — Hebrew letter must not flank the match
-        pattern = r"(?<![א-ת])" + _re.escape(wrong) + r"(?![א-ת])"
+        pattern = r"(?<![" + HEB + r"])" + _re.escape(wrong) + r"(?![" + HEB + r"])"
         result = _re.sub(pattern, right, result)
     return result
 

@@ -44,10 +44,13 @@ class TestBuildPageSsml:
         assert lang == "he-IL"
 
     def test_inter_block_break_between_blocks(self) -> None:
-        # When blocks lack sentence-final punctuation, use the short break
-        # (100ms) so the narrator continues smoothly across line breaks.
+        # Blocks WITHOUT sentence-final punctuation flow continuously — no
+        # break tag, just whitespace. Blocks WITH punctuation get 500ms.
         ssml = build_page_ssml(_two_block_plan())
-        assert '<break time="100ms"/>' in ssml or '<break time="500ms"/>' in ssml
+        # Two blocks of "שָׁלוֹם" / "עוֹלָם" — neither ends in . ! ? : ;
+        assert '<break time="500ms"/>' not in ssml
+        # Body still has both block contents joined
+        assert "שָׁלוֹם" in ssml and "עוֹלָם" in ssml
 
     def test_first_block_has_no_leading_break(self) -> None:
         ssml = build_page_ssml(_two_block_plan())
