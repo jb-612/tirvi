@@ -20,6 +20,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+import re as _re
+
+from tirvi.debug.manifest import build_manifest
+from tirvi.debug.sink import AuditSink
 from tirvi.ports import DiacritizerBackend, G2PBackend, NLPBackend, OCRBackend, TTSBackend
 from tirvi.results import (
     DiacritizationResult,
@@ -58,6 +62,57 @@ class PipelineDeps:
     correction_cascade: Any = None
     enable_correction_cascade: bool = True
 
+    # F33 / DE-04 — AuditSink review mode (T-04).
+    #   When ``enable_review`` is True, ``run_pipeline`` instantiates an
+    #   ``AuditSink``, calls write_* after each stage, and calls
+    #   ``build_manifest`` at run completion.  ``review_output_dir`` is
+    #   the root directory under which auto-incremented run dirs are
+    #   created (defaults to ``Path("output")`` when None).
+    enable_review: bool = False
+    review_output_dir: Path | None = None
+
+
+def _next_run_dir(output_base: Path) -> Path:
+    """Return the next auto-incremented run dir under output_base.
+
+    Scans output_base for directories named ``\\d{3}`` (e.g. ``001``,
+    ``002``), takes the highest, and returns ``output_base / f"{max+1:03d}"``.
+    Returns ``output_base / "001"`` when no such directory exists.
+    Creates the directory before returning.
+    """
+    output_base = Path(output_base)
+    existing = [
+        int(d.name)
+        for d in output_base.iterdir()
+        if d.is_dir() and _re.fullmatch(r"\d{3}", d.name)
+    ]
+    next_n = (max(existing) + 1) if existing else 1
+    run_dir = output_base / f"{next_n:03d}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    return run_dir
+
+
+def _setup_sink(deps: PipelineDeps) -> tuple[AuditSink | None, Path | None]:
+    """Return (sink, run_dir) when enable_review is True, else (None, None)."""
+    if not deps.enable_review:
+        return None, None
+    base = deps.review_output_dir or Path("output")
+    base.mkdir(parents=True, exist_ok=True)
+    run_dir = _next_run_dir(base)
+    sink = AuditSink(base)
+    return sink, run_dir
+
+
+def _sink_write(
+    sink: AuditSink | None,
+    run_dir: Path | None,
+    method: str,
+    payload: dict,
+) -> None:
+    """Call sink.<method>(payload, run_dir) when the sink is active."""
+    if sink is not None and run_dir is not None:
+        getattr(sink, method)(payload, run_dir)
+
 
 def run_pipeline(
     pdf_bytes: bytes,
@@ -73,6 +128,12 @@ def run_pipeline(
     if deps is None:
         deps = _make_deps()
 
+    # F33 / DE-04 — AuditSink wiring (T-04).
+    # When enable_review is True we create a numbered run dir and instantiate
+    # an AuditSink.  Both are None when review is disabled so the rest of
+    # the function needs no branching beyond a single helper call.
+    sink, run_dir = _setup_sink(deps)
+
     from tirvi.blocks.aggregation import build_blocks
     from tirvi.blocks.page_stats import compute_page_stats
     from tirvi.normalize.passthrough import normalize_text
@@ -83,6 +144,8 @@ def run_pipeline(
 
     ocr_result = deps.ocr.ocr_pdf(pdf_bytes)
     words = ocr_result.pages[0].words
+
+    _sink_write(sink, run_dir, "write_ocr", {"words": [w.text for w in words]})
 
     stats = compute_page_stats(words)
     blocks = build_blocks(words, stats)
@@ -118,6 +181,8 @@ def run_pipeline(
         )
     corrected_text = " ".join(corrected_tokens)
 
+    _sink_write(sink, run_dir, "write_normalized", {"text": corrected_text})
+
     # Hebrew text rules: geresh ordinal expansion only (1 token → 1 token).
     # Gender-slash expansion is NOT applied here: it would split a 1-token
     # OCR word like "לנבחן/ת" into 2 TTS tokens ("לנבחן, נבחנת"), shifting
@@ -127,6 +192,8 @@ def run_pipeline(
     corrected_text = expand_geresh_ordinal(corrected_text)
 
     nlp_result = deps.nlp.analyze(corrected_text, lang="he")
+
+    _sink_write(sink, run_dir, "write_nlp", {"provider": getattr(nlp_result, "provider", "")})
 
     # Run ensemble models for inspector display (do not affect diacritization)
     ensemble_results: list[tuple[str, Any]] = []
@@ -154,6 +221,8 @@ def run_pipeline(
         confidence=dia_result.confidence,
     )
 
+    _sink_write(sink, run_dir, "write_diacritized", {"text": dia_result.diacritized_text})
+
     g2p_result = deps.g2p.grapheme_to_phoneme(dia_result.diacritized_text, lang="he")
 
     plan = ReadingPlan.from_inputs(
@@ -172,7 +241,12 @@ def run_pipeline(
     images = deps.rasterize(pdf_bytes, 300)
     images[0].save(str(drafts_dir / "page-1.png"))
 
-    tts_result = deps.tts.synthesize(build_page_ssml(plan), voice=voice)
+    ssml = build_page_ssml(plan)
+    _sink_write(sink, run_dir, "write_ssml", {"ssml": ssml})
+
+    tts_result = deps.tts.synthesize(ssml, voice=voice)
+
+    _sink_write(sink, run_dir, "write_tts", {"provider": tts_result.provider})
 
     (drafts_dir / "audio.mp3").write_bytes(tts_result.audio_bytes)
     (drafts_dir / "audio.json").write_text(
@@ -187,6 +261,9 @@ def run_pipeline(
         ),
         encoding="utf-8",
     )
+
+    if run_dir is not None:
+        build_manifest(run_dir)
 
     return {"sha": sha, "drafts_dir": drafts_dir}
 

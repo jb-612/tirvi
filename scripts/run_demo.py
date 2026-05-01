@@ -189,6 +189,7 @@ def main() -> None:
     _LOG.info("Starting HTTP server at %s — press Ctrl-C to stop", url)
     webbrowser.open(url)
 
+    # AUTH_GATE TODO: add auth check before serving output/ over network
     class _NoCacheHandler(http.server.BaseHTTPRequestHandler):
         def end_headers(self) -> None:
             self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
