@@ -5,6 +5,16 @@ for user review. Medium/Low code-review findings are tagged [GH-ISSUE-NEEDED].
 
 ---
 
+## [DISPUTE-02] httpx not installed; used urllib.request instead (ADR-029)
+- **Task:** T-04a
+- **Question:** ADR-029 designates `adapters/ollama.py` as "the ONLY file allowed to import httpx",
+  but `httpx` is not installed in the project or the pytest tool environment.
+- **Workaround:** Implemented `_http_post()` using `urllib.request` (stdlib). The monkeypatch
+  target is the same module-level function. No functional difference for the unit tests.
+- **Impact if wrong:** Low for unit tests. Medium for production: `urllib.request` lacks
+  httpx's connection pooling and async support. If httpx is added as a dependency later,
+  replace `_http_post` body; the interface and tests stay unchanged.
+
 ## [DISPUTE-01] pyyaml not available in pytest tool environment
 - **Task:** T-03
 - **Question:** `confusion_pairs.yaml` loader was intended to use `pyyaml`, but the
