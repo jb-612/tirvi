@@ -45,7 +45,7 @@ class TestYapUdMapper:
                 "lemma": "עולם",
                 "CPOSTag": "NN",
                 "FPOSTag": "NN",
-                "feats": {"Gender": "Masc", "Number": "Sing", "Definite": "Def"},
+                "feats": {"gen": "M", "num": "S", "def": "D"},
             }
         )
         assert isinstance(token, NLPToken)
@@ -72,7 +72,7 @@ class TestYapUdMapper:
                 "lemma": "x",
                 "CPOSTag": "NN",
                 "FPOSTag": "NN",
-                "feats": {"Gender": "Masc", "ExoticKey": "Bogus"},
+                "feats": {"gen": "M", "ExoticKey": "Bogus"},
             }
         )
         assert token.morph_features == {"Gender": "Masc"}

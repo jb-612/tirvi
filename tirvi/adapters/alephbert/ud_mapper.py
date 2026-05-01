@@ -33,6 +33,27 @@ _CPOS_TO_UD: dict[str, str] = {
     "AT": "ADP",
     "POS": "PART",
     "PUNC": "PUNCT",
+    "PREPOSITION": "ADP",
+    "DEF": "DET",
+    "ADVERB": "ADV",
+    "BN": "VERB",
+    "BNT": "VERB",
+    "CDT": "NUM",
+}
+
+# YAP lowercase feat keys → UD TitleCase
+_FEAT_KEY_MAP: dict[str, str] = {
+    "gen": "Gender", "num": "Number", "per": "Person",
+    "tense": "Tense", "def": "Definite",
+}
+
+# YAP feat value abbreviations → UD canonical values
+_FEAT_VAL_MAP: dict[str, dict[str, str]] = {
+    "Gender":   {"M": "Masc", "F": "Fem"},
+    "Number":   {"S": "Sing", "P": "Plur", "D": "Dual"},
+    "Tense":    {"PAST": "Past", "FUTURE": "Fut", "BEINONI": "Pres",
+                 "IMPERATIVE": "Imp"},
+    "Definite": {"D": "Def"},
 }
 
 
@@ -55,7 +76,13 @@ def _project_morph(
 ) -> dict[str, str] | None:
     if not feats:
         return None
-    projected = {k: v for k, v in feats.items() if k in MORPH_KEYS_WHITELIST}
-    if not projected:
-        return None
-    return projected
+    # Translate YAP lowercase short tags → UD canonical TitleCase keys + values
+    translated: dict[str, str] = {}
+    for raw_key, raw_val in feats.items():
+        ud_key = _FEAT_KEY_MAP.get(raw_key)
+        if ud_key is None:
+            continue
+        ud_val = _FEAT_VAL_MAP.get(ud_key, {}).get(raw_val, raw_val)
+        translated[ud_key] = ud_val
+    projected = {k: v for k, v in translated.items() if k in MORPH_KEYS_WHITELIST}
+    return projected or None

@@ -1,49 +1,5 @@
 {
-  "lattice_md": {
-    "0": [
-      {
-        "surface": "שלום",
-        "lemma": "שלום",
-        "CPOSTag": "NN",
-        "FPOSTag": "NN",
-        "feats": "Gender=Masc|Number=Sing"
-      }
-    ],
-    "1": [
-      {
-        "surface": "עולם",
-        "lemma": "עולם",
-        "CPOSTag": "NN",
-        "FPOSTag": "NN",
-        "feats": "Gender=Masc|Number=Sing|Definite=Def"
-      }
-    ],
-    "2": [
-      {
-        "surface": "הוא",
-        "lemma": "הוא",
-        "CPOSTag": "PRP",
-        "FPOSTag": "PRP",
-        "feats": "Gender=Masc|Number=Sing|Person=3"
-      }
-    ],
-    "3": [
-      {
-        "surface": "טוב",
-        "lemma": "טוב",
-        "CPOSTag": "JJ",
-        "FPOSTag": "JJ",
-        "feats": "Gender=Masc|Number=Sing"
-      }
-    ],
-    "4": [
-      {
-        "surface": "מאוד",
-        "lemma": "מאוד",
-        "CPOSTag": "RB",
-        "FPOSTag": "RB",
-        "feats": ""
-      }
-    ]
-  }
+  "ma_lattice": "0\t1\tשלום\tשלום\tNN\tNN\tgen=M|num=S\t1\n",
+  "md_lattice": "0\t1\tשלום\tשלום\tNN\tNN\tgen=M|num=S\t1\n1\t2\tעולם\tעולם\tNN\tNN\tgen=M|num=S|def=D\t2\n2\t3\tהוא\tהוא\tPRP\tPRP\tgen=M|num=S|per=3\t3\n3\t4\tטוב\tטוב\tJJ\tJJ\tgen=M|num=S\t4\n4\t5\tמאוד\tמאוד\tRB\tRB\t_\t5\n",
+  "dep_tree": "1\tשלום\tשלום\tNN\tNN\tgen=M|num=S\t0\tROOT\t_\t_\n2\tעולם\tעולם\tNN\tNN\tgen=M|num=S|def=D\t1\tdobj\t_\t_\n3\tהוא\tהוא\tPRP\tPRP\tgen=M|num=S|per=3\t1\tnsubj\t_\t_\n4\tטוב\tטוב\tJJ\tJJ\tgen=M|num=S\t1\tamod\t_\t_\n5\tמאוד\tמאוד\tRB\tRB\t_\t4\tadvmod\t_\t_\n"
 }

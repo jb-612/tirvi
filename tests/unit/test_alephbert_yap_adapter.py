@@ -13,17 +13,9 @@ from tirvi.results import NLPResult, NLPToken
 
 
 _FAKE_RESPONSE = {
-    "lattice_md": {
-        "0": [
-            {
-                "surface": "שלום",
-                "lemma": "שלום",
-                "CPOSTag": "NN",
-                "FPOSTag": "NN",
-                "feats": "Gender=Masc|Number=Sing",
-            }
-        ],
-    }
+    "ma_lattice": "0\t1\tשלום\tשלום\tNN\tNN\tgen=M|num=S\t1\n",
+    "md_lattice": "0\t1\tשלום\tשלום\tNN\tNN\tgen=M|num=S\t1\n",
+    "dep_tree":   "1\tשלום\tשלום\tNN\tNN\tgen=M|num=S\t0\tROOT\t_\t_\n",
 }
 
 

@@ -25,7 +25,7 @@ from urllib.error import URLError
 from tirvi.results import NLPResult
 
 from .client import yap_joint_via_api
-from .parser import parse_lattice
+from .parser import parse_yap_response
 from .ud_mapper import yap_token_to_nlp
 
 PROVIDER = "alephbert+yap"
@@ -39,7 +39,7 @@ _DEGRADED_EXC = (
     KeyError,
 )
 _PROBE_TIMEOUT_S = 2.0
-_DEFAULT_BASE_URL = "http://127.0.0.1:8000"
+_DEFAULT_BASE_URL = "http://127.0.0.1:8090"  # YAP runs on :8090 (was :8000, conflicted with demo server)
 
 _log = logging.getLogger("tirvi.adapters.alephbert")
 
@@ -60,7 +60,7 @@ class AlephBertYapFallbackAdapter:
             return NLPResult(provider=PROVIDER, tokens=[], confidence=None)
         try:
             response = yap_joint_via_api(text)
-            tokens = [yap_token_to_nlp(t) for t in parse_lattice(response)]
+            tokens = [yap_token_to_nlp(t) for t in parse_yap_response(response)]
         except _DEGRADED_EXC:
             return _DEGRADED
         return NLPResult(provider=PROVIDER, tokens=tokens, confidence=None)
