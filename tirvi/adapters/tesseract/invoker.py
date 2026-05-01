@@ -20,13 +20,17 @@ from tirvi.results import OCRWord
 
 def invoke_tesseract(
     image: Image.Image,
-    lang: str = "heb",
-    psm: int = 6,
+    lang: str = "heb_best",
+    psm: int = 3,
+    oem: int = 1,
 ) -> list[OCRWord]:
     """Run Tesseract on a single page image, return one :class:`OCRWord` per
     word-level entry whose confidence is non-negative.
+
+    Defaults: heb_best (LSTM best model), PSM 3 (auto page segmentation),
+    OEM 1 (LSTM neural engine only — highest accuracy).
     """
-    config = f"--psm {psm}"
+    config = f"--psm {psm} --oem {oem}"
     raw: dict[str, list[Any]] = pytesseract.image_to_data(
         image,
         lang=lang,

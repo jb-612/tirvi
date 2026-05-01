@@ -1,0 +1,61 @@
+flowchart TD
+    subgraph server["run_demo.py (Python HTTP server)"]
+        DEMO["_NoCacheHandler.do_GET"]
+        VERS["_serve_versions()\nreads drafts/ → JSON list"]
+        STATIC["serve static files\nplayer/*, drafts/{sha}/*"]
+        DEMO -->|"/api/versions"| VERS
+        DEMO -->|"GET drafts/{sha}/page.json\nGET drafts/{sha}/audio.json\nGET drafts/{sha}/output.mp3"| STATIC
+    end
+
+    subgraph drafts["drafts/ (filesystem)"]
+        SHA1["drafts/{sha1}/\npage.json · audio.json · output.mp3"]
+        SHA2["drafts/{sha2}/\npage.json · audio.json · output.mp3"]
+        SHA3["drafts/{sha3}/\n..."]
+    end
+
+    VERS -->|"sorted by mtime desc\n[{sha, mtime, label}]"| VERNAV
+
+    subgraph browser["Browser — 3-column grid layout"]
+        subgraph col1["version-nav (200px) dir=ltr"]
+            VERNAV["#version-nav\n<ul id=version-list>\n  <li sha=sha1> ★ active\n  <li sha=sha2>\n  <li sha=sha3>"]
+        end
+
+        subgraph col2["player-main (1fr) dir=rtl"]
+            PFIG["#page-figure\nmax-width:900px; margin:0 auto\n<img src=page scan>"]
+            OVERLAY["highlight overlay\npositionMarker() → scales with image"]
+            AUDIO["<audio> src=drafts/{sha}/output.mp3"]
+            CONTROLS["#controls\nmountControls()\nPlay · Pause · Continue · Reset"]
+            PFIG --> OVERLAY
+            AUDIO --> CONTROLS
+        end
+
+        subgraph col3["inspector (340px) dir=ltr"]
+            TABS["<nav class=tab-bar>\nOCR | NLP | Nakdan | Voice"]
+            OCR["OCR tabpanel\nwords[] → text/confidence/bbox/lang_hint\nsyncInspectorOcr(markId) → aria-selected row"]
+            NLP["NLP tabpanel\ntokens[] → pos/lemma/morph/confidence"]
+            NAK["Nakdan tabpanel\ndiacritized_text (dir=rtl)"]
+            VOICE["Voice tabpanel\ntimings[] → mark_id/start_s/end_s"]
+            NOTES["<textarea class=reviewer-notes>\nper sha+tab"]
+            EXPORT["<button>Export notes</button>\nBlob → notes-{sha}.json"]
+            TABS --> OCR & NLP & NAK & VOICE
+            OCR & NLP & NAK & VOICE --> NOTES
+            NOTES --> EXPORT
+        end
+
+        VERNAV -->|"switchVersion(sha)\nfetch page.json + audio.json"| col2
+        VERNAV -->|"switchVersion(sha)\nloadInspector(pageJson, audioJson)"| col3
+        OVERLAY -.->|"markchange event / timeupdate rAF\nmark_id"| OCR
+    end
+
+    subgraph storage["Browser Storage"]
+        LS["localStorage\nkey: tirvi:notes:{sha}:{tab}\nvalue: reviewer text"]
+        DL["Download\nnotes-{sha}.json"]
+    end
+
+    NOTES -->|"input event → auto-save"| LS
+    LS -->|"loadInspector → restore on load/switchVersion"| NOTES
+    EXPORT -->|"Blob download"| DL
+
+    SHA1 & SHA2 & SHA3 -->|"listed by _serve_versions"| VERS
+    STATIC -->|"file bytes"| col2
+    STATIC -->|"page.json + audio.json"| col3

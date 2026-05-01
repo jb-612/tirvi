@@ -60,7 +60,7 @@ class TestTesseractAdapter:
         assert words[0].text == "שלום"
         assert words[0].bbox == (10, 20, 40, 60)
 
-    def test_us_01_ac_01_bt_040_uses_psm_6_lang_heb(self) -> None:
+    def test_us_01_ac_01_bt_040_uses_heb_best_psm3_oem1(self) -> None:
         img = Image.new("RGB", (50, 50), "white")
         with patch(
             "tirvi.adapters.tesseract.invoker.pytesseract.image_to_data",
@@ -68,9 +68,10 @@ class TestTesseractAdapter:
         ) as mock:
             invoke_tesseract(img)
         kwargs = mock.call_args.kwargs
-        assert kwargs.get("lang") == "heb"
+        assert kwargs.get("lang") == "heb_best"
         config = kwargs.get("config", "")
-        assert "psm 6" in config
+        assert "psm 3" in config
+        assert "oem 1" in config
 
     def test_filters_non_word_levels_and_negative_conf(self) -> None:
         # Tesseract emits page/block/para/line entries (level < 5) and confidence=-1

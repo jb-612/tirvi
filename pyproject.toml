@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 readme = "README.md"
 dependencies = [
     "opencv-python-headless>=4.13.0.92",
+    "phonikud==0.4.1",
     "pytesseract>=0.3.13",
 ]
 

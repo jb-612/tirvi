@@ -90,7 +90,7 @@ def run_pipeline(
     drafts_dir = output_base / sha
     drafts_dir.mkdir(parents=True, exist_ok=True)
 
-    images = deps.rasterize(pdf_bytes, 150)
+    images = deps.rasterize(pdf_bytes, 300)
     images[0].save(str(drafts_dir / "page-1.png"))
 
     tts_result = deps.tts.synthesize(build_page_ssml(plan), voice=voice)

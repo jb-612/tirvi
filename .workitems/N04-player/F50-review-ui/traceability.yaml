@@ -1,0 +1,201 @@
+feature_id: N04/F50
+feature_name: Review UI
+status: designed
+biz_corpus: false
+
+story_to_prd:
+  US-01: HLD-4.3
+  US-02: HLD-4.3
+  US-03: HLD-4.4
+  US-04: HLD-4.4
+  US-05: HLD-4.4
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-03
+  T-05: DE-03
+  T-06: DE-03
+  T-07: DE-03
+  T-08: DE-06
+  T-09: DE-07
+  T-10: DE-04
+  T-11: DE-05
+  T-12: DE-05
+  T-13: [DE-03, DE-04, DE-05]
+  T-14: DE-03
+
+ac_to_story:
+  AC-01/1: US-01
+  AC-01/2: US-01
+  AC-01/3: US-01
+  AC-01/4: US-01
+  AC-02/1: US-02
+  AC-02/2: US-02
+  AC-02/3: US-02
+  AC-02/4: US-02
+  AC-03/1: US-03
+  AC-03/2: US-03
+  AC-03/3: US-03
+  AC-03/4: US-03
+  AC-03/5: US-03
+  AC-03/6: US-03
+  AC-03/7: US-03
+  AC-04/1: US-04
+  AC-04/2: US-04
+  AC-04/3: US-04
+  AC-04/4: US-04
+  AC-04/5: US-04
+  AC-05/1: US-05
+  AC-05/2: US-05
+  AC-05/3: US-05
+  AC-05/4: US-05
+  AC-05/5: US-05
+
+acm_nodes:
+  specs:
+    - id: F50-DE-01
+      label: "4-Button Control Wiring"
+      type: design_element
+      hld_ref: HLD-4.3
+    - id: F50-DE-02
+      label: "Centered Scan Layout"
+      type: design_element
+      hld_ref: HLD-4.3
+    - id: F50-DE-03
+      label: "Inspector Sidebar"
+      type: design_element
+      hld_ref: HLD-4.4
+    - id: F50-DE-04
+      label: "Version Navigator"
+      type: design_element
+      hld_ref: HLD-4.4
+    - id: F50-DE-05
+      label: "Notes Persistence (localStorage)"
+      type: design_element
+      hld_ref: HLD-4.4
+      adr_ref: ADR-032
+    - id: F50-DE-06
+      label: "OCR Word Sync (rAF)"
+      type: design_element
+      hld_ref: HLD-4.4
+    - id: F50-DE-07
+      label: "run_demo.py /api/versions"
+      type: design_element
+      hld_ref: HLD-4.4
+
+acm_edges:
+  - from: F50-DE-04
+    to: F50-DE-03
+    label: "version switch triggers inspector reload"
+  - from: F50-DE-06
+    to: F50-DE-03
+    label: "rAF loop drives OCR row highlight"
+  - from: F50-DE-05
+    to: F50-DE-03
+    label: "notes textarea in each inspector tab"
+  - from: F50-DE-07
+    to: F50-DE-04
+    label: "version nav fetches /api/versions"
+
+de_to_hld:
+  DE-01: HLD-4.3
+  DE-02: HLD-4.3
+  DE-03: HLD-4.4
+  DE-04: HLD-4.4
+  DE-05: HLD-4.4
+  DE-06: HLD-4.4
+  DE-07: HLD-4.4
+
+tests:
+  - id: FT-001
+    type: unit
+    description: "mountControls renders 4 buttons; disabled state matches player state"
+    task: T-01
+    test_path: player/test/controls.spec.js
+    status: pending
+  - id: FT-002
+    type: unit
+    description: "page-figure max-width resolves to 900px in DOM"
+    task: T-02
+    test_path: player/test/layout.spec.js
+    status: pending
+  - id: FT-003
+    type: unit
+    description: "aside#inspector renders with 4 tab buttons and 4 tabpanels"
+    task: T-03
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-004
+    type: unit
+    description: "loadInspector populates OCR table rows from pageJson.words"
+    task: T-04
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-005
+    type: unit
+    description: "loadInspector populates NLP table rows from pageJson.tokens"
+    task: T-05
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-006
+    type: unit
+    description: "Nakdan tab renders diacritized_text; shows placeholder when absent"
+    task: T-06
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-007
+    type: unit
+    description: "Voice tab renders timings table with mark_id/start_s/end_s columns"
+    task: T-07
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-008
+    type: unit
+    description: "syncInspectorOcr(markId) sets aria-selected on correct row and scrolls it"
+    task: T-08
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-009
+    type: unit
+    description: "_serve_versions returns JSON sorted by mtime descending"
+    task: T-09
+    test_path: tests/unit/test_pipeline.py
+    status: pending
+  - id: FT-010
+    type: unit
+    description: "switchVersion fetches new JSONs, updates audio src, calls loadInspector"
+    task: T-10
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-011
+    type: unit
+    description: "Notes saved to localStorage on input; restored on loadInspector; absent key leaves empty"
+    task: T-11
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-012
+    type: unit
+    description: "Export button triggers Blob download with correct JSON shape"
+    task: T-12
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-013
+    type: smoke
+    description: "Full inspector integration: load, tab switch, sync, notes round-trip"
+    task: T-13
+    test_path: player/test/inspector.spec.js
+    status: pending
+  - id: FT-014
+    type: unit
+    description: "At <900px viewport inspector collapses to bottom sheet position:fixed"
+    task: T-14
+    test_path: player/test/layout.spec.js
+    status: pending
+  - id: E2E-001
+    type: e2e
+    description: "[ANCHOR] Full player render with version switch and notes export in browser"
+    task: T-13
+    test_path: player/test/e2e/review-ui.spec.js
+    status: deferred
