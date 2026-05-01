@@ -1,0 +1,80 @@
+# Ontology delta — N02/F21 Hebrew Homograph Override Lexicon
+# Owner: sw-design session (werbeH-design branch, 2026-05-01)
+# This feature is new (no prior master entries).
+
+version: 1
+feature_id: N02/F21
+
+modules:
+  - id: MOD-N02-F21
+    name: tirvi.lexicon.homograph
+    description: YAML-backed homograph override lexicon — HomographEntry dataclass, YAML loader, singleton dict. Consumed by F19 nakdan adapter.
+    feature_refs: [N02/F21]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/lexicon/homograph.py
+    status: designed
+  - id: MOD-N02-F21-data
+    name: data.homograph-lexicon
+    description: YAML data file for homograph overrides; versioned in repo; 2 seed entries in POC.
+    feature_refs: [N02/F21]
+    bounded_context: hebrew_nlp
+    source_path: data/homograph-lexicon.yaml
+    status: designed
+
+services: []
+ports: []
+adapters: []
+
+classes:
+  - id: CLS-N02-F21-HomographEntry
+    name: HomographEntry
+    description: Frozen dataclass — surface_form, vocalized_form, pos_filter (str|None). Immutable once loaded.
+    feature_refs: [N02/F21]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F21
+    source_path: tirvi/lexicon/homograph.py
+    status: designed
+
+functions:
+  - id: FN-N02-F21-load-overrides
+    name: load_overrides
+    description: Reads data/homograph-lexicon.yaml; returns dict[str, str] (POC: pos_filter=null entries only); raises ValueError on malformed YAML.
+    feature_refs: [N02/F21]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F21
+    source_path: tirvi/lexicon/homograph.py
+    status: designed
+
+adr_decisions: []
+
+tasks:
+  - id: task:N02/F21/T-01
+    name: homograph-entry-dataclass
+    feature_refs: [N02/F21]
+    spec_refs: [spec:N02/F21/DE-01]
+    test_path: tests/unit/test_homograph_entry.py
+    status: designed
+  - id: task:N02/F21/T-02
+    name: yaml-loader-validation
+    feature_refs: [N02/F21]
+    spec_refs: [spec:N02/F21/DE-02]
+    test_path: tests/unit/test_homograph_loader.py
+    status: designed
+  - id: task:N02/F21/T-03
+    name: override-dict-singleton
+    feature_refs: [N02/F21]
+    spec_refs: [spec:N02/F21/DE-03]
+    test_path: tests/unit/test_homograph_overrides.py
+    status: designed
+  - id: task:N02/F21/T-04
+    name: poc-seed-yaml-data
+    feature_refs: [N02/F21]
+    spec_refs: [spec:N02/F21/DE-04]
+    test_path: tests/unit/test_homograph_loader.py
+    status: designed
+  - id: task:N02/F21/T-05
+    name: diagram
+    feature_refs: [N02/F21]
+    spec_refs: [spec:N02/F21/DE-01]
+    test_path: ""
+    status: implemented
