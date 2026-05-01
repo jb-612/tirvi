@@ -63,6 +63,7 @@ def run_pipeline(
     from tirvi.blocks.aggregation import build_blocks
     from tirvi.blocks.page_stats import compute_page_stats
     from tirvi.normalize.passthrough import normalize_text
+    from tirvi.normalize.ocr_corrections import correct_final_letters
     from tirvi.plan.aggregates import ReadingPlan
     from tirvi.ssml.builder import build_page_ssml
 
@@ -73,8 +74,13 @@ def run_pipeline(
     blocks = build_blocks(words, stats)
     normalized = normalize_text(words)
 
-    nlp_result = deps.nlp.analyze(normalized.text, lang="he")
-    dia_result = deps.dia.diacritize(normalized.text)
+    # Post-OCR correction: fix common Hebrew final-letter misreads (ס→ם etc.)
+    raw_tokens = normalized.text.split()
+    corrected_tokens = correct_final_letters(raw_tokens)
+    corrected_text = " ".join(corrected_tokens)
+
+    nlp_result = deps.nlp.analyze(corrected_text, lang="he")
+    dia_result = deps.dia.diacritize(corrected_text)
     g2p_result = deps.g2p.grapheme_to_phoneme(dia_result.diacritized_text, lang="he")
 
     plan = ReadingPlan.from_inputs(
