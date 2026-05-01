@@ -73,8 +73,10 @@ Students with dyslexia who are entitled to a reader accommodation often depend o
 
 - OCR every page, preserving page coordinates and reading order.
 - Detect Hebrew RTL flow and not corrupt it with embedded English/numbers.
-- Segment each page into structural blocks: heading, instruction, question stem, answer option, paragraph, table, figure caption.
+- Segment each page into structural blocks: heading, instruction, question stem, answer option, paragraph, table, figure caption, mixed.
 - Tag question numbers and answer-option letters/numbers.
+
+> **POC note (2026-05-01):** The POC recognises 3 of 8 block types: `paragraph`, `heading`, and `mixed`. The remaining types (`instruction`, `question_stem`, `answer_option`, `table`, `figure`) are scaffolded but not fully implemented in the OCR post-processor.
 
 ### 6.3 Hebrew normalization
 
@@ -84,6 +86,8 @@ Students with dyslexia who are entitled to a reader accommodation often depend o
 - Detect mixed Hebrew/English spans and mark language for the TTS layer.
 - Detect math expressions and route them through a math-reading template.
 
+> **POC note (2026-05-01) — deferred features:** Acronym expansion (F15) and mixed-language detection (F16) are implemented as TDD-tested modules but are not yet integrated into the pipeline. Number normalization handles OCR artifact repair (broken lines, stray punctuation) but does not convert Arabic numerals, dates, or percentages to spoken Hebrew form. Both are deferred to the next integration milestone.
+
 ### 6.4 Reading plan (the differentiator)
 
 - Produce, per block, a structured "reading plan" with:
@@ -91,7 +95,7 @@ Students with dyslexia who are entitled to a reader accommodation often depend o
   - Morphological role (POS, lemma) where confidence is high
   - Pronunciation hint (partial ניקוד or phoneme sequence) for ambiguous tokens
   - SSML-shaping cues (pause, emphasis, language switch)
-- Use rules + Hebrew NLP signals (AlephBERT, YAP/HebPipe) to disambiguate homographs.
+- Use a three-stage correction cascade to correct OCR tokens: Dicta-Nakdan REST API (diacritization), DictaBERT-MLM (`dicta-il/dictabert-mlm`, masked-LM scoring), and Gemma 3 4B via Ollama (LLM reviewer for low-confidence tokens).
 - Allow user feedback: "this word was read wrong" → captured for offline improvement (no live model retraining in MVP).
 
 ### 6.5 TTS
@@ -99,6 +103,8 @@ Students with dyslexia who are entitled to a reader accommodation often depend o
 - Synthesize audio per block (not per page) so playback granularity matches segmentation.
 - Use SSML to inject pauses, language switches, and pronunciation hints.
 - Cache synthesized audio in Cloud Storage keyed by content hash so re-reads cost nothing.
+
+> **POC note (2026-05-01):** The POC does not implement content-hash audio caching; TTS is called on every pipeline run. The cache described above is a production feature.
 
 ### 6.6 Player UI
 
@@ -151,7 +157,7 @@ Students with dyslexia who are entitled to a reader accommodation often depend o
 
 ## 9. Constraints
 
-- **Models — local-first:** Hebrew NLP (morphology, POS, contextual disambiguation) uses open-source models (AlephBERT, YAP, HebPipe) running locally in the dev container.
+- **Models — local-first:** Hebrew NLP (morphology, diacritization, contextual correction) uses open-source models running locally: `dicta-il/dictabert-morph` (DictaBERT-morph, morphological analysis), Dicta-Nakdan via REST API (diacritization), and `dicta-il/dictabert-mlm` (DictaBERT-MLM, correction scoring). Gemma 3 4B (via Ollama) acts as an LLM reviewer in the correction cascade.
 - **Hebrew TTS — Vertex / Google Cloud TTS:** open-source Hebrew TTS quality is not yet good enough for accommodation-grade reading; this is the deliberate exception.
 - **Hebrew OCR:** prefer open-source if a tested option meets the quality bar on Hebrew exam PDFs (e.g., Tesseract `heb` with layout post-processing); otherwise fall back to GCP Document AI / Vision OCR. Decision recorded in HLD.
 - **Single Docker dev environment:** one `docker compose up` (or `docker run`) brings up frontend, backend, worker, and any local model server.

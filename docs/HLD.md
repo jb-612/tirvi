@@ -67,6 +67,8 @@ The middle layer (normalization + NLP + reading plan) is the defensible part of 
 - **Sync model:** the player loads the per-block `reading_plan.json` and the matching `audio.mp3`; word timings are produced by the TTS step (Google TTS returns word/timepoint marks for SSML `<mark>` tags) and stored alongside the audio.
 - **Accessibility:** keyboard-first, ARIA roles for the player, `prefers-reduced-motion` honored, focus ring always visible.
 
+> **POC note (2026-05-01):** The POC ships a vanilla HTML/JS player in `player/`; Next.js/React/TypeScript is deferred to MVP.
+
 ### 3.2 Backend API (FastAPI)
 
 - Endpoints:
@@ -78,17 +80,21 @@ The middle layer (normalization + NLP + reading plan) is the defensible part of 
   - `POST /documents/{id}/feedback` → "word X was read wrong" capture.
 - Stateless. All durable state is in GCS (and optionally a tiny SQLite/Cloud SQL row for user accounts if we add them).
 
+> **POC note (2026-05-01):** The FastAPI BFF is not yet implemented. In the POC the pipeline is invoked directly via `scripts/run_demo.py`; no HTTP endpoints exist yet.
+
 ### 3.3 Worker
 
 - Same Docker image as the API, started with a different entrypoint.
 - In dev: a single in-process queue (Redis or just `asyncio` for the smallest case).
 - In prod: Cloud Tasks pushes to a Cloud Run worker service, or Cloud Run Jobs run per-document.
 - Pipeline stages, each idempotent and resumable, each writing its output to GCS:
-  1. `ocr` → `pages/{doc}/{page}.ocr.json`
-  2. `normalize` → `pages/{doc}/{page}.norm.json`
-  3. `nlp` → `pages/{doc}/{page}.nlp.json`
+  1. `rasterize` → per-page images (PDF → PNG via `pdf2image`)
+  2. `ocr` → `pages/{doc}/{page}.ocr.json` (Tesseract `heb` + layout post-processing)
+  3. `nakdan_cascade` → diacritized + corrected tokens (Nakdan REST API → DictaBERT-MLM scorer → Gemma LLM reviewer)
   4. `plan` → `plans/{doc}/{page}.plan.json`
   5. `synthesize` → `audio/{doc}/{block_hash}.mp3` + `.timings.json`
+
+> **POC note (2026-05-01):** In the POC all five stages run as a single monolithic `run_pipeline()` call in `tirvi/pipeline.py` (no per-stage idempotency or GCS writes). Output lands in a local `drafts/` directory. The `AuditSink` (F33) captures per-stage debug manifests locally during review runs (`--review` flag).
 
 ### 3.4 Storage layout (Cloud Storage as primary store)
 
@@ -108,6 +114,8 @@ gs://tirvi-{env}/
 - Object lifecycle rule: auto-delete `pdfs/`, `pages/`, `plans/`, and `manifests/` after the configured TTL (default 7 days). `audio/` may live longer because it's keyed by content hash and is shareable across users.
 - No relational DB in MVP. If user accounts are added, they go into Cloud SQL Postgres at the smallest tier; document state stays in GCS.
 
+> **POC note (2026-05-01):** The POC uses a local `drafts/<sha>/` directory rather than GCS. The `gs://tirvi-{env}/` layout above is the production target.
+
 ## 4. Adapter interfaces (vendor isolation)
 
 All external services are reached through narrow Python interfaces. The domain code never imports a Google SDK directly.
@@ -124,17 +132,33 @@ class OCRBackend(Protocol):
 class TTSBackend(Protocol):
     def synthesize(self, ssml: str, voice: VoiceSpec) -> Synthesis: ...
         # returns audio bytes + word/mark timings
+
+class CorrectionCascadeService(Protocol):
+    def correct_tokens(self, tokens: list[str]) -> list[str]: ...
+    # Nakdan word-list gate → DictaBERT-MLM scorer → Gemma 3 4B LLM reviewer
+
+class ProgressReporter(Protocol):
+    def stage_started(self, name: str) -> None: ...
+    def stage_completed(self, name: str, elapsed_s: float, metric_label: str) -> None: ...
+    def stage_error(self, name: str, exc: Exception) -> None: ...
+    def token_tick(self, token: str, stage: str, word_count: int) -> None: ...
+    def summarize(self) -> None: ...
+
+class AuditSink(Protocol):
+    def write_stage(self, stage: str, payload: dict) -> None: ...
 ```
 
 Concrete implementations:
 
-| Interface | Dev (in single Docker)    | Prod (GCP)                       |
-| --------- | ------------------------- | -------------------------------- |
-| Storage   | `fakegcs` / local volume  | Cloud Storage                    |
-| OCR       | Tesseract `heb` (default) | Document AI / Vision OCR         |
-| TTS       | Google Cloud TTS (online) | Google Cloud TTS / Vertex        |
-| Queue     | in-process / Redis        | Cloud Tasks                      |
-| NLP       | local AlephBERT + YAP     | same models, baked into image    |
+| Interface | Dev (in single Docker)                         | Prod (GCP)                           |
+| --------- | ---------------------------------------------- | ------------------------------------ |
+| Storage   | `fakegcs` / local volume                       | Cloud Storage                        |
+| OCR       | Tesseract `heb` (default)                      | Document AI / Vision OCR             |
+| TTS       | Google Cloud TTS (online)                      | Google Cloud TTS / Vertex            |
+| Queue     | in-process / Redis                             | Cloud Tasks                          |
+| NLP/Cascade | Nakdan REST + DictaBERT-MLM + Gemma (Ollama) | same, baked into image               |
+| Progress  | `NoOpProgressReporter` / `RichProgressReporter` | `NoOpProgressReporter`              |
+| Audit     | `FileAuditSink` (review mode, F33)             | deferred                             |
 
 The worker reads `TIRVI_BACKEND=local|gcp` and wires the right implementations.
 
@@ -146,17 +170,22 @@ The worker reads `TIRVI_BACKEND=local|gcp` and wires the right implementations.
 
 ### 5.2 Processing
 
-1. **Tokenize + morphology** with YAP / HebPipe → tokens, lemmas, POS, morphological features.
-2. **Contextual disambiguation** with AlephBERT → for each ambiguous token, score candidate readings using sentence context (e.g., is `ספר` a noun or a verb here?).
-3. **Pronunciation hint generation:**
-   - Maintain a curated Hebrew lexicon of high-frequency homographs mapped to partial ניקוד / phoneme strings.
-   - For tokens not in the lexicon, fall back to a rule-based grapheme-to-phoneme heuristic informed by POS + morphology.
-   - Acronym table expands `ד״ר → דוקטור`, `מס׳ → מספר`, etc.
+1. **Rasterize:** PDF → per-page images (`pdf2image`).
+2. **OCR:** Tesseract `heb` on each page image → `OCRResult` (tokens, bounding boxes, raw text). A layout post-processor corrects RTL column order and strips OCR artifacts (slash suffixes, wrapping quotes, etc.).
+3. **Nakdan + Correction Cascade (F48):**
+   - **Nakdan REST API** applies diacritization to all OCR tokens, producing a candidate word-list.
+   - **DictaBERT-MLM** (`dicta-il/dictabert-mlm`) scores each candidate using masked-language-model probability in sentence context (e.g., is `ספר` a noun or a verb here?).
+   - **Gemma 3 4B** (via Ollama) acts as an LLM reviewer for tokens where MLM confidence is below threshold.
+   - The cascade is gated: Nakdan word-list → MLM scorer → LLM reviewer (progressive fallback, cost-controlled via call cap).
+   - A curated homograph lexicon (`data/homograph-lexicon.yaml`) is available for high-frequency ambiguous words; wiring into the cascade is a next integration step.
 4. **SSML shaping:**
    - Wrap question numbers in a slower, emphasized template.
    - Insert `<break>` between answer options.
    - Switch `xml:lang` on detected English spans.
    - Use `<mark name="block-{id}-word-{i}"/>` so word timings come back from TTS for highlighting.
+5. **TTS synthesis:** SSML → Google Cloud TTS returns audio bytes + word/mark timings.
+
+> **POC note (2026-05-01):** Acronym expansion (F15) and mixed-language detection (F16) are TDD-built modules but are **not yet wired into `run_pipeline()`** — deferred to the next integration milestone. SSML shaping (step 4) is partial: `xml:lang` switching and `<mark>` tags are generated; prosody/emphasis shaping is not yet implemented.
 
 ### 5.3 Output
 
@@ -166,8 +195,8 @@ The worker reads `TIRVI_BACKEND=local|gcp` and wires the right implementations.
   "block_type": "question",
   "ssml": "<speak>...</speak>",
   "tokens": [
-    { "i": 0, "text": "ספר", "lemma": "ספר", "pos": "VERB", "hint": "sfor" },
-    { "i": 1, "text": "את",  "lemma": "את",  "pos": "ACC",  "hint": null }
+    { "i": 0, "text": "ספר", "lemma": "ספר", "pos": "VERB", "diacritized_text": "סָפַר", "ipa": "saˈfar" },
+    { "i": 1, "text": "את",  "lemma": "את",  "pos": "ACC",  "diacritized_text": null,    "ipa": null }
   ]
 }
 ```
@@ -201,6 +230,8 @@ Pick the winner per-page-type. If Tesseract is acceptable for digital-born PDFs 
 
 > Note: the user requested "GCP App Service." GCP doesn't ship a product by that name; the closest managed equivalents are **Cloud Run** (recommended — request-driven, scale-to-zero, container-native) and **App Engine Standard/Flex** (older, more opinionated). HLD assumes Cloud Run; flag for confirmation before infra work begins.
 
+> **POC note (2026-05-01):** The POC is not deployed to GCP. It runs entirely locally via `scripts/run_demo.py`. The topology above is the production target.
+
 ## 8. Single-container dev environment
 
 One `docker compose up` brings up:
@@ -214,6 +245,8 @@ One `docker compose up` brings up:
 Optional `compose.gcp.yml` overlay swaps `storage` for real GCS via ADC and uses the real TTS/OCR adapters; useful when iterating on the prod path locally.
 
 The user's "single docker" requirement is honored either as one Compose project (preferred, still one `up`) or, if strictly required, as one image with a process supervisor — Compose is the cleaner default and is recommended.
+
+> **POC note (2026-05-01):** In the POC, DictaBERT-morph (`dicta-il/dictabert-morph`) and DictaBERT-MLM (`dicta-il/dictabert-mlm`) run in-process; Gemma 3 4B is served by a separately-started Ollama instance. There is no `models` sidecar container and no `docker compose up` yet. The sidecar/Compose architecture above is the production target.
 
 ## 9. Data flow (happy path)
 
@@ -232,7 +265,7 @@ The user's "single docker" requirement is honored either as one Compose project 
 | Risk                                  | Mitigation                                                                        |
 | ------------------------------------- | --------------------------------------------------------------------------------- |
 | OCR Hebrew layout errors              | Keep page coordinates; show original alongside extracted text; benchmark per §6.  |
-| Wrong pronunciation                   | Curated lexicon + AlephBERT/YAP disambiguation + user feedback capture.           |
+| Wrong pronunciation                   | Curated lexicon + Nakdan diacritization + DictaBERT-MLM/Gemma correction cascade + user feedback capture. |
 | Tables / math read as flat text       | Detect in normalization; route through dedicated reading templates.               |
 | TTS ignores pronunciation hints       | Pre-process aggressively; encode in SSML where supported; measure per release.    |
 | Exam privacy                          | Short TTL on documents; minimum payload to third parties; no log capture of text. |
