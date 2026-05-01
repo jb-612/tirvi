@@ -2,25 +2,17 @@
 
 Spec: F48 DE-08. AC: F48-S05/AC-01..AC-04.
 T-08.
-
-Reads ``drafts/feedback.db`` (sqlite — schema-compat extension of F47's
-``BO46 FeedbackEntry``: adds ``system_chose``, ``expected``,
-``persona_role``, ``sentence_context_hash``).
-
-Aggregator logic:
-  - Group rows by ``(ocr_word, expected)``.
-  - **Per-sha cap = 1** (anti-spam, INV-CCS-006, BT-220).
-  - Emit ``RuleSuggestion`` only when ``distinct_shas >= 3``.
-  - Output to ``drafts/rule_suggestions.json``; engineer-gated, never
-    auto-applies.
-
-Strict scaffold rule: NO BUSINESS LOGIC.
 """
 
 from __future__ import annotations
 
+import dataclasses
+import json
+import os
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
+from typing import Iterable
 
 from .domain.events import RulePromoted
 from .domain.policies import PerShaContributionCapPolicy
@@ -48,36 +40,51 @@ class FeedbackAggregator:
     """CLI entry point for the rule-promotion aggregator (DE-08)."""
 
     feedback: FeedbackReadPort
+    shas: tuple[str, ...]
     output_path: Path
-    cap_policy: PerShaContributionCapPolicy = field(
-        default_factory=PerShaContributionCapPolicy
-    )
+    cap_policy: PerShaContributionCapPolicy = field(default_factory=PerShaContributionCapPolicy)
     distinct_sha_threshold: int = DEFAULT_DISTINCT_SHA_THRESHOLD
 
     def run(self) -> tuple[RuleSuggestion, ...]:
-        """Aggregate feedback rows; write suggestions; return them.
+        groups = self._collect_groups()
+        suggestions = self._threshold_filter(groups)
+        self._write(suggestions)
+        return tuple(suggestions)
 
-        TODO AC-F48-S05/AC-01 (T-08): scan all known shas via
-            ``feedback.user_rejections(sha)`` for each sha.
-        TODO AC-F48-S05/AC-02 (T-08): group by ``(ocr_word, expected)``.
-        TODO INV-CCS-006 / BT-220 (T-08): apply
-            ``self.cap_policy.cap_per_sha`` so each sha contributes ≤ 1.
-        TODO AC-F48-S05/AC-03 (T-08): emit ``RuleSuggestion`` for each
-            group with ``distinct_shas >= self.distinct_sha_threshold``.
-        TODO AC-F48-S05/AC-04 (T-08): write to ``self.output_path``
-            atomically; return the suggestions tuple.
-        """
-        raise NotImplementedError(
-            "AC-F48-S05/AC-01..AC-04 / FT-325 / INV-CCS-006 — TDD T-08 fills"
-        )
+    def _collect_groups(self) -> dict[tuple[str, str], dict[str, int]]:
+        groups: dict[tuple[str, str], dict[str, int]] = {}
+        for sha in self.shas:
+            for rejection in self.feedback.user_rejections(sha):
+                if rejection.expected is None:
+                    continue
+                key = (rejection.ocr_word, rejection.expected)
+                grp = groups.setdefault(key, {})
+                grp[sha] = grp.get(sha, 0) + 1
+        return groups
+
+    def _threshold_filter(self, groups: dict) -> list[RuleSuggestion]:
+        result = []
+        for (ocr_word, expected), sha_counts in groups.items():
+            distinct = self.cap_policy.cap_per_sha(sha_counts)
+            if distinct >= self.distinct_sha_threshold:
+                result.append(RuleSuggestion(
+                    ocr_word=ocr_word, expected=expected,
+                    support_count=distinct, distinct_shas=distinct,
+                ))
+        return result
+
+    def _write(self, suggestions: list[RuleSuggestion]) -> None:
+        doc = [dataclasses.asdict(s) for s in suggestions]
+        tmp = self.output_path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, self.output_path)
 
     def _emit_rule_promoted(self, sugg: RuleSuggestion) -> RulePromoted:
-        """Build a ``RulePromoted`` domain event from a suggestion.
-
-        TODO T-08: stamp ``occurred_at`` from injected clock; return
-        ``RulePromoted`` for the in-process listener bus.
-        """
-        raise NotImplementedError("AC-F48-S05/AC-03 — TDD T-08 fills")
+        return RulePromoted(
+            ocr_word=sugg.ocr_word, expected=sugg.expected,
+            support_count=sugg.support_count, distinct_shas=sugg.distinct_shas,
+            occurred_at=datetime.utcnow(),
+        )
 
 
 __all__ = [

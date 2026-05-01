@@ -91,9 +91,7 @@ class PerShaContributionCapPolicy:
     """
 
     def cap_per_sha(self, raw_counts_per_sha: dict[str, int]) -> int:
-        # TODO INV-CCS-006 (T-08): support_count = number of shas with
-        # >= 1 contribution (i.e., len({sha for sha, n in raw if n >= 1})).
-        raise NotImplementedError("AC-F48-S05/AC-04 / INV-CCS-006 — TDD T-08 fills")
+        return sum(1 for n in raw_counts_per_sha.values() if n >= 1)
 
 
 @dataclass(frozen=True)

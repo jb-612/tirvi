@@ -182,7 +182,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-08: Implement `FeedbackAggregator` script + `FeedbackReadPort` adapter (DE-08)
 
-- [ ] **T-08 done**
+- [x] **T-08 done**
 - design_element: DE-08
 - acceptance_criteria: [F48-S05/AC-01, F48-S05/AC-02, F48-S05/AC-03, F48-S05/AC-04]
 - ft_anchors: [FT-325]
