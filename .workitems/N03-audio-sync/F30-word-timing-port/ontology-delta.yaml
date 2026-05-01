@@ -1,0 +1,83 @@
+# Ontology delta — N03/F30 Word-Timing Port (TTS-marks adapter)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+# Note: MOD-N03-F30 and ADP-N03-F30-tts-marks already in master.
+
+version: 1
+feature_id: N03/F30
+
+modules:
+  - id: MOD-N03-F30
+    name: tirvi.adapters.tts_marks
+    description: WordTimingProvider TTS-marks adapter — mark projection, monotonicity invariant, truncation-aware alignment.
+    feature_refs: [N03/F30]
+    bounded_context: audio_sync
+    source_path: tirvi/adapters/tts_marks/
+    status: designed
+
+services: []
+ports: []
+
+adapters:
+  - id: ADP-N03-F30-tts-marks
+    name: TTSEmittedTimingAdapter
+    description: WordTimingProvider implementation for TTS-marks slot. POC only (no forced-alignment branch). Source=tts-marks.
+    feature_refs: [N03/F30]
+    bounded_context: audio_sync
+    port_ref: PORT-06
+    source_path: tirvi/adapters/tts_marks/__init__.py
+    status: designed
+
+classes: []
+
+functions:
+  - id: FN-N03-F30-mark-to-timing
+    name: mark_to_timing
+    description: WordMark.t_seconds -> WordTiming(mark_id, start_s, end_s). end_s derived from next mark or audio_duration_s.
+    feature_refs: [N03/F30]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F30
+    source_path: tirvi/adapters/tts_marks/project.py
+    status: designed
+  - id: FN-N03-F30-assert-marks-monotonic
+    name: assert_marks_monotonic
+    description: Raises TimingInvariantError if t_seconds is non-monotonic. Guards against Wavenet API regression.
+    feature_refs: [N03/F30]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F30
+    source_path: tirvi/adapters/tts_marks/invariants.py
+    status: designed
+
+adr_decisions:
+  - id: adr:015
+    name: WordTimingProvider dual-adapter contract; forced-alignment fallback disabled in POC
+    description: ADR-015 defines dual-adapter pattern; WhisperX fallback disabled for POC per PLAN-POC.md.
+    feature_refs: [N03/F30]
+    bounded_context: audio_sync
+    source_path: docs/ADR/ADR-015-word-timing-provider-dual-adapter.md
+    status: proposed
+
+tasks:
+  - id: task:N03/F30/T-01
+    name: tts-emitted-timing-adapter
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-01]
+    test_path: tests/unit/test_tts_marks_adapter.py
+    status: designed
+  - id: task:N03/F30/T-02
+    name: word-mark-to-word-timing
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-02]
+    test_path: tests/unit/test_mark_to_timing.py
+    status: implemented
+  - id: task:N03/F30/T-03
+    name: per-block-scope-guard
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-03]
+    test_path: tests/unit/test_per_block_scope.py
+    status: implemented
+  - id: task:N03/F30/T-04
+    name: monotonicity-invariant
+    feature_refs: [N03/F30]
+    spec_refs: [spec:N03/F30/DE-04]
+    test_path: tests/unit/test_marks_monotonic.py
+    status: implemented

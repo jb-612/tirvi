@@ -18,7 +18,7 @@ red-green-refactor cycle coherent across the rule chain.
 
 ## T-01: Package scaffold + LanguageSpansResult value type
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-112]
@@ -39,7 +39,7 @@ red-green-refactor cycle coherent across the rule chain.
 
 ## T-02: Unicode-script per-character classifier
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-112, FT-113]
@@ -58,7 +58,7 @@ red-green-refactor cycle coherent across the rule chain.
 
 ## T-03: Run-length aggregation with whitespace absorption
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-112, FT-114]
@@ -77,7 +77,7 @@ red-green-refactor cycle coherent across the rule chain.
 
 ## T-04: Transliteration heuristic (single Latin inside Hebrew word)
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-113]
@@ -93,7 +93,7 @@ red-green-refactor cycle coherent across the rule chain.
 
 ## T-05: Hyphen-bridge rule (`p-value` → single `en` span)
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-112]
@@ -108,7 +108,7 @@ red-green-refactor cycle coherent across the rule chain.
 
 ## T-06: Number / math unification
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-112]
@@ -123,7 +123,7 @@ red-green-refactor cycle coherent across the rule chain.
 
 ## T-07: detect_language_spans pipeline + smoke
 
-- [ ] **T-07 done**
+- [x] **T-07 done**
 - design_element: DE-06, DE-07
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-112, FT-113, FT-114]

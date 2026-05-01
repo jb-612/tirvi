@@ -1,0 +1,33 @@
+# Ontology delta — N03/F27 Google Chirp3 HD Voice TTS Adapter (Deferred MVP)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+# Status: deferred stub — no production nodes activated in POC
+
+version: 1
+feature_id: N03/F27
+
+modules:
+  - id: MOD-N03-F27
+    name: tirvi.adapters.chirp3
+    description: Google Chirp3 HD Voice TTS adapter stub. Raises NotImplementedError when TIRVI_CHIRP3 unset. MVP scope.
+    feature_refs: [N03/F27]
+    bounded_context: audio_sync
+    source_path: tirvi/adapters/chirp3/
+    status: designed
+
+functions:
+  - id: FN-N03-F27-synthesize-chirp3
+    name: synthesize_chirp3
+    description: Identity no-op stub; raises NotImplementedError when TIRVI_CHIRP3 unset. Full Chirp3 HD synthesis deferred MVP.
+    feature_refs: [N03/F27]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F27
+    source_path: tirvi/adapters/chirp3/__init__.py
+    status: designed
+
+tasks:
+  - id: task:N03/F27/T-01
+    name: chirp3-stub-feature-gate
+    feature_refs: [N03/F27]
+    spec_refs: [spec:N03/F27/DE-01]
+    test_path: tests/unit/test_chirp3_stub.py
+    status: designed

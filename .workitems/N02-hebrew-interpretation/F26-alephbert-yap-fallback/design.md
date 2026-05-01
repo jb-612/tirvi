@@ -69,14 +69,20 @@ provider.
    `${YAP_BASE_URL}/api/v0/joint`; parse JSON with `lattice_md` (morph
    disambiguation) and `lattice_ma` (morphological analysis) sub-arrays.
    Stdlib `urllib.request` (no new vendor dep); 30s timeout.
-2. **DE-02**: YAP response parser — walk the disambiguated lattice
-   (`lattice_md`); extract per-token surface, lemma, CPOSTag, FPOSTag,
-   feats string ("Definite=Def|Gender=Masc|..."); split feats into
-   `morph: dict[str,str]`.
+2. **DE-02**: YAP response parser — decomposed into three CC ≤ 3 helpers:
+   (a) `parse_lattice_md(response) -> list[YAPEdge]` — extracts edges
+   from `lattice_md` array; (b) `collapse_edges(edges) -> list[YAPToken]`
+   — collapses multi-edge tokens by surface form (Hebrew prefix decomposition
+   produces multiple YAP edges per whitespace token; test case: כשהתלמיד
+   should collapse to 1 output token); (c) `extract_feats(feats_str) ->
+   dict[str, str]` — splits "Definite=Def|Gender=Masc|..." into a dict.
 3. **DE-03**: UD-Hebrew schema mapper — YAP CPOSTag → canonical UD pos
-   (e.g., `VB → VERB`, `NN → NOUN`); morph keys normalized
-   (Definite, Gender, Number, Person, Case, Tense, VerbForm). Missing
-   primary fields filled with `None` (per biz S02 AC).
+   (e.g., `VB → VERB`, `NN → NOUN`); morph keys normalized to canonical
+   UD-Hebrew set only (Definite, Gender, Number, Person, Case, Tense,
+   VerbForm). **Do NOT add `raw_pos` to morph_features** — this violates
+   the locked F03 NLPToken schema. CPOSTag is used only as a local lookup
+   key during mapping and not stored on the token. Missing primary fields
+   filled with `None` (per biz S02 AC).
 4. **DE-04**: Fallback adapter wrapper — `AlephBertYapFallbackAdapter`
    implements `NLPBackend`; `analyze()` calls client → mapper → returns
    `NLPResult(provider="alephbert+yap", tokens=...)`.
@@ -141,6 +147,7 @@ provider.
 | YAP HTTP server crashes mid-call | DE-05 timeout + reconnection; per-call independence |
 | YAP UD label set drifts from canonical | DE-03 mapper table; one place to update |
 | AlephBERT integration creep into POC scope | ADR-027 explicit out-of-scope |
+| F18/F19 do not tolerate prefix_segments=None from YAP path | YAP does not emit BIO labels → prefix_segments=None for all tokens; downstream F18 and F19 must handle None gracefully (verified in F18 Wave 2 review; confirm F19 diacritize_in_context tolerates None) |
 
 ## Diagrams
 

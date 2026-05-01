@@ -1,0 +1,116 @@
+# Ontology delta — N02/F22 Reading-Plan Output (plan.json)
+# Owner: sw-design session (werbeH-design branch, 2026-05-01)
+# Note: MOD-N02-F22 already in master from Wave 1 run.
+
+version: 1
+feature_id: N02/F22
+
+modules:
+  - id: MOD-N02-F22
+    name: tirvi.plan
+    description: Reading-plan assembly — ReadingPlan / PlanBlock / PlanToken value types, build_plan combinator, provenance tracking, deterministic JSON, page.json projection.
+    feature_refs: [N02/F22]
+    bounded_context: reading_plan
+    source_path: tirvi/plan/
+    status: designed
+
+services: []
+ports: []
+adapters: []
+
+classes:
+  - id: CLS-N02-F22-ReadingPlan
+    name: ReadingPlan
+    description: Frozen dataclass — page_id, blocks (list[PlanBlock]). Top-level per-page contract.
+    feature_refs: [N02/F22]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F22
+    source_path: tirvi/plan/results.py
+    status: designed
+  - id: CLS-N02-F22-PlanBlock
+    name: PlanBlock
+    description: Frozen dataclass — block_id, block_type, ssml (default ""), tokens (list[PlanToken]), voice_spec.
+    feature_refs: [N02/F22]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F22
+    source_path: tirvi/plan/results.py
+    status: designed
+  - id: CLS-N02-F22-PlanToken
+    name: PlanToken
+    description: Frozen dataclass — id (block_id-position), text, lemma, pos, ipa, stress, src_word_indices, provenance. Stable ID for F30 word-timing and F35 highlight.
+    feature_refs: [N02/F22]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F22
+    source_path: tirvi/plan/results.py
+    status: designed
+
+functions:
+  - id: FN-N02-F22-build-plan
+    name: build_plan
+    description: Combines F11 blocks + F14 spans + F18 NLP + F19 diacritization + F20 G2P into a ReadingPlan.
+    feature_refs: [N02/F22]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F22
+    source_path: tirvi/plan/__init__.py
+    status: designed
+  - id: FN-N02-F22-assert-plan-v1
+    name: assert_plan_v1
+    description: Validates unique IDs, token-block membership, src_word_indices bounds.
+    feature_refs: [N02/F22]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F22
+    source_path: tirvi/plan/invariants.py
+    status: designed
+
+adr_decisions:
+  - id: adr:014
+    name: Reading plan as immutable JSON contract between interpretation and audio/UI layers
+    description: ReadingPlan is the per-page contract; immutable; SSML filled by F23 layer; deterministic JSON for content-hash caching.
+    feature_refs: [N02/F22]
+    bounded_context: reading_plan
+    source_path: docs/ADR/ADR-014-reading-plan-contract.md
+    status: proposed
+
+tasks:
+  - id: task:N02/F22/T-01
+    name: plan-value-types
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-01]
+    test_path: tests/unit/test_plan_value_types.py
+    status: designed
+  - id: task:N02/F22/T-02
+    name: build-plan-combinator
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-02]
+    test_path: tests/unit/test_build_plan.py
+    status: implemented
+  - id: task:N02/F22/T-03
+    name: per-token-provenance
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-03]
+    test_path: tests/unit/test_plan_provenance.py
+    status: designed
+  - id: task:N02/F22/T-04
+    name: assert-plan-v1-invariants
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-04]
+    test_path: tests/unit/test_plan_invariants.py
+    status: implemented
+  - id: task:N02/F22/T-05
+    name: empty-block-skip
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-05]
+    test_path: tests/unit/test_empty_block_skip.py
+    status: implemented
+  - id: task:N02/F22/T-06
+    name: deterministic-json-serialization
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-06]
+    test_path: tests/unit/test_plan_serialization.py
+    status: implemented
+  - id: task:N02/F22/T-07
+    name: page-json-projection
+    feature_refs: [N02/F22]
+    spec_refs: [spec:N02/F22/DE-07]
+    test_path: tests/unit/test_page_json_projection.py
+    status: implemented

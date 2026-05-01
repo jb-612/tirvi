@@ -1,27 +1,44 @@
-# Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+# Traceability index — N03/F29 Voice Routing Policy (Deferred MVP — Single-Voice POC)
+feature_id: N03/F29
+status: designed
+deferred: true
 
-feature_id: TBD
-status: scaffolded
+hld_refs:
+  - HLD-§4/AdapterInterfaces
+prd_refs:
+  - "PRD §6.5 — TTS"
+adr_refs: []
 
-# Source-document references
-hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
-prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
-adr_refs: []        # e.g. ["ADR-001"]
+biz_source:
+  corpus_e_id: E07-F04
+  imported_at: 2026-05-01T00:00:00Z
+  source_sha: stub
 
-# ACM nodes
+ontology_refs:
+  - bc:speech_synthesis
+  - co:TTSProvider
+
 acm_nodes:
-  feature: feature:TBD
-  specs: []         # spec:<feature_id>/DE-NN
-  user_stories: []  # story:<feature_id>/US-NN
-  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
-  tasks: []         # task:<feature_id>/T-NN
+  feature: feature:N03/F29
+  specs:
+    - spec:N03/F29/DE-01
+  user_stories: []
+  acceptance_criteria: []
+  tasks:
+    - task:N03/F29/T-01
 
-# ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+acm_edges:
+  - {from: spec:N03/F29/DE-01, to: HLD-§4/AdapterInterfaces, type: TRACED_TO}
+  - {from: feature:N03/F29, to: spec:N03/F29/DE-01, type: CONTAINS}
+  - {from: spec:N03/F29/DE-01, to: bc:speech_synthesis, type: BELONGS_TO}
+  - {from: task:N03/F29/T-01, to: spec:N03/F29/DE-01, type: IMPLEMENTED_BY}
 
-# Per-element traces (denormalized for quick lookup)
-de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
-story_to_prd: {}    # US-NN -> PRD §X.Y
-task_to_de: {}      # T-NN -> DE-NN
-ac_to_story: {}     # AC-NN -> US-NN
+de_to_hld:
+  DE-01: HLD-§4/AdapterInterfaces
+story_to_prd: {}
+task_to_de:
+  T-01: DE-01
+ac_to_story: {}
+
+tests:
+  - {ontology_id: "task:N03/F29/T-01", test_path: tests/unit/test_voice_router_stub.py, status: pending}

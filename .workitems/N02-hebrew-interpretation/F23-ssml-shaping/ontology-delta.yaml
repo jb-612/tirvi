@@ -1,0 +1,88 @@
+# Ontology delta — N02/F23 SSML Shaping (POC minimum)
+# Owner: sw-design session (werbeH-design branch, 2026-05-01)
+# MOD-N02-F23 already exists in master from Wave 1 run.
+
+version: 1
+feature_id: N02/F23
+
+modules:
+  - id: MOD-N02-F23
+    name: tirvi.ssml
+    description: SSML shaping module — block builder, per-word mark insertion, inter-block break, XML escape, invariant check, plan re-emit.
+    feature_refs: [N02/F23]
+    bounded_context: reading_plan
+    source_path: tirvi/ssml/
+    status: designed
+
+services: []
+ports: []
+adapters: []
+classes: []
+
+functions:
+  - id: FN-N02-F23-shape
+    name: shape
+    description: shape(plan) -> ReadingPlan — returns new plan with ssml field populated per block.
+    feature_refs: [N02/F23]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F23
+    source_path: tirvi/ssml/__init__.py
+    status: designed
+  - id: FN-N02-F23-block-to-ssml
+    name: block_to_ssml
+    description: One PlanBlock -> one SSML <speak> document with per-word <mark> and XML-safe content.
+    feature_refs: [N02/F23]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F23
+    source_path: tirvi/ssml/builders.py
+    status: designed
+  - id: FN-N02-F23-xml-escape
+    name: xml_escape
+    description: Escapes < > & " ' while preserving Hebrew U+0590..U+05FF and IPA codepoints.
+    feature_refs: [N02/F23]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F23
+    source_path: tirvi/ssml/escape.py
+    status: designed
+  - id: FN-N02-F23-assert-ssml-v1
+    name: assert_ssml_v1
+    description: XML parse check; single <speak> root; unique <mark> IDs; raises SSMLValidationError on failure.
+    feature_refs: [N02/F23]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F23
+    source_path: tirvi/ssml/invariants.py
+    status: designed
+
+adr_decisions: []
+
+tasks:
+  - id: task:N02/F23/T-01
+    name: ssml-block-builder
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-01]
+    test_path: tests/unit/test_ssml_block_builder.py
+    status: implemented
+  - id: task:N02/F23/T-02
+    name: per-word-mark-insertion
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-02]
+    test_path: tests/unit/test_per_word_mark.py
+    status: implemented
+  - id: task:N02/F23/T-03
+    name: inter-block-break
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-03]
+    test_path: tests/unit/test_inter_block_break.py
+    status: implemented
+  - id: task:N02/F23/T-04
+    name: xml-safe-escape
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-04]
+    test_path: tests/unit/test_xml_escape.py
+    status: implemented
+  - id: task:N02/F23/T-05
+    name: assert-ssml-v1-plan-re-emit
+    feature_refs: [N02/F23]
+    spec_refs: [spec:N02/F23/DE-05, spec:N02/F23/DE-06]
+    test_path: tests/unit/test_ssml_invariants.py
+    status: implemented

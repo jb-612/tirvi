@@ -1,0 +1,33 @@
+# Ontology delta — N03/F32 TTS Content-Hash Audio Cache (Deferred MVP)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+# Status: deferred stub — always returns None (cache miss) in POC
+
+version: 1
+feature_id: N03/F32
+
+modules:
+  - id: MOD-N03-F32
+    name: tirvi.cache.tts
+    description: TTS content-hash audio cache stub. Returns None always (cache miss) in POC. Full cache backend deferred MVP.
+    feature_refs: [N03/F32]
+    bounded_context: audio_sync
+    source_path: tirvi/cache/tts.py
+    status: designed
+
+functions:
+  - id: FN-N03-F32-get-cached-audio
+    name: get_cached_audio
+    description: Returns None always for POC (no cache). When TIRVI_TTS_CACHE set, raises NotImplementedError (cache backend not wired). MVP scope.
+    feature_refs: [N03/F32]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F32
+    source_path: tirvi/cache/tts.py
+    status: designed
+
+tasks:
+  - id: task:N03/F32/T-01
+    name: tts-cache-always-miss-stub
+    feature_refs: [N03/F32]
+    spec_refs: [spec:N03/F32/DE-01]
+    test_path: tests/unit/test_tts_cache_stub.py
+    status: designed

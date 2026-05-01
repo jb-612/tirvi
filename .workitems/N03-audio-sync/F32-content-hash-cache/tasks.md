@@ -1,36 +1,31 @@
 ---
-feature_id: TBD
-status: scaffolded
-total_estimate_hours: 0
+feature_id: N03/F32
+status: ready
+total_estimate_hours: 0.5
+deferred: true
 ---
 
-# Tasks: TBD
+# Tasks: N03/F32 — TTS Content-Hash Audio Cache (Deferred MVP)
 
-Atomic tasks (≤ 2h each), dependency-ordered, every task traced to a Design
-Element + Acceptance Criterion.
+This feature is confirmed deferred per PLAN-POC.md. A single stub task covers
+the always-None cache miss. Full cache backend wiring is MVP scope.
 
-## T-01: TBD
+## T-01: Implement get_cached_audio always-miss POC stub
 
 - [ ] **T-01 done**
+
 - design_element: DE-01
-- acceptance_criteria: [AC-01]
-- estimate: 0h
-- test_file: TBD
+- acceptance_criteria: [US-01/AC-01]
+- estimate: 0.5h
+- test_file: tests/unit/test_tts_cache_stub.py
 - dependencies: []
-- hints: TBD
-
-## T-02: TBD
-
-- [ ] **T-02 done**
-- design_element: DE-01
-- acceptance_criteria: [AC-02]
-- estimate: 0h
-- test_file: TBD
-- dependencies: [T-01]
-- hints: TBD
+- hints: >
+    `tirvi/cache/tts.py` — `def get_cached_audio(reading_plan_sha: str) -> None: return None`.
+    When TIRVI_TTS_CACHE is set, raise NotImplementedError (cache backend not wired).
+    Test: assert returns None when gate unset; assert raises NotImplementedError when set.
 
 ## Dependency DAG
 
 ```
-T-01 → T-02
+T-01 (standalone stub)
 ```

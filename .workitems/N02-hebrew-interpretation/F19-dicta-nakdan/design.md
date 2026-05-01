@@ -23,6 +23,8 @@ API** (`https://nakdan-2-0.loadbalancer.dicta.org.il/api`) to add
 in-process HuggingFace loader; that path was abandoned per **ADR-025**
 when `dicta-il/dicta-nakdan` proved to be a private/gated repo (HTTP
 401). The REST endpoint serves the same Nakdan engine without auth.
+Note: Hebrew exam text transits the Dicta public REST endpoint; privacy
+posture (data local-first per HLD §9) deferred to MVP per ADR-025.
 F18 disambiguation (when reactivated post-F17 reroute per ADR-026)
 will supply NLP context which this adapter uses to **score Dicta's
 response options** rather than always taking the top pick. Per-word
@@ -73,7 +75,12 @@ not a numeric margin — finer signal deferred MVP).
 2. **DE-02**: NLP-context conditioning — when `diacritize_in_context`
    receives an `NLPResult` whose tokens align with Dicta's response,
    prefer Dicta options that match the F17 morph signal (POS, gender,
-   construct-state). Without context, fall through to DE-03 top-pick.
+   construct-state). Scoring heuristic: if F17 reports POS=VERB, prefer
+   the Dicta option whose vocalized form contains a verb-typical vowel
+   pattern (שׁוּרוּק or חִירִיק for binyan markers); if F17 reports
+   construct-state=Yes, prefer the Dicta option ending with ַ (patah).
+   When no clear signal match, fall through to DE-03 top-pick. This is
+   a best-effort heuristic; correctness is gated by the N05 bench.
    Mechanism shifted from "pass context to the model" (in-process)
    to "score response options client-side" (REST) per ADR-025.
 3. **DE-03**: Word-level diacritization with override + confidence gate —
@@ -90,7 +97,12 @@ not a numeric margin — finer signal deferred MVP).
    homograph keys, so reachability of the override branch is preserved.
    The single-character risk surfaced in Round-1 review H2 is
    acceptable since `HOMOGRAPH_OVERRIDES` entries are whole Hebrew
-   words.
+   words. **Refactor contract (required before T-02):** decompose
+   `_pick` into three helper predicates — `_passthrough(entry) -> str | None`,
+   `_override_hit(word) -> str | None`, `_confidence_gated(entry) -> str | None`
+   — so that `_pick` reduces to a chained `or` expression (CC ≤ 3)
+   with headroom for T-02's NLP-context branch. This is a named design
+   contract, not just a hint.
 4. **DE-04**: Token-skip filter — entries whose `word` is pure ASCII /
    pure digits / pure punctuation pass through with no diacritization.
    Implemented inside `_pick` via `entry.sep` flag (Dicta marks these).

@@ -1,0 +1,110 @@
+# Ontology delta — N03/F26 Google Wavenet he-IL-Wavenet-D Adapter
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+# Note: MOD-N03-F26 and ADP-N03-F26-wavenet already in master from Wave 1 run.
+
+version: 1
+feature_id: N03/F26
+
+modules:
+  - id: MOD-N03-F26
+    name: tirvi.adapters.wavenet
+    description: Google Wavenet he-IL-Wavenet-D TTS adapter — client wrapper, mark timepoint parsing, TTSResult assembly, drafts-dir writer, retry.
+    feature_refs: [N03/F26]
+    bounded_context: audio_sync
+    source_path: tirvi/adapters/wavenet/
+    status: designed
+
+services:
+  - id: SVC-N03-F26-cloud-tts
+    name: Google Cloud Text-to-Speech v1beta1
+    description: External TTS API; he-IL-Wavenet-D voice; SSML with SSML_MARK enable_time_pointing.
+    feature_refs: [N03/F26]
+    bounded_context: audio_sync
+    status: designed
+
+ports: []
+
+adapters:
+  - id: ADP-N03-F26-wavenet
+    name: WavenetTTSAdapter
+    description: TTSBackend implementation. Single voice (he-IL-Wavenet-D). Mark timepoints → word_marks. Retry 3x on 429. POC only.
+    feature_refs: [N03/F26]
+    bounded_context: audio_sync
+    port_ref: PORT-05
+    source_path: tirvi/adapters/wavenet/__init__.py
+    status: designed
+
+classes: []
+
+functions:
+  - id: FN-N03-F26-synthesize-speech
+    name: synthesize_speech
+    description: Thin wrapper over google-cloud-texttospeech v1beta1; returns (audio_bytes, timepoints).
+    feature_refs: [N03/F26]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F26
+    source_path: tirvi/adapters/wavenet/client.py
+    status: designed
+  - id: FN-N03-F26-parse-timepoints
+    name: parse_timepoints
+    description: API timepoints response -> list[WordMark(mark_id, t_seconds)].
+    feature_refs: [N03/F26]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F26
+    source_path: tirvi/adapters/wavenet/marks.py
+    status: designed
+  - id: FN-N03-F26-write-drafts-dir
+    name: write_drafts_dir
+    description: Writes drafts/{reading_plan_sha}/audio.mp3 + audio.json. Raises on overwrite.
+    feature_refs: [N03/F26]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F26
+    source_path: tirvi/adapters/wavenet/io.py
+    status: designed
+
+adr_decisions:
+  - id: adr:001
+    name: Google Wavenet as primary TTS voice for POC
+    description: he-IL-Wavenet-D selected for Hebrew-IL; SSML mark support via v1beta1; ADR-001 anchors this choice.
+    feature_refs: [N03/F26]
+    bounded_context: audio_sync
+    source_path: docs/ADR/ADR-001-tts-voice-wavenet-primary.md
+    status: proposed
+
+tasks:
+  - id: task:N03/F26/T-01
+    name: wavenet-client-wrapper
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-01]
+    test_path: tests/unit/test_wavenet_client.py
+    status: implemented
+  - id: task:N03/F26/T-02
+    name: synthesize-with-mark-timepoints
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-02]
+    test_path: tests/unit/test_wavenet_synthesize.py
+    status: implemented
+  - id: task:N03/F26/T-03
+    name: tts-result-assembly
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-03]
+    test_path: tests/unit/test_tts_result_assembly.py
+    status: implemented
+  - id: task:N03/F26/T-04
+    name: mark-truncation-detect
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-04]
+    test_path: tests/unit/test_mark_truncation.py
+    status: designed
+  - id: task:N03/F26/T-05
+    name: drafts-dir-writer
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-05]
+    test_path: tests/unit/test_drafts_dir_write.py
+    status: implemented
+  - id: task:N03/F26/T-06
+    name: adapter-contract-retry
+    feature_refs: [N03/F26]
+    spec_refs: [spec:N03/F26/DE-06]
+    test_path: tests/unit/test_wavenet_adapter.py
+    status: implemented

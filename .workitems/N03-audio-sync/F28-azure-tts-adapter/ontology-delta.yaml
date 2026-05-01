@@ -1,0 +1,33 @@
+# Ontology delta — N03/F28 Azure Cognitive Services TTS Adapter (Deferred MVP)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+# Status: deferred stub — no production nodes activated in POC
+
+version: 1
+feature_id: N03/F28
+
+modules:
+  - id: MOD-N03-F28
+    name: tirvi.adapters.azure_tts
+    description: Azure Cognitive Services TTS adapter stub. Raises NotImplementedError when TIRVI_AZURE_TTS unset. MVP scope.
+    feature_refs: [N03/F28]
+    bounded_context: audio_sync
+    source_path: tirvi/adapters/azure_tts/
+    status: designed
+
+functions:
+  - id: FN-N03-F28-synthesize-azure
+    name: synthesize_azure
+    description: Identity no-op stub; raises NotImplementedError when TIRVI_AZURE_TTS unset. Full Azure TTS synthesis deferred MVP.
+    feature_refs: [N03/F28]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F28
+    source_path: tirvi/adapters/azure_tts/__init__.py
+    status: designed
+
+tasks:
+  - id: task:N03/F28/T-01
+    name: azure-tts-stub-feature-gate
+    feature_refs: [N03/F28]
+    spec_refs: [spec:N03/F28/DE-01]
+    test_path: tests/unit/test_azure_tts_stub.py
+    status: designed

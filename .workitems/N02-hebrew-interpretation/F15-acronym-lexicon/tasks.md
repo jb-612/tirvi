@@ -12,7 +12,7 @@ behavioural test.
 
 ## T-01: Value types — Lexicon, AcronymEntry, ExpandedText, ExpansionLogEntry
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - estimate: 1h
@@ -22,7 +22,7 @@ behavioural test.
 
 ## T-02: YAML lexicon loader + mtime cache
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-111]
@@ -33,7 +33,7 @@ behavioural test.
 
 ## T-03: Whole-token matcher + sentence-final punctuation strip-reattach
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-106, FT-107, FT-109]
@@ -44,7 +44,7 @@ behavioural test.
 
 ## T-04: Expansion emitter (whole-token output + ExpansionLogEntry)
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-106, FT-107, FT-108]
@@ -56,7 +56,7 @@ behavioural test.
 
 ## T-05: URL / embedded-acronym skip filter
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-negative-2 — "Acronym embedded in URL; left untouched"]
@@ -67,7 +67,7 @@ behavioural test.
 
 ## T-06: Unknown-acronym fallback (spell_out flag)
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-110]
@@ -79,7 +79,7 @@ behavioural test.
 
 ## T-07: bbox→span round-trip property across expansion
 
-- [ ] **T-07 done**
+- [x] **T-07 done**
 - design_element: DE-07
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-106]
@@ -90,7 +90,7 @@ behavioural test.
 
 ## T-08: Lexicon version stamp + lint CLI
 
-- [ ] **T-08 done**
+- [x] **T-08 done**
 - design_element: DE-08
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-111]

@@ -1,36 +1,31 @@
 ---
-feature_id: TBD
-status: scaffolded
-total_estimate_hours: 0
+feature_id: N03/F27
+status: ready
+total_estimate_hours: 0.5
+deferred: true
 ---
 
-# Tasks: TBD
+# Tasks: N03/F27 — Google Chirp3 HD Voice TTS Adapter (Deferred MVP)
 
-Atomic tasks (≤ 2h each), dependency-ordered, every task traced to a Design
-Element + Acceptance Criterion.
+This feature is confirmed deferred per PLAN-POC.md. A single stub task covers
+the no-op identity function. Full Chirp3 synthesis tasks are MVP scope.
 
-## T-01: TBD
+## T-01: Implement synthesize_chirp3 feature-gated stub
 
 - [ ] **T-01 done**
+
 - design_element: DE-01
-- acceptance_criteria: [AC-01]
-- estimate: 0h
-- test_file: TBD
+- acceptance_criteria: [US-01/AC-01]
+- estimate: 0.5h
+- test_file: tests/unit/test_chirp3_stub.py
 - dependencies: []
-- hints: TBD
-
-## T-02: TBD
-
-- [ ] **T-02 done**
-- design_element: DE-01
-- acceptance_criteria: [AC-02]
-- estimate: 0h
-- test_file: TBD
-- dependencies: [T-01]
-- hints: TBD
+- hints: >
+    `tirvi/adapters/chirp3/__init__.py` — if os.getenv("TIRVI_CHIRP3") is falsy,
+    raise NotImplementedError("Chirp3 adapter is deferred MVP"). No real API calls.
+    Test: assert raises NotImplementedError when env var absent.
 
 ## Dependency DAG
 
 ```
-T-01 → T-02
+T-01 (standalone stub)
 ```

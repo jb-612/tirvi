@@ -1,0 +1,33 @@
+# Ontology delta — N03/F29 Voice Routing Policy (Deferred MVP — Single-Voice POC)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+# Status: deferred stub — POC constant returns "wavenet"
+
+version: 1
+feature_id: N03/F29
+
+modules:
+  - id: MOD-N03-F29
+    name: tirvi.voice_router
+    description: Voice routing policy. POC stub returns "wavenet" unconditionally. Multi-voice routing deferred MVP behind TIRVI_VOICE_ROUTING.
+    feature_refs: [N03/F29]
+    bounded_context: audio_sync
+    source_path: tirvi/voice_router.py
+    status: designed
+
+functions:
+  - id: FN-N03-F29-route-voice
+    name: route_voice
+    description: Returns "wavenet" always for POC. When TIRVI_VOICE_ROUTING set, raises NotImplementedError (multi-voice not implemented). MVP scope.
+    feature_refs: [N03/F29]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F29
+    source_path: tirvi/voice_router.py
+    status: designed
+
+tasks:
+  - id: task:N03/F29/T-01
+    name: route-voice-constant-wavenet-stub
+    feature_refs: [N03/F29]
+    spec_refs: [spec:N03/F29/DE-01]
+    test_path: tests/unit/test_voice_router_stub.py
+    status: designed

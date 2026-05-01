@@ -63,12 +63,20 @@ per ADR-028.
 1. **DE-01**: Phonikud loader — lazy `import phonikud`; cached via
    `lru_cache`; `None` on `ImportError` (matches ADR-022 graceful
    degradation pattern). Existing `tirvi/adapters/phonikud/loader.py`
-   already implements this — no change.
+   already implements this — no change. Phonikud pinned to `==0.4.1`
+   in pyproject.toml for deterministic vocal-shva prediction in tests.
+   **None propagation guard:** callers MUST check for `None` before
+   calling `module.phonemize()`. The adapter's `grapheme_to_phoneme()`
+   checks this and delegates to `fallback_g2p()` on `None`, never
+   allowing AttributeError on None.phonemize() to surface.
 2. **DE-02**: `phonemize()` invocation — `module.phonemize(text,
    schema="modern", predict_stress=True, predict_vocal_shva=True)`
    returns the whole-text IPA string with inline stress markers and
    vocal-shva resolution. Replaces the broken `module.transliterate()`
-   call from the original design.
+   call from the original design. **Transition:** existing tests
+   referencing per-token IPA shape must be rewritten to assert string
+   result or skip-marked with `reason="per-token IPA deferred MVP per
+   ADR-028"`.
 3. **DE-03**: Vocal-shva resolution — handled by Phonikud's
    `predict_vocal_shva=True` parameter (Phonikud emits the resolved
    form inline). No separate field.
@@ -130,8 +138,11 @@ per ADR-028.
 ## Out of Scope
 
 - Per-token IPA splitting (deferred MVP per ADR-028).
+- Per-word `PlanToken.ipa` population (deferred MVP per ADR-028; F22/T-07 emits None for all).
 - Rule-based fallback content (identity-only POC).
-- Vocal-shva synthesis post-Phonikud (deferred MVP).
+- Vocal-shva synthesis post-Phonikud (deferred MVP; handled inline by Phonikud parameter).
 - SSML `<phoneme>` injection (lives in F23).
 - Custom IPA override / lexicon (lives in F21 / F25 — homograph + content templates).
+- `tirvi/adapters/phonikud/skip_filter.py` and `value_objects.py` are zombie modules
+  orphaned by ADR-028 whole-text pivot; deleted at T-04/T-05 (see tasks.md for scope).
 - Stress-accuracy bench (deferred N05).
