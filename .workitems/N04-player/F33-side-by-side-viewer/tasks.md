@@ -51,7 +51,7 @@ Element + Acceptance Criterion.
 
 ## T-04: Wire AuditSink into pipeline
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-05/AC-21]
 - ft_anchors: [FT-319]
