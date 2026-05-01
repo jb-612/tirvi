@@ -152,12 +152,12 @@ Launch research agents — one per cluster, running in parallel via `TeamCreate`
 
 ```
 TeamCreate("re-architect-research")
-Agent(name="cluster-a", prompt="Research Cluster A: Agent Orchestration...")
-Agent(name="cluster-b", prompt="Research Cluster B: Communication...")
-Agent(name="cluster-c", prompt="Research Cluster C: Knowledge Management...")
-Agent(name="cluster-d", prompt="Research Cluster D: Dashboard...")
-Agent(name="cluster-e", prompt="Research Cluster E: Task Management...")
-Agent(name="cluster-f", prompt="Research Cluster F: Testing & Quality...")
+Agent(name="cluster-a", mode="acceptEdits", prompt="Research Cluster A: Agent Orchestration...")
+Agent(name="cluster-b", mode="acceptEdits", prompt="Research Cluster B: Communication...")
+Agent(name="cluster-c", mode="acceptEdits", prompt="Research Cluster C: Knowledge Management...")
+Agent(name="cluster-d", mode="acceptEdits", prompt="Research Cluster D: Dashboard...")
+Agent(name="cluster-e", mode="acceptEdits", prompt="Research Cluster E: Task Management...")
+Agent(name="cluster-f", mode="acceptEdits", prompt="Research Cluster F: Testing & Quality...")
 ```
 
 Each agent writes its findings to:

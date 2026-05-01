@@ -21,7 +21,7 @@ Design review for $ARGUMENTS:
 
 ### Round 1: 6 Specialist Reviewers (parallel)
 
-Create team `design-review-{feature}`, launch 6 agents in parallel on Sonnet:
+Create team `design-review-{feature}`, launch 6 agents in parallel on Sonnet (use `mode: "default"` on each Agent call — reviewers read and analyze only, no file writes):
 
 #### Agent 1: Contract Alignment Reviewer
 

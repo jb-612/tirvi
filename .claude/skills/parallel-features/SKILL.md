@@ -74,7 +74,7 @@ need worktree isolation, abort and use `multi-session.md` instead.
 
 ### Stage 3 — Spawn designers in parallel
 
-One `general-purpose` agent per feature, spawned in a single message with N parallel `Agent` tool calls. Each brief must include:
+One `general-purpose` agent per feature, spawned in a single message with N parallel `Agent` tool calls. Use `mode: "acceptEdits"` on each Agent call — designers write workitem artifacts and need edit permission without per-file prompts. Each brief must include:
 
 - Feature scope + motivation
 - **Sibling-feature hints** (what other features are being designed in parallel + expected coupling points)
@@ -116,7 +116,7 @@ Present the unified package to the user with the review findings. Require explic
 
 ### Stage 8 — Spawn runners in parallel
 
-One `general-purpose` runner per feature into the **same team** (designers stay idle as on-call oracles). Runner briefs must include:
+One `general-purpose` runner per feature into the **same team** (designers stay idle as on-call oracles). Use `mode: "acceptEdits"` on each Agent call — runners write source and test files during TDD and need edit permission without per-file prompts. Runner briefs must include:
 
 - `tasks.md` path + dependency order
 - TDD mode: `/tdd --accept-all` (tasks.md is already atomic; avoid interleaved HITL prompts)

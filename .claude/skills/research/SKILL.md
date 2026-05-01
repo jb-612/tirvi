@@ -100,6 +100,7 @@ Agent(
   subagent_type="general-purpose",
   name="research-{perspective}",
   model="sonnet",
+  mode="default",
   prompt="""
 You are the {perspective} agent on a research team.
 
