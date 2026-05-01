@@ -62,12 +62,7 @@
             aria-controls="tab-ocr"
             aria-selected="true"
           >OCR</button>
-          <button
-            role="tab"
-            data-tab="nlp"
-            aria-controls="tab-nlp"
-            aria-selected="false"
-          >NLP</button>
+          <!-- NLP model tabs injected dynamically by inspector.js -->
           <button
             role="tab"
             data-tab="nakdan"
@@ -84,7 +79,7 @@
 
         <div id="inspector-content">
           <div id="tab-ocr"    role="tabpanel" aria-label="OCR output"></div>
-          <div id="tab-nlp"    role="tabpanel" aria-label="NLP tokens" hidden></div>
+          <!-- NLP model panels injected dynamically by inspector.js -->
           <div id="tab-nakdan" role="tabpanel" aria-label="Nakdan diacritization" hidden></div>
           <div id="tab-voice"  role="tabpanel" aria-label="Voice timing marks" hidden></div>
         </div>

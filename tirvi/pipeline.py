@@ -15,6 +15,7 @@ import re
 import struct
 import wave
 import zlib
+import dataclasses
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
@@ -39,11 +40,13 @@ class PipelineDeps:
     """Adapter set for the POC pipeline (injectable for tests)."""
 
     ocr: OCRBackend
-    nlp: NLPBackend
+    nlp: NLPBackend                                 # primary — feeds diacritization context
     dia: DiacritizerBackend
     g2p: G2PBackend
     tts: TTSBackend
-    rasterize: Callable[[bytes, int], list[Any]]  # (pdf_bytes, dpi) -> [PIL.Image]
+    rasterize: Callable[[bytes, int], list[Any]]    # (pdf_bytes, dpi) -> [PIL.Image]
+    nlp_ensemble: list[tuple[str, NLPBackend]] = dataclasses.field(default_factory=list)
+    # [(display_name, adapter), ...] — run in parallel with primary for inspector display
 
 
 def run_pipeline(
@@ -84,6 +87,15 @@ def run_pipeline(
     corrected_text = apply_hebrew_text_rules(corrected_text)
 
     nlp_result = deps.nlp.analyze(corrected_text, lang="he")
+
+    # Run ensemble models for inspector display (do not affect diacritization)
+    ensemble_results: list[tuple[str, Any]] = []
+    for name, adapter in (deps.nlp_ensemble or []):
+        try:
+            ensemble_results.append((name, adapter.analyze(corrected_text, lang="he")))
+        except Exception:
+            pass
+
     dia_result = deps.dia.diacritize(corrected_text)
     g2p_result = deps.g2p.grapheme_to_phoneme(dia_result.diacritized_text, lang="he")
 
@@ -112,7 +124,7 @@ def run_pipeline(
     )
     (drafts_dir / "page.json").write_text(
         json.dumps(
-            plan.to_page_json(ocr_result, page_image_url="page-1.png"),
+            _build_page_json(plan, ocr_result, nlp_result, ensemble_results),
             ensure_ascii=False,
             indent=2,
         ),
@@ -120,6 +132,39 @@ def run_pipeline(
     )
 
     return {"sha": sha, "drafts_dir": drafts_dir}
+
+
+def _build_page_json(
+    plan: Any,
+    ocr_result: Any,
+    primary_nlp: Any,
+    ensemble: list[tuple[str, Any]],
+) -> dict[str, Any]:
+    """Build the page.json artifact including primary + ensemble NLP outputs."""
+    page = plan.to_page_json(ocr_result, page_image_url="page-1.png")
+
+    # Primary NLP model output (named after its provider)
+    primary_name = primary_nlp.provider if hasattr(primary_nlp, "provider") else "NLP"
+    all_models = [(primary_name, primary_nlp)] + list(ensemble)
+
+    page["nlp_models"] = [
+        {
+            "name": name,
+            "tokens": [_nlp_token_to_dict(t) for t in result.tokens],
+        }
+        for name, result in all_models
+        if result and result.tokens
+    ]
+    return page
+
+
+def _nlp_token_to_dict(token: Any) -> dict[str, Any]:
+    entry: dict[str, Any] = {"text": token.text}
+    if token.pos: entry["pos"] = token.pos
+    if token.lemma: entry["lemma"] = token.lemma
+    if token.morph_features: entry["morph"] = token.morph_features
+    if token.confidence is not None: entry["confidence"] = round(token.confidence, 3)
+    return entry
 
 
 def _build_audio_json(tts_result: TTSResult) -> dict[str, Any]:
