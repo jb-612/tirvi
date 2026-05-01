@@ -2,6 +2,8 @@
 feature_id: N04/F33
 status: complete
 folds_in: [N05/F47]
+part: 1-of-2
+continued_in: user_stories.part-2.md
 prd_refs:
   - "PRD §6.4 — feedback loop"
   - "PRD §6.6 — Player UI"
@@ -14,7 +16,9 @@ personas:
   supporting: [Pipeline Developer, QA Reviewer, Content Preparer]
 ---
 
-# User Stories — N04/F33 Exam Review Portal
+# User Stories — N04/F33 Exam Review Portal (Part 1 of 2)
+
+US-01..US-03 here. US-04..US-07 in `user_stories.part-2.md`.
 
 ## US-01: Admin loads portal for a pipeline run
 
@@ -39,6 +43,7 @@ PRD ref: PRD §6.6 — Player UI; PRD §10 — feedback signal
 - Hesitation: admin may not know the run number; portal should show a list
   of available runs if `?run=` is omitted.
 - Partial info: admin may navigate directly to a URL shared by a developer.
+- Config: artifact base URL is `TIRVI_ARTIFACT_BASE_URL` (default: `./output/`).
 
 ---
 
@@ -54,7 +59,7 @@ PRD ref: PRD §6.4 — reading plan feedback; PRD §10 — "user-reported wrong 
 
 - AC-05: When the audio plays and a word is highlighted, the admin can click
   that word to open the annotation panel.
-- AC-06: The annotation panel presents four issue categories:
+- AC-06: The annotation panel presents five issue categories:
   Wrong nikud / Wrong stress / Wrong order / Wrong pronunciation / Other.
 - AC-07: The admin may optionally add a free-text note (Hebrew or English,
   up to 500 characters).
@@ -63,15 +68,12 @@ PRD ref: PRD §6.4 — reading plan feedback; PRD §10 — "user-reported wrong 
 - AC-09: After submission, the annotation is persisted to
   `output/<N>/feedback/<markId>-<ts>.json` and also saved to localStorage
   so a page reload does not lose it.
-- AC-10: The annotated word is visually marked in the player (e.g. red outline)
-  so the admin can track which words they have already reviewed.
+- AC-10: The annotated word is visually marked in the player (e.g. red outline).
 
 ### Behavioural notes
 
-- Rework: admin re-annotates the same word twice — second submission
-  overwrites the first (latest annotation wins).
-- Abandoned flow: admin closes browser mid-review — localStorage draft
-  is restored on next load of the same run.
+- Rework: re-annotating the same word overwrites the first (latest wins).
+- Abandoned flow: localStorage draft is restored on next load of the same run.
 
 ---
 
@@ -93,121 +95,10 @@ PRD ref: PRD §6.4 — reading plan layer; HLD §3.3 Worker pipeline stages
   render inline, MP3 files show an audio player.
 - AC-13: Stage labels are human-readable — not raw file names like
   `06-diacritize/raw-response.json`.
-- AC-14: If a stage directory is absent (pipeline did not run that stage),
-  the tree shows a "not available" indicator rather than an error.
-- AC-15: The admin can return to the PDF view by clicking the "Page view"
-  control after browsing an artifact.
+- AC-14: If a stage directory is absent, the tree shows a "not available" indicator.
+- AC-15: The admin can return to the PDF view by clicking the "Page view" control.
 
 ### Behavioural notes
 
 - Partial info: admin does not know which stage is responsible; labels must be
   self-explanatory without pipeline knowledge.
-
----
-
-## US-04: Admin exports a feedback report
-
-**As** a university accommodation coordinator
-**I want** to export all annotated feedback for a run as a JSON file
-**So that** I can send it to the pipeline developer for actioning
-
-PRD ref: PRD §6.4 — feedback capture; PRD §10 — feedback signal north star
-
-### Acceptance Criteria
-
-- AC-16: An "Export feedback" button is visible when at least one annotation
-  exists for the current run.
-- AC-17: Clicking export downloads a JSON file containing all annotations for
-  the run in the schema defined in design.md.
-- AC-18: The exported JSON validates against the feedback schema
-  (`run`, `markId`, `word`, `stages_visible_at_capture`, `issue`,
-  `severity`, `note`, `ts`).
-- AC-19: A run with zero annotations exports an empty `[]` array (not an error).
-- AC-20: The exported file is named `feedback-run-<N>-<iso8601>.json`.
-
-### Behavioural notes
-
-- Retry: admin exports, discovers an error in an annotation, re-annotates,
-  then exports again — second export supersedes the first.
-
----
-
-## US-05: Developer inspects per-stage artifacts to diagnose a quality issue
-
-**As** a pipeline developer
-**I want** to drill from a bad audio segment into the artifact tree and see
-the exact intermediate output at each stage
-**So that** I can identify which pipeline stage introduced the error
-
-PRD ref: HLD §5.2 Processing stages; design.md DE-03, DE-04
-
-### Acceptance Criteria
-
-- AC-21: Developer can navigate from a highlighted word in the audio player
-  directly to the matching token in the NLP artifact panel.
-- AC-22: The artifact tree shows all stages that ran for the current run,
-  including stages with empty or stub output (e.g. G2P stub).
-- AC-23: Stage artifacts display their raw content without transformation —
-  what the pipeline wrote is what the developer sees.
-- AC-24: The manifest.json is accessible as a tree node for debugging
-  the run structure itself.
-
-### Behavioural notes
-
-- Deep drill: developer follows OCR word → normalized text → NLP token →
-  diacritized form → SSML → audio segment in a single session.
-
----
-
-## US-06: Admin compares two pipeline runs for the same exam
-
-**As** a university accommodation coordinator
-**I want** to switch between two pipeline runs for the same exam
-**So that** I can verify that a fix actually improved the audio quality
-
-PRD ref: design.md DE-05 (run numbering); DE-07 diff overlay deferred
-
-### Acceptance Criteria
-
-- AC-25: The portal lists all available runs for the current exam in a
-  run-selector control.
-- AC-26: Switching runs reloads the artifact tree and audio player for
-  the selected run without a full page refresh.
-- AC-27: Annotations from the previous run are not shown in the new run's
-  feedback panel (each run's feedback is independent).
-- AC-28: The run-selector shows the run number and creation timestamp
-  so the admin can identify "before fix" vs "after fix" runs.
-
-### Behavioural notes
-
-- Comparison workflow: admin listens to run 001, hears issue, developer
-  fixes pipeline, runs again (run 002), admin loads run 002, listens again.
-
----
-
-## US-07: Admin reviews all flagged words before submitting feedback
-
-**As** a university accommodation coordinator
-**I want** to see a summary list of all words I have annotated in the session
-**So that** I can review and correct any mistakes before exporting
-
-PRD ref: PRD §6.4; feedback capture rationale in design.md
-
-### Acceptance Criteria
-
-- AC-29: A "Review annotations" panel shows all submitted annotations for
-  the current run in a scrollable list with word, issue category, and note.
-- AC-30: Admin can click any annotation in the list to navigate the audio
-  player to that word's position.
-- AC-31: Admin can delete an annotation from the list; the feedback file
-  is updated immediately.
-- AC-32: The list updates in real-time as new annotations are submitted.
-- AC-33: If there are no annotations, the panel shows an empty state message
-  ("No words flagged yet").
-
-### Behavioural notes
-
-- Long session: admin reviews 200 words in one session — list scrolls without
-  UI degradation; no pagination required for POC.
-- Correction: admin sees an annotation with wrong category, deletes it, and
-  re-annotates the word from the player.
