@@ -80,11 +80,17 @@ attribute margin falls below 0.2 (consumed by F18 DE-03).
 5. **DE-05**: Long-sentence chunking on **encoded sub-token length**
    (NOT whitespace count) — split when `tokenizer.encode(text,
    add_special_tokens=False)` exceeds 448 sub-tokens (leaves 64-token
-   headroom under the 512 model max). Use 64-sub-token overlap; reconcile
-   by majority vote on overlap region. Whitespace-token chunking is
-   unsafe because Hebrew BIO sub-token expansion is ~2-3× per word and
-   prefix-decomposed tokens (`כשהתלמיד → CONJ+ PREP+ DEF+ STEM`) push
-   the factor higher. Pin one regression test with a high-clitic input.
+   headroom under the 512 model max). Use 64-sub-token overlap;
+   **left-chunk-wins merge**: left chunk's boundary-region labels are
+   authoritative; right chunk's overlap tokens are discarded. (Majority
+   vote is unsafe for BIO sequences — a token may get B-X in left context
+   and I-X in right context; left-wins preserves BIO continuity.)
+   Implemented as two CC ≤ 3 helpers: `chunk_input(encoded_ids, max_len,
+   overlap) -> list[list[int]]` and `merge_chunk_results(chunk_results:
+   list[NLPResult]) -> NLPResult`. Whitespace-token chunking is unsafe
+   because Hebrew BIO sub-token expansion is ~2-3× per word. Pin one
+   regression test with a high-clitic input; include boundary-word
+   prefix_segments assertion.
 6. **DE-06**: Adapter contract conformance + F26 fallback wiring —
    `DictaBERTAdapter.analyze()` (NOT `load_model()`) wraps the real
    call in `try/except (ImportError, OSError)`. On exception, lazily
@@ -151,3 +157,5 @@ attribute margin falls below 0.2 (consumed by F18 DE-03).
 - Quantized / GPU inference profile (deferred MVP).
 - Shadow A/B between primary and fallback (deferred MVP).
 - UD-Hebrew accuracy bench (deferred to N05).
+- PLAN-POC.md still names `dictabert-large-joint` (superseded by ADR-026; see §HLD Deviations). PLAN-POC.md is a protected governance file and is not edited here. [KNOWN-DEBT]
+- `provider="degraded"` sentinel in DE-06: a pending F03 backlog item should document sentinel provider strings so downstream consumers can handle them. Graceful degradation (empty result) is the correct POC behavior; exception-based propagation is deferred to MVP. [KNOWN-DEBT]

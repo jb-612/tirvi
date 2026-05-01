@@ -1,0 +1,143 @@
+# Ontology delta — N02/F17 DictaBERT-morph Adapter
+# Owner: sw-design session (werbeH-design branch, 2026-05-01)
+# Target: ontology/technical-implementation.yaml (additive merge)
+#
+# Idempotency: MOD-N02-F17 and ADP-N02-F17-dictabert already exist in master (Wave 1 run).
+# This delta is the per-feature canonical record; includes FN nodes and tasks not yet in master.
+# All new nodes are additive. Merge deduplicates on `id`.
+
+version: 1
+feature_id: N02/F17
+
+# Modules — tirvi.adapters.dictabert (already in master, included for completeness).
+modules:
+  - id: MOD-N02-F17
+    name: tirvi.adapters.dictabert
+    description: DictaBERT-morph adapter package — loader, inference, BIO-label prefix segmentation, fallback wiring to F26. Per ADR-026.
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/adapters/dictabert/
+    status: designed
+
+# Services — none. In-process model load per ADR-020.
+services: []
+
+# Ports — none created; this feature IMPLEMENTS the existing NLPBackend port (PORT-02).
+ports: []
+
+# Adapters — DictaBERTAdapter implements PORT-02 NLPBackend.
+adapters:
+  - id: ADP-N02-F17-dictabert
+    name: DictaBERTAdapter
+    description: >
+      DictaBERT-morph NLP adapter. Implements NLPBackend.analyze() —
+      in-process model load (lru_cache), BIO-label prefix segmentation,
+      per-attribute softmax-margin confidence, sub-token chunking (>448 tokens),
+      and try/except fallback to F26 AlephBERT/YAP on ImportError/OSError.
+      Per ADR-026 (model pivot) and ADR-029 (vendor-boundary discipline).
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    port_ref: PORT-02
+    source_path: tirvi/adapters/dictabert/__init__.py
+    status: designed
+
+# Classes — DictaBERTAdapter is an adapter class; no separate value objects introduced.
+classes: []
+
+# Functions — sub-functions within the adapter package.
+functions:
+  - id: FN-N02-F17-load-model
+    name: load_model
+    description: >
+      Lazy-import transformers.AutoModelForTokenClassification + AutoTokenizer
+      for dicta-il/dictabert-morph; lru_cache(maxsize=2); pinned revision via
+      TIRVI_DICTABERT_REVISION env. Returns (model, tokenizer) tuple.
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F17
+    source_path: tirvi/adapters/dictabert/loader.py
+    status: designed
+  - id: FN-N02-F17-prefix-segment
+    name: prefix_segment
+    description: >
+      Recovers prefix splits from morph BIO label sequence: PREP+, DEF+, CONJ+
+      prefixes followed by STEM tag produce prefix_segments tuple; no separate
+      model call. Example: כשהתלמיד → ['כ','ש','ה'].
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F17
+    source_path: tirvi/adapters/dictabert/tokenize.py
+    status: designed
+  - id: FN-N02-F17-decode-morph
+    name: decode_morph
+    description: >
+      Maps DictaBERT-morph classification label to UD-Hebrew feature dict
+      with keys gender, number, person, tense, Definite, Case, VerbForm.
+    feature_refs: [N02/F17]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F17
+    source_path: tirvi/adapters/dictabert/morph.py
+    status: designed
+
+# ADR decisions — ADR-026 is the material decision for this feature.
+adr_decisions:
+  - id: adr:026
+    name: F17 DictaBERT model identifier — pivot to dicta-il/dictabert-morph
+    description: >
+      -large-joint not in public HF catalog; pivot to -morph variant which
+      provides morph classification head (POS + gender/number/person/tense).
+      Lemma head absent in -morph; lemma=None for POC, deferred to MVP.
+      Confidence = min(per-attribute softmax margins); ambiguous flag at 0.2 threshold.
+    feature_refs: [N02/F17, N02/F26]
+    bounded_context: hebrew_nlp
+    source_path: docs/ADR/ADR-026-hebrew-nlp-dictabert-morph-model-pivot.md
+    status: proposed
+
+# Tasks — 6 tasks (T-01 through T-06). T-01 to T-04 and T-06 are implemented; T-05 pending.
+tasks:
+  - id: task:N02/F17/T-01
+    name: in-process-model-loader
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-01]
+    test_path: tests/unit/test_dictabert_loader.py
+    status: implemented
+  - id: task:N02/F17/T-02
+    name: inference-path-nlp-result
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-02]
+    test_path: tests/unit/test_dictabert_inference.py
+    status: implemented
+  - id: task:N02/F17/T-03
+    name: prefix-segmentation-bio
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-03]
+    test_path: tests/unit/test_prefix_segmentation.py
+    status: implemented
+  - id: task:N02/F17/T-04
+    name: per-attribute-confidence
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-04]
+    test_path: tests/unit/test_per_attr_confidence.py
+    status: implemented
+  - id: task:N02/F17/T-05
+    name: long-sentence-chunking
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-05]
+    test_path: tests/unit/test_long_sentence_chunking.py
+    status: designed
+  - id: task:N02/F17/T-06
+    name: adapter-contract-f26-fallback
+    feature_refs: [N02/F17]
+    spec_refs: [spec:N02/F17/DE-06]
+    test_path: tests/unit/test_dictabert_adapter.py
+    status: implemented
+
+# Notes for merger:
+# - MOD-N02-F17 and ADP-N02-F17-dictabert already exist in master (Wave 1 run).
+# - FN-N02-F17-{load-model,prefix-segment,decode-morph} are NEW — additive.
+# - adr:026 already exists in master under different description — this delta's version
+#   is richer; lead should merge description fields.
+# - Task status updated: T-01 through T-04 and T-06 are implemented (TDD green);
+#   T-05 remains designed (long-sentence chunking pending TDD).
+# - traceability.yaml still shows status: designed — should be reconciled with partial
+#   implementation state at next traceability sync.
