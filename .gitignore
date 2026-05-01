@@ -61,3 +61,4 @@ package-lock.json
 
 # UAT screenshots (transient)
 uat-*.png
+uat-screenshots/
