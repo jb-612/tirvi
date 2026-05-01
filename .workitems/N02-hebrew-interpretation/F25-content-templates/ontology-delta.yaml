@@ -1,0 +1,33 @@
+# Ontology delta — N02/F25 (deferred MVP stub)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+version: 1
+feature_id: N02/F25
+modules:
+  - id: MOD-N02-F25
+    name: tirvi.templates
+    description: Feature-gated stub module — no-op when disabled (POC). Full MVP implementation deferred.
+    feature_refs: [N02/F25]
+    bounded_context: reading_plan
+    source_path: tirvi/templates/__init__.py
+    status: designed
+services: []
+ports: []
+adapters: []
+classes: []
+functions:
+  - id: FN-N02-F25-apply_content_template
+    name: apply_content_template
+    description: Identity/stub when feature gate disabled. MVP: real implementation.
+    feature_refs: [N02/F25]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F25
+    source_path: tirvi/templates/__init__.py
+    status: designed
+adr_decisions: []
+tasks:
+  - id: task:N02/F25/T-01
+    name: stub-no-op
+    feature_refs: [N02/F25]
+    spec_refs: [spec:N02/F25/DE-01]
+    test_path: tests/unit/test_apply_content_template.py
+    status: designed

@@ -1,0 +1,33 @@
+# Ontology delta — N02/F24 (deferred MVP stub)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+version: 1
+feature_id: N02/F24
+modules:
+  - id: MOD-N02-F24
+    name: tirvi.ssml.lang_switch
+    description: Feature-gated stub module — no-op when disabled (POC). Full MVP implementation deferred.
+    feature_refs: [N02/F24]
+    bounded_context: reading_plan
+    source_path: tirvi/ssml/lang_switch/__init__.py
+    status: designed
+services: []
+ports: []
+adapters: []
+classes: []
+functions:
+  - id: FN-N02-F24-apply_lang_policy
+    name: apply_lang_policy
+    description: Identity/stub when feature gate disabled. MVP: real implementation.
+    feature_refs: [N02/F24]
+    bounded_context: reading_plan
+    module_ref: MOD-N02-F24
+    source_path: tirvi/ssml/lang_switch/__init__.py
+    status: designed
+adr_decisions: []
+tasks:
+  - id: task:N02/F24/T-01
+    name: stub-no-op
+    feature_refs: [N02/F24]
+    spec_refs: [spec:N02/F24/DE-01]
+    test_path: tests/unit/test_apply_lang_policy.py
+    status: designed

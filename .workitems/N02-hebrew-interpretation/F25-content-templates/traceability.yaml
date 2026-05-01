@@ -1,27 +1,29 @@
-# Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
-
-feature_id: TBD
-status: scaffolded
-
-# Source-document references
-hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
-prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
-adr_refs: []        # e.g. ["ADR-001"]
-
-# ACM nodes
+feature_id: N02/F25
+status: designed
+hld_refs: [HLD-§5.2/Processing]
+prd_refs: ["PRD §6.3 — Hebrew NLP"]
+adr_refs: []
+biz_source:
+  functional_test_plan_path: ./functional-test-plan.md
+  behavioural_test_plan_path: ./behavioural-test-plan.md
+  corpus_e_id: E03-F05
+  imported_at: 2026-04-30T17:52:50Z
+  source_sha: 2af7279d515d1177f3f9774c0aeae63996e2b2e7
+ontology_refs: [persona:P01, persona:P02, persona:P08, bc:reading_plan]
 acm_nodes:
-  feature: feature:TBD
-  specs: []         # spec:<feature_id>/DE-NN
-  user_stories: []  # story:<feature_id>/US-NN
-  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
-  tasks: []         # task:<feature_id>/T-NN
-
-# ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
-
-# Per-element traces (denormalized for quick lookup)
-de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
-story_to_prd: {}    # US-NN -> PRD §X.Y
-task_to_de: {}      # T-NN -> DE-NN
-ac_to_story: {}     # AC-NN -> US-NN
+  feature: feature:N02/F25
+  specs: [spec:N02/F25/DE-01]
+  user_stories: [story:N02/F25/US-01, story:N02/F25/US-02]
+  acceptance_criteria: [criterion:N02/F25/US-01/AC-01, criterion:N02/F25/US-02/AC-01]
+  tasks: [task:N02/F25/T-01]
+  diagrams: []
+acm_edges:
+  - {from: spec:N02/F25/DE-01, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: feature:N02/F25, to: spec:N02/F25/DE-01, type: CONTAINS}
+  - {from: task:N02/F25/T-01, to: spec:N02/F25/DE-01, type: IMPLEMENTED_BY}
+de_to_hld: {DE-01: HLD-§5.2/Processing}
+story_to_prd: {US-01: "PRD §6.3 — Hebrew NLP", US-02: "PRD §6.3 — Hebrew NLP"}
+task_to_de: {T-01: DE-01}
+ac_to_story: {"US-01/AC-01": US-01, "US-02/AC-01": US-02}
+tests:
+  - {ontology_id: "task:N02/F25/T-01", test_path: tests/unit/test_content_templates.py, status: pending}
