@@ -74,12 +74,19 @@ def _block_ssml_with_break(block: PlanBlock, *, leading_break: bool) -> str:
 def build_page_ssml(plan: ReadingPlan) -> str:
     """Single ``<speak>`` SSML document for the whole page (one TTS call).
 
-    Used by the demo orchestrator to synthesize all blocks in one Wavenet
-    request, producing a unified audio file and mark timeline. Blocks are
-    joined with ``<break time="500ms"/>`` (same cadence as per-block SSML).
+    Inter-block breaks are punctuation-aware: 500ms only when the prior
+    block ends with sentence-final punctuation, else 100ms (natural breath)
+    so the narrator continues smoothly across mid-sentence line breaks.
     """
     parts: list[str] = []
+    prev_block = None
     for i, block in enumerate(plan.blocks):
         body = " ".join(_token_to_ssml_fragment(t) for t in block.tokens)
-        parts.append((inter_block_break() if i > 0 else "") + body)
+        if i > 0:
+            prev_text = " ".join(
+                (t.diacritized_text or t.text) for t in prev_block.tokens
+            )
+            parts.append(inter_block_break(prev_text))
+        parts.append(body)
+        prev_block = block
     return f'<speak xml:lang="he-IL">{"".join(parts)}</speak>'

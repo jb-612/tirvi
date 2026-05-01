@@ -36,7 +36,15 @@ class TestCorrectFinalLetters:
         assert result[0] == "פרס"
 
     def test_api_error_returns_original(self):
+        # Use a word NOT in the hardcoded fix list so it falls through to
+        # the API-backed heuristic, where the network error path is exercised.
         def rejects(w): raise Exception("network error")
         with patch("tirvi.normalize.ocr_corrections._nakdan_rejects", side_effect=rejects):
-            result = correct_final_letters(["סיוס"])
-        assert result[0] == "סיוס"
+            result = correct_final_letters(["צרורס"])  # not in known fixes
+        assert result[0] == "צרורס"
+
+    def test_known_fix_applied_without_api_call(self):
+        with patch("tirvi.normalize.ocr_corrections._nakdan_rejects") as m:
+            result = correct_final_letters(["גורס"])
+        assert result[0] == "גורם"
+        m.assert_not_called()

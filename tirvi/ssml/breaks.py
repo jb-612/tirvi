@@ -1,19 +1,22 @@
-"""F23 — inter-block break helper.
+"""F23 — inter-block break helper."""
 
-Spec: N02/F23 DE-03. AC: US-02/AC-01. FT-anchors: FT-175. BT-anchors: BT-117.
-
-Emits the SSML ``<break>`` element placed between consecutive PlanBlocks
-during the plan-level walk in :func:`tirvi.ssml.populate_plan_ssml`.
-POC: fixed 500ms; per-block-type variation deferred.
-"""
-
-_DEFAULT_BREAK_MS = 500
+_DEFAULT_BREAK_MS = 500   # full sentence break (after . ! ? : ;)
+_SHORT_BREAK_MS = 100     # natural breath at line break with no punctuation
+_SENTENCE_FINAL = (".", "!", "?", ":", ";")
 
 
-def inter_block_break() -> str:
-    """Return the canonical inter-block break SSML element.
+def inter_block_break(prev_block_text: str | None = None) -> str:
+    """Inter-block SSML <break>.
 
-    Wavenet accepts ``<break time="…ms"/>`` and pauses synthesis for the
-    requested duration. The same element form is consumed by F26.
+    With prev_block_text ending in sentence-final punctuation (or None for
+    backward compat), emit 500ms. Otherwise emit 100ms so the narrator
+    continues naturally across mid-sentence line breaks instead of stopping.
     """
-    return f'<break time="{_DEFAULT_BREAK_MS}ms"/>'
+    if prev_block_text is None or _ends_with_sentence_punct(prev_block_text):
+        return f'<break time="{_DEFAULT_BREAK_MS}ms"/>'
+    return f'<break time="{_SHORT_BREAK_MS}ms"/>'
+
+
+def _ends_with_sentence_punct(text: str) -> bool:
+    stripped = text.rstrip().rstrip('"\'”“)').rstrip()
+    return bool(stripped) and stripped[-1] in _SENTENCE_FINAL

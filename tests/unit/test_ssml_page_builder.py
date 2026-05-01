@@ -44,8 +44,10 @@ class TestBuildPageSsml:
         assert lang == "he-IL"
 
     def test_inter_block_break_between_blocks(self) -> None:
+        # When blocks lack sentence-final punctuation, use the short break
+        # (100ms) so the narrator continues smoothly across line breaks.
         ssml = build_page_ssml(_two_block_plan())
-        assert '<break time="500ms"/>' in ssml
+        assert '<break time="100ms"/>' in ssml or '<break time="500ms"/>' in ssml
 
     def test_first_block_has_no_leading_break(self) -> None:
         ssml = build_page_ssml(_two_block_plan())

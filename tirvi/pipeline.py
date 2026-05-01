@@ -83,8 +83,13 @@ def run_pipeline(
     corrected_tokens = correct_final_letters(raw_tokens)
     corrected_text = " ".join(corrected_tokens)
 
-    # Hebrew text rules: gender slash, geresh ordinals, etc.
-    corrected_text = apply_hebrew_text_rules(corrected_text)
+    # Hebrew text rules: geresh ordinal expansion only (1 token → 1 token).
+    # Gender-slash expansion is NOT applied here: it would split a 1-token
+    # OCR word like "לנבחן/ת" into 2 TTS tokens ("לנבחן, נבחנת"), shifting
+    # all subsequent <mark> IDs and breaking marker sync. Long-term fix:
+    # apply via SSML <sub alias="לנבחן, נבחנת">לנבחן/ת</sub> in the builder.
+    from tirvi.normalize.hebrew_text_rules import expand_geresh_ordinal
+    corrected_text = expand_geresh_ordinal(corrected_text)
 
     nlp_result = deps.nlp.analyze(corrected_text, lang="he")
 
