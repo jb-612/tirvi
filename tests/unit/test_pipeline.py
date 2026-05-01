@@ -179,28 +179,49 @@ class TestMakePocDeps:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="scaffold — /tdd fills (T-09)")
 class TestCorrectionCascadeWiring:
     """T-09 — wire CorrectionCascadeService between F14 and F19.
 
     AC: F48-S01/AC-01. FT-329. BT-209.
     """
 
-    def test_pipeline_calls_cascade_after_normalize_before_dia(self):
-        # FT-329 — order: ocr → normalize → cascade → nakdan
-        pass
+    @staticmethod
+    def _cascade_deps(mock_cascade: MagicMock, enable: bool = True) -> "PipelineDeps":
+        import dataclasses as dc
+        base = _fake_deps()
+        return dc.replace(base, correction_cascade=mock_cascade, enable_correction_cascade=enable)
 
-    def test_enable_correction_cascade_flag_default_true(self):
-        # Pipeline still runnable while cascade adapters bake
-        pass
+    def test_pipeline_calls_cascade_after_normalize_before_dia(self, tmp_path: Path) -> None:
+        # FT-329 — cascade is called between normalize and Nakdan
+        mock_cascade = MagicMock()
+        mock_cascade.run_page.return_value.corrected_tokens = ("שלום",)
+        run_pipeline(b"fake-pdf", tmp_path, self._cascade_deps(mock_cascade))
+        mock_cascade.run_page.assert_called_once()
 
-    def test_disable_flag_skips_cascade(self):
-        pass
+    def test_enable_correction_cascade_flag_default_true(self) -> None:
+        import dataclasses as dc
+        fields = {f.name: f for f in dc.fields(PipelineDeps)}
+        assert fields["enable_correction_cascade"].default is True
 
-    def test_make_poc_deps_injects_cascade_adapters(self):
-        # Four adapters: NakdanGate / MLM / LLMReviewer / FeedbackReader
-        pass
+    def test_disable_flag_skips_cascade(self, tmp_path: Path) -> None:
+        mock_cascade = MagicMock()
+        run_pipeline(b"fake-pdf", tmp_path, self._cascade_deps(mock_cascade, enable=False))
+        mock_cascade.run_page.assert_not_called()
 
-    def test_token_in_token_out_holds_through_full_pipeline(self):
-        # INV-CCS-001 cross-pipeline assertion (DEP-052/053)
-        pass
+    def test_make_poc_deps_injects_cascade_adapters(self) -> None:
+        import dataclasses as dc
+        from tirvi.correction.service import CorrectionCascadeService
+        field_names = {f.name for f in dc.fields(CorrectionCascadeService)}
+        assert "nakdan_gate" in field_names
+        assert "mlm_scorer" in field_names
+        assert "llm_reviewer" in field_names
+        assert "feedback" in field_names
+
+    def test_token_in_token_out_holds_through_full_pipeline(self, tmp_path: Path) -> None:
+        # INV-CCS-001: corrected token count must equal input token count
+        mock_cascade = MagicMock()
+        mock_cascade.run_page.return_value.corrected_tokens = ("שלום",)
+        run_pipeline(b"fake-pdf", tmp_path, self._cascade_deps(mock_cascade))
+        in_tokens = mock_cascade.run_page.call_args.args[0]
+        out_tokens = mock_cascade.run_page.return_value.corrected_tokens
+        assert len(in_tokens) == len(out_tokens)

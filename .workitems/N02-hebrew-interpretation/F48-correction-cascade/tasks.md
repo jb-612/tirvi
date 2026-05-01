@@ -203,7 +203,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-09: Wire cascade into `tirvi/pipeline.py` between F14 and F19
 
-- [ ] **T-09 done**
+- [x] **T-09 done**
 - design_element: DE-05
 - acceptance_criteria: [F48-S01/AC-01]
 - ft_anchors: [FT-329]
@@ -220,7 +220,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-10: Privacy invariant test — assert no non-localhost outbound during cascade
 
-- [ ] **T-10 done**
+- [x] **T-10 done**
 - design_element: DE-04
 - acceptance_criteria: [F48-S03/AC-01]
 - ft_anchors: [FT-AUD-03]
