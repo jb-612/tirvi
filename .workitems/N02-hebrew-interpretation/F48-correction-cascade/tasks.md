@@ -36,7 +36,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-02: Implement `NakdanGate` (DE-02) + skip rules
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [F48-S01/AC-01, F48-S01/AC-02]
 - ft_anchors: [FT-316, FT-317]
