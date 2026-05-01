@@ -1,19 +1,66 @@
-/* F35 — vanilla CSS for the POC reader.
-   Spec: N04/F35. Bounded context: bc:audio_delivery. */
+/* F35/F36/F50 — vanilla CSS for the POC reader + Review UI.
+   Spec: N04/F35, N04/F36, F50. Bounded context: bc:audio_delivery. */
 
-/* F35 T-06 — design tokens.
+/* ===========================================================================
+   F35 T-06 — Design tokens.
    --highlight-bg / --highlight-fg meet WCAG AA (>= 4.5:1) for normal text.
    #ffe066 (bg) on #1a1a1a (fg) measures 14.7:1 — well above 4.5:1.
-   Verified by tests/contrast helper in test/highlight.spec.js. */
+   =========================================================================== */
 :root {
   --highlight-bg: #ffe066;
   --highlight-fg: #1a1a1a;
   --focus-ring: #1976d2;
+  --sidebar-bg: #f8f8f8;
+  --sidebar-border: #ddd;
+  --inspector-width: 360px;
+  --version-nav-width: 220px;
+  --active-row-bg: #fff3cd;
+  --active-version-bg: #1976d2;
+  --active-version-fg: #fff;
+}
+
+/* ===========================================================================
+   Reset / base
+   =========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   F50 — 3-column CSS grid layout
+   =========================================================================== */
+#app-layout {
+  display: grid;
+  grid-template-columns: var(--version-nav-width) 1fr var(--inspector-width);
+  grid-template-rows: 100vh;
+  height: 100vh;
+  gap: 0;
+}
+
+/* ===========================================================================
+   Centre column — player
+   =========================================================================== */
+#player-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding: 16px;
+  background: #fff;
 }
 
 #page-figure {
   position: relative;
-  margin: 0;
+  margin: 0 auto;
+  max-width: 900px;
+  width: 100%;
 }
 
 #page-figure img {
@@ -32,24 +79,19 @@
   transition: top 80ms linear, left 80ms linear, width 80ms linear, height 80ms linear;
 }
 
-/* F35 T-06 — honour prefers-reduced-motion: drop the transition so the
-   marker snaps to position instead of sliding. The .no-animation class
-   is also toggled programmatically by player.js for users without media
-   query support. */
+/* F35 T-06 — honour prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  .marker {
-    transition: none;
-  }
+  .marker { transition: none; }
 }
-.marker.no-animation {
-  transition: none;
-}
+.marker.no-animation { transition: none; }
 
-/* F36 T-06 — controls toolbar. */
+/* F36 T-06 — controls toolbar */
 #controls {
   display: flex;
   gap: 8px;
   margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 #controls button {
@@ -70,4 +112,312 @@
 #controls button:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Error banner */
+#error-banner {
+  width: 100%;
+  max-width: 900px;
+  padding: 8px 12px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  color: var(--highlight-fg);
+}
+
+/* ===========================================================================
+   Left column — version navigator
+   =========================================================================== */
+#version-nav {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+#version-nav h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px;
+  color: #555;
+}
+
+#version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#version-list li button {
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--highlight-fg);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+#version-list li button:hover {
+  background: #eee;
+  border-color: var(--sidebar-border);
+}
+
+#version-list li button.version-active {
+  background: var(--active-version-bg);
+  color: var(--active-version-fg);
+  border-color: var(--active-version-bg);
+}
+
+#version-list li button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.version-empty {
+  color: #888;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* ===========================================================================
+   Right column — inspector sidebar
+   =========================================================================== */
+#inspector {
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+#inspector.collapsed {
+  transform: translateX(calc(var(--inspector-width) - 24px));
+}
+
+/* Collapse toggle button on left edge */
+#inspector-toggle {
+  position: absolute;
+  top: 50%;
+  left: -1px;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 24px;
+  height: 48px;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--sidebar-border);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #555;
+}
+
+#inspector-toggle:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Tab strip */
+#inspector-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--sidebar-border);
+  flex-shrink: 0;
+}
+
+#inspector-tabs [role="tab"] {
+  flex: 1;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+}
+
+#inspector-tabs [role="tab"][aria-selected="true"] {
+  border-bottom-color: var(--focus-ring);
+  color: var(--focus-ring);
+}
+
+#inspector-tabs [role="tab"]:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* Tab content area */
+#inspector-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+[role="tabpanel"] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[role="tabpanel"][hidden] {
+  display: none;
+}
+
+/* Inspector tables */
+.inspector-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.inspector-table th,
+.inspector-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.inspector-table th {
+  background: #f0f0f0;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.inspector-table tr.active {
+  background: var(--active-row-bg);
+}
+
+.inspector-empty {
+  color: #888;
+  font-style: italic;
+  padding: 4px;
+  margin: 0;
+}
+
+/* ===========================================================================
+   F50 — Reviewer notes widget
+   =========================================================================== */
+.notes-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  border-top: 1px solid var(--sidebar-border);
+  padding-top: 8px;
+}
+
+.notes-area {
+  width: 100%;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px;
+  border: 1px solid var(--sidebar-border);
+  border-radius: 4px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.notes-area:focus {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.notes-export {
+  align-self: flex-end;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--sidebar-border);
+  border-radius: 4px;
+  color: #555;
+}
+
+.notes-export:hover {
+  background: #eee;
+}
+
+.notes-export:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ===========================================================================
+   Responsive — viewport < 900px
+   =========================================================================== */
+@media (max-width: 900px) {
+  #app-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  /* Version nav collapses to a select at top — JS swaps the element;
+     hide the list form so only the CSS-visible select shows */
+  #version-nav {
+    border-right: none;
+    border-bottom: 1px solid var(--sidebar-border);
+    padding: 8px;
+  }
+
+  #version-nav h2 {
+    display: none;
+  }
+
+  /* Inspector slides up from bottom as a sheet */
+  #inspector {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40vh;
+    border-left: none;
+    border-top: 1px solid var(--sidebar-border);
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+    z-index: 100;
+  }
+
+  #inspector.collapsed {
+    transform: translateY(calc(40vh - 40px));
+  }
+
+  #inspector-toggle {
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 24px;
+    border-radius: 0 0 4px 4px;
+    border-top: none;
+    border-right: 1px solid var(--sidebar-border);
+  }
+
+  #player-root {
+    overflow-y: auto;
+    padding-bottom: calc(40vh + 16px);
+  }
 }

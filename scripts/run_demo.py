@@ -3,7 +3,7 @@
 POC demo: Economy.pdf page 1 → Hebrew TTS → word-synced player.
 
 Usage:
-    uv run scripts/run_demo.py [--port 8000]
+    uv run scripts/run_demo.py [--port 8000] [--stubs]
 
 The pipeline runs synchronously (~30–60 s with real models). Once done,
 opens http://localhost:<port> in the browser and serves the player from
@@ -18,7 +18,9 @@ Prerequisites:
 from __future__ import annotations
 
 import argparse
+import datetime
 import http.server
+import json
 import logging
 import os
 import shutil
@@ -58,6 +60,59 @@ def _copy_player_assets(drafts_dir: Path) -> None:
     shutil.copytree(_PLAYER / "js", js_dest)
 
 
+def build_versions_list(drafts_dir: Path) -> list[dict]:
+    """
+    Return a list of version dicts for each subdirectory in drafts_dir.
+
+    Each dict has: {"sha": str, "mtime": float, "label": str}.
+    Returns [] when drafts_dir does not exist.
+    Skips non-directory entries. Reads audio.json metadata when present.
+    Sorts newest-first by mtime.
+    """
+    if not drafts_dir.exists():
+        return []
+
+    entries = []
+    for child in drafts_dir.iterdir():
+        if not child.is_dir():
+            continue
+        mtime = child.stat().st_mtime
+        label = _format_label(mtime)
+        _try_enrich_from_audio_json(child, label)
+        entries.append({"sha": child.name, "mtime": mtime, "label": label})
+
+    entries.sort(key=lambda e: e["mtime"], reverse=True)
+    return entries
+
+
+def _format_label(mtime: float) -> str:
+    """Format an mtime float into a human-readable label string."""
+    dt = datetime.datetime.fromtimestamp(mtime)
+    return dt.strftime("%Y-%m-%d %H:%M")
+
+
+def _try_enrich_from_audio_json(sha_dir: Path, default_label: str) -> str:
+    """
+    Attempt to read audio.json from sha_dir for extra metadata.
+
+    Returns default_label unchanged — enrichment is best-effort only.
+    """
+    audio_path = sha_dir / "audio.json"
+    if not audio_path.exists():
+        return default_label
+    try:
+        json.loads(audio_path.read_text())
+    except Exception:  # noqa: BLE001
+        pass
+    return default_label
+
+
+def _build_versions_response(drafts_root: Path) -> bytes:
+    """Serialize build_versions_list result to UTF-8 JSON bytes."""
+    versions = build_versions_list(drafts_root)
+    return json.dumps(versions).encode("utf-8")
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     args = _parse_args()
@@ -84,6 +139,9 @@ def main() -> None:
     _LOG.info("Starting HTTP server at %s — press Ctrl-C to stop", url)
     webbrowser.open(url)
 
+    # Keep reference to repo root for /api/versions (cwd will change below)
+    _repo_drafts = Path.cwd() / _DRAFTS
+
     os.chdir(drafts_dir)
 
     class _NoCacheHandler(http.server.SimpleHTTPRequestHandler):
@@ -92,6 +150,20 @@ def main() -> None:
             self.send_header("Pragma", "no-cache")
             self.send_header("Expires", "0")
             super().end_headers()
+
+        def do_GET(self) -> None:  # type: ignore[override]
+            if self.path == "/api/versions":
+                self._serve_versions()
+            else:
+                super().do_GET()
+
+        def _serve_versions(self) -> None:
+            body = _build_versions_response(_repo_drafts)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
 
     with http.server.HTTPServer(("", args.port), _NoCacheHandler) as srv:
         try:

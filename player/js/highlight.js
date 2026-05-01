@@ -154,6 +154,8 @@ export function startHighlightLoop(state) {
 
 function _renderActiveWord(state) {
   const markId = findActiveMark(state.timings, state.audio.currentTime);
+  // Notify inspector regardless of whether we can resolve a bbox.
+  if (typeof state.onActiveMark === "function") state.onActiveMark(markId);
   if (!markId) return;
   const wordIndex = state.pageProjection.marks_to_word_index[markId];
   if (wordIndex === undefined) return;

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
-  F35 + F36 — vanilla HTML/JS player shell.
+  F35 + F36 + F50 — vanilla HTML/JS player + Review UI.
 
-  Spec: N04/F35 (word-sync highlight), N04/F36 (accessibility controls).
+  Spec: N04/F35 (word-sync highlight), N04/F36 (accessibility controls),
+        F50 (inspector, version nav, reviewer notes).
   Bounded context: bc:audio_delivery.
-  Per ADR-023: vanilla HTML + Web Audio API; no framework. MVP migration to
-  Next.js deferred.
+  Per ADR-023: vanilla HTML + Web Audio API; no framework.
 
   Wire contracts (read-only consumers):
     - audio.json — docs/schemas/audio.schema.json (produced by F30)
@@ -19,19 +19,79 @@
     <link rel="stylesheet" href="player.css" />
   </head>
   <body>
-    <main id="player-root">
-      <!-- TODO US-01/AC-01 (F35 T-01): page image + .marker overlay div -->
-      <!-- TODO US-01/AC-01 (F36 T-02): 4 controls — play, pause, restart, replay -->
-      <!-- TODO F35 DE-02 (post-review C2): non-blocking error banner slot -->
-      <div id="error-banner" hidden></div>
-      <figure id="page-figure">
-        <!-- page.png + bbox overlays injected by player.js -->
-      </figure>
-      <div id="controls" role="toolbar" aria-label="Player controls">
-        <!-- buttons injected by controls.js -->
-      </div>
-      <audio id="audio-element" preload="auto"></audio>
-    </main>
+    <!-- 3-column CSS grid: [version-nav] | [player-main] | [inspector] -->
+    <div id="app-layout">
+
+      <!-- Left column: version navigator (dir=ltr even in RTL page) -->
+      <nav id="version-nav" dir="ltr" aria-label="Pipeline runs">
+        <h2>Runs</h2>
+        <ul id="version-list"></ul>
+      </nav>
+
+      <!-- Centre column: player -->
+      <main id="player-root">
+        <!-- Non-blocking error banner (F35 post-review C2) -->
+        <div id="error-banner" hidden role="alert" aria-live="polite"></div>
+
+        <figure id="page-figure" aria-label="Exam page with word highlight overlay">
+          <!-- page.png + bbox marker overlay injected by main.js -->
+        </figure>
+
+        <div id="controls" role="toolbar" aria-label="Player controls">
+          <!-- 4 buttons injected by controls.js (mountControls) -->
+        </div>
+
+        <audio id="audio-element" preload="auto"></audio>
+      </main>
+
+      <!-- Right column: inspector sidebar (dir=ltr) -->
+      <aside id="inspector" dir="ltr" aria-label="Inspection panel">
+        <!-- Collapse toggle on left edge -->
+        <button
+          id="inspector-toggle"
+          type="button"
+          aria-label="Collapse inspector"
+          aria-expanded="true"
+          aria-controls="inspector"
+        >◀</button>
+
+        <div id="inspector-tabs" role="tablist" aria-label="Inspector tabs">
+          <button
+            role="tab"
+            data-tab="ocr"
+            aria-controls="tab-ocr"
+            aria-selected="true"
+          >OCR</button>
+          <button
+            role="tab"
+            data-tab="nlp"
+            aria-controls="tab-nlp"
+            aria-selected="false"
+          >NLP</button>
+          <button
+            role="tab"
+            data-tab="nakdan"
+            aria-controls="tab-nakdan"
+            aria-selected="false"
+          >Nakdan</button>
+          <button
+            role="tab"
+            data-tab="voice"
+            aria-controls="tab-voice"
+            aria-selected="false"
+          >Voice</button>
+        </div>
+
+        <div id="inspector-content">
+          <div id="tab-ocr"    role="tabpanel" aria-label="OCR output"></div>
+          <div id="tab-nlp"    role="tabpanel" aria-label="NLP tokens" hidden></div>
+          <div id="tab-nakdan" role="tabpanel" aria-label="Nakdan diacritization" hidden></div>
+          <div id="tab-voice"  role="tabpanel" aria-label="Voice timing marks" hidden></div>
+        </div>
+      </aside>
+
+    </div><!-- #app-layout -->
+
     <script type="module" src="js/main.js"></script>
   </body>
 </html>
