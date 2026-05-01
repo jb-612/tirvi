@@ -1,0 +1,114 @@
+# Ontology delta — N02/F20 Phonikud G2P Adapter
+# Owner: sw-design session (werbeH-design branch, 2026-05-01)
+# Note: MOD-N02-F20 and ADP-N02-F20-phonikud already exist in master.
+
+version: 1
+feature_id: N02/F20
+
+modules:
+  - id: MOD-N02-F20
+    name: tirvi.adapters.phonikud
+    description: Phonikud G2P adapter — lazy loader, phonemize() whole-text IPA, identity fallback. Per ADR-028.
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    source_path: tirvi/adapters/phonikud/
+    status: designed
+
+services: []
+ports: []
+
+adapters:
+  - id: ADP-N02-F20-phonikud
+    name: PhonikudG2PAdapter
+    description: >
+      G2PBackend implementation wrapping phonikud.phonemize(). POC emits
+      whole-text IPA as single-element list. Per ADR-028 (phonemize API pivot)
+      and ADR-022 (in-process loader). Fallback: identity emit with provider
+      stamp "phonikud-fallback" when package is missing.
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    port_ref: PORT-04
+    source_path: tirvi/adapters/phonikud/adapter.py
+    status: designed
+
+classes: []
+
+functions:
+  - id: FN-N02-F20-load-phonikud
+    name: load_phonikud
+    description: Lazy import phonikud; lru_cache(maxsize=1); returns None on ImportError.
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    module_ref: MOD-N02-F20
+    source_path: tirvi/adapters/phonikud/loader.py
+    status: designed
+  - id: FN-N02-F20-grapheme-to-phoneme
+    name: grapheme_to_phoneme
+    description: Calls phonikud.phonemize(text, schema="modern", predict_stress=True, predict_vocal_shva=True); returns G2PResult with single-element phonemes list.
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    module_ref: MOD-N02-F20
+    source_path: tirvi/adapters/phonikud/inference.py
+    status: designed
+  - id: FN-N02-F20-fallback-g2p
+    name: fallback_g2p
+    description: Identity emit when Phonikud unavailable; provider stamp "phonikud-fallback"; phonemes=[].
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    module_ref: MOD-N02-F20
+    source_path: tirvi/adapters/phonikud/loader.py
+    status: designed
+
+adr_decisions:
+  - id: adr:028
+    name: Phonikud phonemize() API pivot; per-token transliteration deferred
+    description: Phonikud ≥0.4 exposes phonemize() not per-token transliterate(); per-token IPA deferred to MVP.
+    feature_refs: [N02/F20]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-028-pronunciation-phonikud-phonemize-api-pivot.md
+    status: proposed
+
+tasks:
+  - id: task:N02/F20/T-01
+    name: phonikud-lazy-loader
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-01]
+    test_path: tests/unit/test_phonikud_loader.py
+    status: implemented
+  - id: task:N02/F20/T-02
+    name: phonemize-invocation
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-02]
+    test_path: tests/unit/test_phonikud_inference.py
+    status: designed
+  - id: task:N02/F20/T-03
+    name: vocal-shva-via-parameter
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-03]
+    test_path: tests/unit/test_phonikud_inference.py
+    status: designed
+  - id: task:N02/F20/T-04
+    name: empty-input-short-circuit
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-04]
+    test_path: tests/unit/test_phonikud_inference.py
+    status: designed
+  - id: task:N02/F20/T-05
+    name: g2p-result-shape
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-05]
+    test_path: tests/unit/test_phonikud_inference.py
+    status: designed
+  - id: task:N02/F20/T-06
+    name: adapter-contract-conformance
+    feature_refs: [N02/F20]
+    spec_refs: [spec:N02/F20/DE-06]
+    test_path: tests/unit/test_phonikud_adapter.py
+    status: designed
+
+# Notes:
+# - T-01 implemented; T-02 requires API rewrite (transliterate → phonemize).
+# - T-03 is a no-op impl (covered by T-02 phonemize parameter).
+# - T-04 partial: empty-input short-circuit done; skip_filter.py cleanup pending.
+# - T-05, T-06: pending (dead-VO cleanup required per review).
+# - Skip-filter.py and PronunciationHint value_objects.py deletion tracked in T-04/T-05.
