@@ -162,7 +162,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-07: Implement `HealthProbe` + degraded-mode policy (DE-07)
 
-- [ ] **T-07 done**
+- [x] **T-07 done**
 - design_element: DE-07
 - acceptance_criteria: [F48-S06/AC-01, F48-S06/AC-02, F48-S06/AC-03, F48-S06/AC-04]
 - ft_anchors: [FT-326, FT-327]
