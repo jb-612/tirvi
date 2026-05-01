@@ -208,9 +208,10 @@ def _run_cascade_for_page(
         ``page_corrections.corrected_tokens`` as a list[str] preserving
         the token-in/token-out invariant (INV-CCS-001).
     """
-    raise NotImplementedError(
-        "AC-F48-S01/AC-01 / FT-329 — TDD T-09 fills the cascade bridge"
-    )
+    from tirvi.correction.value_objects import CascadeMode
+    mode = CascadeMode(name="full")
+    result = service.run_page(tokens, page_index=page_index, sha=sha, mode=mode)
+    return list(result.corrected_tokens)
 
 
 def _build_page_json(
