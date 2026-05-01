@@ -1,0 +1,22 @@
+sequenceDiagram
+  participant Admin
+  participant AudioPlayer as Audio Player (F35)
+  participant Panel as Word Annotation Panel<br/>feedback.js (DE-06)
+  participant Store as localStorage
+  participant Server as run_demo.py /feedback
+  participant FS as output/NNN/feedback/
+
+  Admin->>AudioPlayer: listens to exam audio
+  AudioPlayer->>Panel: word highlight event (markId)
+  Admin->>Panel: clicks highlighted word
+  Panel->>Store: save draft annotation (markId, run)
+  Admin->>Panel: selects issue category
+  Admin->>Panel: types optional note (≤ 500 chars)
+  Admin->>Panel: clicks Submit
+  Panel->>Panel: validate — category required
+  Panel->>Server: POST /feedback {markId, word, issue, note, stages_visible, ts, schema_version:"1"}
+  Server->>FS: write <markId>-<ts>.json
+  Server-->>Panel: 200 OK
+  Panel->>Store: clear draft for markId
+  Panel->>AudioPlayer: mark word with red outline (AC-10)
+  Panel->>Panel: update review annotations list (AC-32)

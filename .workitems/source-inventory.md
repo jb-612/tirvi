@@ -27,6 +27,22 @@ without a source become assumptions logged in `business-taxonomy.yaml`.
 | src-014 | scripts/run_demo.py (CLI entrypoint) | implementation | `scripts/run_demo.py` | F49 | high | `main()` runs pipeline synchronously; no progress display; uses stdlib logging only. Target file for F49 integration. |
 | src-015 | tirvi/correction/service.py (cascade service) | implementation | `tirvi/correction/service.py` | F49 | high | `EventListener` Protocol with `on_correction_applied` / `on_correction_rejected` / `on_cascade_mode_degraded` / `on_llm_call_cap_reached`. Token-counting hook point for cascade progress. |
 
+## F33 — Exam Review Portal (Admin Quality Review)
+
+| ID | Name | Type | Path | Confidence | Notes |
+|----|------|------|------|-----------|-------|
+| src-F33-01 | F33 design.md (existing) | feature_design | `.workitems/N04-player/F33-side-by-side-viewer/design.md` | high | Three-panel layout; artifact tree; feedback panel; DebugSink; manifest contract; output/ filesystem shape. |
+| src-F33-02 | PRD §6.6 | prd | `docs/PRD.md` | high | Player UI requirements; feedback loop mentioned in §6.4 and §10 success metrics. |
+| src-F33-03 | HLD §3.1 Frontend | architecture | `docs/HLD.md` | high | Next.js/React stack; /doc/[id] split view; audio engine; sync model. |
+| src-F33-04 | HLD §5.4 Feedback loop | architecture | `docs/HLD.md` | high | Corrections → feedback/...json in GCS; offline lexicon updates. |
+| src-F33-05 | PLAN.md N04-player | plan | `.workitems/PLAN.md` | high | F33 item in N04; folds in N05/F47. F39 tirvi-bench downstream. |
+
+**Gaps specific to F33:**
+- No explicit "university admin" persona exists in PRD — the PRD primary persona is the dyslexic student. Admin persona is inferred from product context (quality review pre-term) and the design.md framing. Recorded as ASM-F33-01.
+- Auth/security design is explicitly deferred (single-user POC). Recorded in deferred-fixes.md.
+- No formal schema for `manifest.json` in design.md — inferred from the `output/<N>/` filesystem contract.
+- F50 (inspector tabs) is referenced as a consumer surface but not yet designed — downstream edge noted.
+
 ## Gaps
 
 - No `.workitems/PLAN.md` exists yet; src-003 §10 is treated as the

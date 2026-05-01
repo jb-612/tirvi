@@ -2,7 +2,7 @@
 
 ## T-01: Wire mountControls into main.js and retire mountPlayButton shim
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01/1, US-01/AC-01/2, US-01/AC-01/3, US-01/AC-01/4]
 - estimate: 1h
@@ -14,7 +14,7 @@
 
 ## T-02: CSS centered layout — max-width:900px on page-figure, responsive
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-02/AC-02/1, US-02/AC-02/2]
 - estimate: 0.5h
@@ -26,7 +26,7 @@
 
 ## T-03: Inspector sidebar HTML shell — aside#inspector with tab bar, collapse toggle
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-03/AC-03/1, US-03/AC-03/7]
 - estimate: 1h
@@ -38,7 +38,7 @@
 
 ## T-04: Inspector OCR tab — word list table from page.json words[]
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-03
 - acceptance_criteria: [US-03/AC-03/3]
 - estimate: 1h
@@ -50,7 +50,7 @@
 
 ## T-05: Inspector NLP tab — token table pos/lemma/morph_features
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-03
 - acceptance_criteria: [US-03/AC-03/4]
 - estimate: 1h
@@ -62,7 +62,7 @@
 
 ## T-06: Inspector Nakdan tab — diacritized text display
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-03
 - acceptance_criteria: [US-03/AC-03/5]
 - estimate: 0.5h
@@ -74,7 +74,7 @@
 
 ## T-07: Inspector Voice tab — word-timing table from audio.json timings[]
 
-- [ ] **T-07 done**
+- [x] **T-07 done**
 - design_element: DE-03
 - acceptance_criteria: [US-03/AC-03/6]
 - estimate: 0.5h
@@ -86,7 +86,7 @@
 
 ## T-08: OCR word sync — highlight active inspector row by mark_id during rAF loop
 
-- [ ] **T-08 done**
+- [x] **T-08 done**
 - design_element: DE-06
 - acceptance_criteria: [US-03/AC-03/3]
 - estimate: 1h
@@ -98,7 +98,7 @@
 
 ## T-09: run_demo.py /api/versions endpoint — extend _NoCacheHandler GET handler
 
-- [ ] **T-09 done**
+- [x] **T-09 done**
 - design_element: DE-07
 - acceptance_criteria: [US-04/AC-04/4]
 - estimate: 1h
@@ -110,7 +110,7 @@
 
 ## T-10: Version navigator HTML + JS — fetch /api/versions, render list, switchVersion(sha)
 
-- [ ] **T-10 done**
+- [x] **T-10 done**
 - design_element: DE-04
 - acceptance_criteria: [US-04/AC-04/1, US-04/AC-04/2, US-04/AC-04/3, US-04/AC-04/5]
 - estimate: 1.5h
@@ -122,7 +122,7 @@
 
 ## T-11: Notes textarea + localStorage persistence per sha+tab
 
-- [ ] **T-11 done**
+- [x] **T-11 done**
 - design_element: DE-05
 - acceptance_criteria: [US-05/AC-05/1, US-05/AC-05/2, US-05/AC-05/3, US-05/AC-05/5]
 - estimate: 1h
@@ -134,7 +134,7 @@
 
 ## T-12: Notes export button — Blob download as notes-{sha}.json
 
-- [ ] **T-12 done**
+- [x] **T-12 done**
 - design_element: DE-05
 - acceptance_criteria: [US-05/AC-05/4]
 - estimate: 0.5h
@@ -146,7 +146,7 @@
 
 ## T-13: Vitest specs for inspector module (loadInspector, switchVersion, notes CRUD)
 
-- [ ] **T-13 done**
+- [x] **T-13 done**
 - design_element: DE-03, DE-04, DE-05
 - acceptance_criteria: [US-03/AC-03/1, US-04/AC-04/3, US-05/AC-05/2]
 - estimate: 2h

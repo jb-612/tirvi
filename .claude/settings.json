@@ -4,6 +4,7 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git status:*)",
+      "Bash(git push:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",
       "Bash(git rev-parse:*)",
@@ -81,7 +82,6 @@
       "Edit(data/**)"
     ],
     "deny": [
-      "Bash(git push:*)",
       "Bash(git reset --hard:*)",
       "Bash(git checkout:*)",
       "Bash(rm -rf:*)",

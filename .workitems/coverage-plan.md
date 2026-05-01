@@ -133,6 +133,31 @@ R10 distribution (out of scope here; product/GTM concern).
 R11 dev-machine resource floor (gates E0 compose profile).
 R12 minors' regulatory tightening (gates E11).
 
+## F33 — Exam Review Portal (Admin Quality Review)
+
+**Bounded context:** `bc:exam_review` (new — subordinate to existing `player` and `quality_assurance`)
+**Personas:** University Admin (primary, new), Pipeline Developer (supporting), QA Reviewer (supporting), Content Preparer (supporting).
+**Phase:** N04 (Player UI, weeks 11–13). Folds in N05/F47 feedback capture.
+
+**Key processes added:**
+1. Admin loads portal for a run → sees PDF side-by-side with audio player
+2. Admin annotates per-word quality issues (category + note)
+3. Admin browses artifact tree to diagnose pipeline stage output
+4. Admin exports feedback as JSON
+5. Developer drills artifact tree to find root cause
+6. Admin compares two pipeline runs (before/after fix)
+7. Admin reviews all flagged words before final export
+
+**Risks specific to F33:**
+- R-F33-01: Auth deferred — portal is open; documented as intentional deferral.
+- R-F33-02: Feedback schema forward-compatibility with F39 benchmark harness.
+- R-F33-03: Concurrent review not handled (single-user POC assumption).
+- R-F33-04: Admin has zero pipeline knowledge — UX must be self-explaining.
+
+**Test ID ranges allocated:**
+- Functional: FT-316 to FT-330
+- Behavioural: BT-209 to BT-218
+
 ## Out of Scope for This Design Phase
 
 - Class diagrams, API specs, DB schemas, code samples (that is design-pipeline).

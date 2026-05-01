@@ -225,3 +225,96 @@ class TestCorrectionCascadeWiring:
         in_tokens = mock_cascade.run_page.call_args.args[0]
         out_tokens = mock_cascade.run_page.return_value.corrected_tokens
         assert len(in_tokens) == len(out_tokens)
+
+
+# ---------------------------------------------------------------------------
+# T-04 — AuditSink wiring (DE-04 / US-05/AC-21 / FT-319)
+# ---------------------------------------------------------------------------
+
+
+class TestAuditSinkWiring:
+    """T-04 — wire AuditSink into pipeline.
+
+    AC: US-05/AC-21. FT-319.
+    """
+
+    def test_enable_review_false_by_default(self) -> None:
+        import dataclasses as dc
+        fields = {f.name: f for f in dc.fields(PipelineDeps)}
+        assert "enable_review" in fields
+        assert fields["enable_review"].default is False
+
+    def test_no_sink_called_when_review_disabled(self, tmp_path: Path) -> None:
+        # run_pipeline with enable_review=False must NOT create any output/ subdirs
+        import dataclasses as dc
+        deps = dc.replace(_fake_deps(), enable_review=False)
+        output_base = tmp_path / "output"
+        output_base.mkdir()
+        run_pipeline(b"fake-pdf", tmp_path, deps)
+        # no NNN run dirs should have been created
+        nnn_dirs = [d for d in output_base.iterdir() if d.is_dir()]
+        assert nnn_dirs == []
+
+    def test_sink_write_called_when_review_enabled(self, tmp_path: Path) -> None:
+        import dataclasses as dc
+        from unittest.mock import patch
+        output_base = tmp_path / "output"
+        output_base.mkdir()
+        deps = dc.replace(
+            _fake_deps(),
+            enable_review=True,
+            review_output_dir=output_base,
+        )
+        with patch("tirvi.pipeline.AuditSink") as MockSink:
+            mock_sink_instance = MagicMock()
+            MockSink.return_value = mock_sink_instance
+            run_pipeline(b"fake-pdf", tmp_path, deps)
+        # At least one write_* method was called
+        write_calls = (
+            mock_sink_instance.write_ocr.call_count
+            + mock_sink_instance.write_normalized.call_count
+            + mock_sink_instance.write_nlp.call_count
+            + mock_sink_instance.write_diacritized.call_count
+            + mock_sink_instance.write_ssml.call_count
+            + mock_sink_instance.write_tts.call_count
+        )
+        assert write_calls >= 1
+
+    def test_run_dir_auto_increments(self, tmp_path: Path) -> None:
+        from tirvi.pipeline import _next_run_dir
+        first = _next_run_dir(tmp_path)
+        assert first.name == "001"
+        assert first.is_dir()
+        second = _next_run_dir(tmp_path)
+        assert second.name == "002"
+        assert second.is_dir()
+
+    def test_run_dir_starts_at_001(self, tmp_path: Path) -> None:
+        from tirvi.pipeline import _next_run_dir
+        result = _next_run_dir(tmp_path)
+        assert result.name == "001"
+        assert result.is_dir()
+
+    def test_manifest_written_after_pipeline_run(self, tmp_path: Path) -> None:
+        import dataclasses as dc
+        output_base = tmp_path / "output"
+        output_base.mkdir()
+        deps = dc.replace(
+            _fake_deps(),
+            enable_review=True,
+            review_output_dir=output_base,
+        )
+        run_pipeline(b"fake-pdf", tmp_path, deps)
+        # manifest.json must exist in the created run dir
+        run_dirs = [d for d in output_base.iterdir() if d.is_dir()]
+        assert len(run_dirs) == 1
+        assert (run_dirs[0] / "manifest.json").is_file()
+
+    def test_pipeline_unchanged_when_review_disabled(self, tmp_path: Path) -> None:
+        import dataclasses as dc
+        deps = dc.replace(_fake_deps(), enable_review=False)
+        result = run_pipeline(b"fake-pdf", tmp_path, deps)
+        # Standard artefacts still produced
+        assert (result["drafts_dir"] / "audio.mp3").is_file()
+        assert (result["drafts_dir"] / "page.json").is_file()
+

@@ -1,27 +1,177 @@
-# Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+feature_id: N04/F33
+status: designed
 
-feature_id: TBD
-status: scaffolded
+hld_refs: [HLD-§3.1/Frontend, HLD-§5.2/Processing, HLD-§5.4/FeedbackLoop]
+prd_refs: ["PRD §6.6", "PRD §10"]
+adr_refs: [ADR-023, ADR-025, ADR-029, ADR-036]
 
-# Source-document references
-hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
-prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
-adr_refs: []        # e.g. ["ADR-001"]
+biz_source:
+  functional_test_plan_path: .workitems/N04-player/F33-side-by-side-viewer/functional-test-plan.md
+  behavioural_test_plan_path: .workitems/N04-player/F33-side-by-side-viewer/behavioural-test-plan.md
+  corpus_e_id: E10-F33
+  imported_at: "2026-05-01"
+  source_sha: ""  # fill with git sha of biz commit
 
-# ACM nodes
+ontology_refs:
+  - bc:exam_review
+  - bc:audio_delivery
+  - persona:admin_reviewer
+  - persona:pipeline_developer
+  - persona:qa_reviewer
+  - bo:WordAnnotation
+  - bo:ReviewSession
+
 acm_nodes:
-  feature: feature:TBD
-  specs: []         # spec:<feature_id>/DE-NN
-  user_stories: []  # story:<feature_id>/US-NN
-  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
-  tasks: []         # task:<feature_id>/T-NN
+  feature: feature:N04/F33
+  specs:
+    - spec:N04/F33/DE-01
+    - spec:N04/F33/DE-02
+    - spec:N04/F33/DE-03
+    - spec:N04/F33/DE-04
+    - spec:N04/F33/DE-05
+    - spec:N04/F33/DE-06
+  user_stories:
+    - story:N04/F33/US-01
+    - story:N04/F33/US-02
+    - story:N04/F33/US-03
+    - story:N04/F33/US-04
+    - story:N04/F33/US-05
+    - story:N04/F33/US-06
+    - story:N04/F33/US-07
+  tasks:
+    - task:N04/F33/T-01
+    - task:N04/F33/T-02
+    - task:N04/F33/T-03
+    - task:N04/F33/T-04
+    - task:N04/F33/T-05
+    - task:N04/F33/T-06
+    - task:N04/F33/T-07
+    - task:N04/F33/T-08
+    - task:N04/F33/T-09
+    - task:N04/F33/T-10
+    - task:N04/F33/T-11
+    - task:N04/F33/T-12
+    - task:N04/F33/T-13
 
-# ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+acm_edges:
+  - {from: spec:N04/F33/DE-01, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F33/DE-02, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F33/DE-03, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F33/DE-04, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N04/F33/DE-05, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N04/F33/DE-06, to: HLD-§5.4/FeedbackLoop, type: TRACED_TO}
+  - {from: feature:N04/F33, to: adr:023, type: IMPLEMENTS}
+  - {from: feature:N04/F33, to: adr:029, type: IMPLEMENTS}
+  - {from: feature:N04/F33, to: adr:036, type: IMPLEMENTS}
+  - {from: task:N04/F33/T-02, to: spec:N04/F33/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-03, to: spec:N04/F33/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-04, to: spec:N04/F33/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-05, to: spec:N04/F33/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-06, to: spec:N04/F33/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-07, to: spec:N04/F33/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-08, to: spec:N04/F33/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-09, to: spec:N04/F33/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-10, to: spec:N04/F33/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-11, to: spec:N04/F33/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-12, to: spec:N04/F33/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N04/F33/T-13, to: spec:N04/F33/DE-06, type: IMPLEMENTED_BY}
 
-# Per-element traces (denormalized for quick lookup)
-de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
-story_to_prd: {}    # US-NN -> PRD §X.Y
-task_to_de: {}      # T-NN -> DE-NN
-ac_to_story: {}     # AC-NN -> US-NN
+de_to_hld:
+  DE-01: HLD-§3.1/Frontend
+  DE-02: HLD-§3.1/Frontend
+  DE-03: HLD-§3.1/Frontend
+  DE-04: HLD-§5.2/Processing
+  DE-05: HLD-§5.2/Processing
+  DE-06: HLD-§5.4/FeedbackLoop
+
+story_to_prd:
+  US-01: "PRD §6.6"
+  US-02: "PRD §10"
+  US-03: "PRD §6.6"
+  US-04: "PRD §10"
+  US-05: "PRD §5.2"
+  US-06: "PRD §10"
+  US-07: "PRD §10"
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-04
+  T-03: DE-04
+  T-04: DE-04
+  T-05: DE-06
+  T-06: DE-03
+  T-07: DE-03
+  T-08: DE-06
+  T-09: DE-05
+  T-10: DE-06
+  T-11: DE-05
+  T-12: DE-06
+  T-13: DE-06
+
+ac_to_story:
+  AC-01: US-01
+  AC-02: US-01
+  AC-03: US-01
+  AC-04: US-01
+  AC-05: US-02
+  AC-06: US-02
+  AC-07: US-02
+  AC-08: US-02
+  AC-09: US-02
+  AC-10: US-02
+  AC-11: US-03
+  AC-12: US-03
+  AC-13: US-03
+  AC-14: US-03
+  AC-15: US-03
+  AC-16: US-04
+  AC-17: US-04
+  AC-18: US-04
+  AC-19: US-04
+  AC-20: US-04
+  AC-21: US-05
+  AC-22: US-05
+  AC-23: US-05
+  AC-24: US-05
+  AC-25: US-06
+  AC-26: US-06
+  AC-27: US-06
+  AC-28: US-06
+  AC-29: US-07
+  AC-30: US-07
+  AC-31: US-07
+  AC-32: US-07
+  AC-33: US-07
+
+# Functional test coverage (FT-316..FT-330)
+ft_to_task:
+  FT-316: [T-01, T-09]
+  FT-317: [T-05, T-09]
+  FT-318: [T-06]
+  FT-319: [T-02, T-07]
+  FT-320: [T-08]
+  FT-321: [T-08]
+  FT-322: [T-07, T-12]
+  FT-323: [T-09, T-11]
+  FT-324: [T-06]
+  FT-325: [T-09]
+  FT-326: [T-06]
+  FT-327: [T-08, T-12]  # feedback JSON schema validation: markId regex, XSS via textContent, schema_version:"1"
+  FT-328: [T-12]
+  FT-329: [T-06, T-07]  # 55 artifact nodes rendered within 1s
+  FT-330: [T-13]
+
+# Behavioural test coverage (BT-209..BT-218)
+bt_to_task:
+  BT-209: [T-10]
+  BT-210: [T-08]
+  BT-211: [T-06]
+  BT-212: [T-13]
+  BT-213: [T-02, T-07]
+  BT-214: [T-12]
+  BT-215: [T-12, T-13]
+  BT-216: [T-11]
+  BT-217: [T-03, T-07]
+  BT-218: [T-05]  # auth-deferred posture; BT-218 validates no-login required
+
+tests: []  # filled by TDD at implementation time

@@ -1,0 +1,15 @@
+flowchart LR
+  subgraph Browser["Browser — Three-Panel Layout (DE-01)"]
+    A["Artifact Tree Sidebar\nplayer/js/sidebar.js\n(DE-03)"]
+    B["Center Panel\nPDF page image\n+ word-sync player (F35)\n(DE-02)"]
+    C["Word Annotation Panel\nplayer/js/feedback.js\n(DE-06)"]
+    A -->|"click artifact"| B
+    B -->|"word highlight event"| C
+  end
+  D["AuditSink\ntirvi/debug/sink.py\n(DE-04)"]
+  E["output/NNN/\nArtifact store\n(DE-05)"]
+  F["feedback/*.json\nF48 / F39 FeedbackAggregator"]
+  D -->|"write stage artifacts"| E
+  E -->|"manifest.json"| A
+  C -->|"POST /feedback"| E
+  E --> F

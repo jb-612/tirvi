@@ -663,8 +663,75 @@ dependencies:
     related_files:
       - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/ontology-delta.yaml
 
-  # --- N01/F49 pipeline-progress edges (appended by sw-designpipeline 2026-05-01) ---
+  # --- N04/F33 Exam Review Portal edges ---
   - id: DEP-110
+    source: { type: feature, id: N04/F33, name: Exam Review Portal }
+    target: { type: feature, id: N04/F35, name: word-sync marker }
+    relationship: requires
+    rationale: F33 artifact tree and feedback panel are layered on top of F35's word-sync marker; center panel preserves F35 bbox math.
+    strength: strong
+    direction: one_way
+    risk_if_broken: word-sync highlight broken inside review portal center panel.
+    related_files:
+      - path: .workitems/N04-player/F33-side-by-side-viewer/design.md
+
+  - id: DEP-111
+    source: { type: feature, id: N04/F33, name: Exam Review Portal }
+    target: { type: feature, id: N03/F30, name: word-timing-port }
+    relationship: requires
+    rationale: F33 audio player displays timing JSON for word sync; same audio.json consumed by review portal.
+    strength: strong
+    direction: one_way
+    risk_if_broken: audio player in review portal cannot sync word positions.
+    related_files:
+      - path: .workitems/N04-player/F33-side-by-side-viewer/design.md
+
+  - id: DEP-112
+    source: { type: feature, id: N04/F33, name: Exam Review Portal }
+    target: { type: feature, id: N02/F22, name: reading-plan-output }
+    relationship: requires
+    rationale: F33 artifact tree shows page.json (reading plan) as a stage artifact; required for admin diagnosis flow.
+    strength: strong
+    direction: one_way
+    risk_if_broken: NLP tokens stage missing from artifact tree.
+    related_files:
+      - path: .workitems/N04-player/F33-side-by-side-viewer/design.md
+
+  - id: DEP-113
+    source: { type: feature, id: N04/F33, name: Exam Review Portal }
+    target: { type: feature, id: N04/F50, name: inspector-tabs }
+    relationship: provides_surface_for
+    rationale: F33 three-panel layout is the consumer surface that F50 inspector tabs extend.
+    strength: medium
+    direction: one_way
+    risk_if_broken: F50 inspector tabs have no host panel.
+    related_files:
+      - path: .workitems/N04-player/F33-side-by-side-viewer/design.md
+
+  - id: DEP-114
+    source: { type: feature, id: N04/F33, name: Exam Review Portal }
+    target: { type: feature, id: N02/F48, name: feedback-aggregator }
+    relationship: produces
+    rationale: F33 produces output/<run-N>/feedback/*.json consumed by N02/F48 FeedbackAggregator (T-08).
+    strength: strong
+    direction: one_way
+    risk_if_broken: F48 aggregator has no feedback source; lexicon improvement loop broken.
+    related_files:
+      - path: .workitems/N04-player/F33-side-by-side-viewer/design.md
+
+  - id: DEP-115
+    source: { type: feature, id: N04/F33, name: Exam Review Portal }
+    target: { type: feature, id: N05/F39, name: tirvi-bench-v0 }
+    relationship: feeds
+    rationale: Aggregated admin feedback drives tirvi-bench IPA ground-truth corrections and quality regression tracking.
+    strength: medium
+    direction: one_way
+    risk_if_broken: bench v0 lacks human feedback signal; quality metrics are automated-only.
+    related_files:
+      - path: .workitems/N04-player/F33-side-by-side-viewer/design.md
+
+  # --- N01/F49 pipeline-progress edges (appended by sw-designpipeline 2026-05-01) ---
+  - id: DEP-116
     source: { type: protocol, id: PROTO-N01-F49-ProgressReporter, name: ProgressReporter }
     target: { type: bounded_context, id: bc:observability, name: PipelineObservability }
     relationship: realizes
@@ -675,7 +742,7 @@ dependencies:
     related_files:
       - path: tirvi/progress.py
 
-  - id: DEP-111
+  - id: DEP-117
     source: { type: class, id: CLS-N01-F49-RichProgressReporter, name: RichProgressReporter }
     target: { type: protocol, id: PROTO-N01-F49-ProgressReporter, name: ProgressReporter }
     relationship: implements
@@ -686,7 +753,7 @@ dependencies:
     related_files:
       - path: tirvi/progress.py
 
-  - id: DEP-112
+  - id: DEP-118
     source: { type: module, id: MOD-N01-F49, name: tirvi.progress }
     target: { type: feature_test, id: test:FT-316, name: FT-316-stage-rows-render-order }
     relationship: tested_by

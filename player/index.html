@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <!--
-  F35 + F36 + F50 — vanilla HTML/JS player + Review UI.
+  F35 + F36 + F50 + F33 — vanilla HTML/JS player, Review UI, and Exam Review Portal.
 
   Spec: N04/F35 (word-sync highlight), N04/F36 (accessibility controls),
-        F50 (inspector, version nav, reviewer notes).
-  Bounded context: bc:audio_delivery.
+        F50 (inspector, version nav, reviewer notes),
+        N04/F33 DE-01 (review-portal three-panel grid),
+              DE-02 (centered PDF viewer, max-width 800px),
+              DE-03 (#artifact-tree sidebar — mounted by sidebar.js),
+              DE-06 (#annotation-panel — mounted by feedback.js).
+  Bounded context: bc:audio_delivery, bc:exam_review.
   Per ADR-023: vanilla HTML + Web Audio API; no framework.
+  Per ADR-036: auth/permission layer deferred (localhost-only for POC).
+  AUTH_GATE TODO: add auth check before serving this portal over any network.
 
   Wire contracts (read-only consumers):
     - audio.json — docs/schemas/audio.schema.json (produced by F30)
     - page.json  — docs/schemas/page.schema.json (produced by F22 DE-07)
+    - output/<run>/manifest.json — produced by tirvi/debug/manifest.py (F33 T-03)
 -->
 <html lang="he" dir="rtl">
   <head>
@@ -22,10 +29,16 @@
     <!-- 3-column CSS grid: [version-nav] | [player-main] | [inspector] -->
     <div id="app-layout">
 
-      <!-- Left column: version navigator (dir=ltr even in RTL page) -->
+      <!-- Left column: version navigator (F50) + artifact tree (F33 DE-03) -->
       <nav id="version-nav" dir="ltr" aria-label="Pipeline runs">
         <h2>Runs</h2>
         <ul id="version-list"></ul>
+        <!-- F33 DE-03: artifact tree container — populated by sidebar.js (T-06) -->
+        <section
+          id="artifact-tree"
+          aria-label="Pipeline artifact tree"
+          hidden
+        ></section>
       </nav>
 
       <!-- Centre column: player -->
@@ -44,7 +57,7 @@
         <audio id="audio-element" preload="auto"></audio>
       </main>
 
-      <!-- Right column: inspector sidebar (dir=ltr) -->
+      <!-- Right column: inspector (F50) + word annotation panel (F33 DE-06) -->
       <aside id="inspector" dir="ltr" aria-label="Inspection panel">
         <!-- Collapse toggle on left edge -->
         <button
@@ -83,6 +96,12 @@
           <div id="tab-nakdan" role="tabpanel" aria-label="Nakdan diacritization" hidden></div>
           <div id="tab-voice"  role="tabpanel" aria-label="Voice timing marks" hidden></div>
         </div>
+        <!-- F33 DE-06: word annotation panel — populated by feedback.js (T-08) -->
+        <section
+          id="annotation-panel"
+          aria-label="Word annotation panel"
+          hidden
+        ></section>
       </aside>
 
     </div><!-- #app-layout -->

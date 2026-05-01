@@ -272,6 +272,7 @@ class TestCascadeConfigInvalid:
             agg.lock_mode(CascadeMode(name="no_llm"))  # different mode → conflict
 
 
+
 class TestMLMCandidatesThreadedToLLM:
     """INV-CCS-002: LLM reviewer must receive candidates from MLM verdict."""
 
