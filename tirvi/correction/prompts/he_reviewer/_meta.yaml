@@ -1,8 +1,5 @@
-# Prompt template metadata — DE-04, ADR-034.
-# `prompt_template_version` is part of the LLM cache key. Bump on any
-# change to v1.txt (or rename to v2.txt and add a new _meta entry).
-prompt_template_version: "v1-scaffold"
-status: scaffold
+prompt_template_version: "v1"
+status: active
 notes: |
-  Placeholder. TDD T-04b fills the real prompt body and bumps version
-  to "v1" when the prompt is finalised.
+  TDD T-04b: minimal Hebrew OCR correction prompt.
+  Variables: {sentence}, {original}, {candidates} (sorted, comma-separated).

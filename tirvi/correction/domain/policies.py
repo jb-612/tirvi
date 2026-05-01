@@ -54,10 +54,11 @@ class AntiHallucinationPolicy:
     def check(
         self, chosen: str, candidates: tuple[str, ...]
     ) -> None:
-        # TODO INV-CCS-002 (T-04b): reject if chosen not in candidates.
-        # TODO INV-CCS-002 (T-04b): reject if not self.word_list.is_known_word(chosen).
-        # On violation: raise LLMWordListViolation (errors.py).
-        raise NotImplementedError("AC-F48-S03/AC-03 / INV-CCS-002 — TDD T-04b fills")
+        from ..errors import LLMWordListViolation
+        if chosen not in candidates:
+            raise LLMWordListViolation(f"'{chosen}' not in candidates {candidates}")
+        if not self.word_list.is_known_word(chosen):
+            raise LLMWordListViolation(f"'{chosen}' not in NakdanWordList")
 
 
 @dataclass(frozen=True)
@@ -73,8 +74,7 @@ class PerPageLLMCapPolicy:
     cap: int = 10
 
     def can_call(self, calls_made: int) -> bool:
-        # TODO BT-F-05 (T-04a): return calls_made < self.cap.
-        raise NotImplementedError("AC-F48-S03/AC-02 / BT-F-05 — TDD T-04a fills")
+        return calls_made < self.cap
 
 
 @dataclass(frozen=True)
