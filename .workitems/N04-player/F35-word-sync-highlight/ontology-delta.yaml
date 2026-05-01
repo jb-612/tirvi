@@ -1,0 +1,141 @@
+# Ontology delta — N04/F35 Word-sync highlight (vanilla HTML POC)
+# Owner: werbeH-design branch
+# Target: ontology/technical-implementation.yaml (merged serially by team-lead)
+#
+# Schema: matches ontology/schemas/technical-implementation.schema.yaml plus
+#   the "tasks" section convention used by the master file.
+# Idempotency: nodes are additive; lead deduplicates on `id` during merge.
+# F35 is a frontend JS feature — no Python classes or adapter ports.
+
+version: 1
+feature_id: N04/F35
+
+# Modules — coarse-grained code groupings.
+modules:
+  - id: MOD-N04-F35
+    name: player.word_sync_highlight
+    description: vanilla-HTML POC player — loads audio timings + page bbox JSON, drives a requestAnimationFrame highlight loop, and positions a CSS marker over the currently-spoken word; pure browser JS, no framework
+    feature_refs: [N04/F35]
+    bounded_context: audio_delivery
+    source_path: player/
+    status: implementing   # T-01, T-02, T-03 done; T-04..T-06 designed
+
+# Services — runtime processes.
+services: []
+
+# Ports — abstract interfaces.
+ports: []
+
+# Adapters — concrete vendor implementations.
+adapters: []
+
+# Classes — none; F35 is function + class module, described under functions.
+classes: []
+
+# Functions — top-level callable entry points contributed by F35.
+functions:
+  - id: FN-N04-F35-initPlayer
+    name: initPlayer
+    description: async entry point; fetches audio.json + page.json, populates Player.state, attaches play/pause listeners that arm/disarm the rAF loop; degrades gracefully when audio.json is missing (banner) but fails loud on missing page.json
+    feature_refs: [N04/F35]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F35
+    source_path: player/js/player.js
+    status: implementing   # covered by T-01 (scaffold done), T-02 (loader done)
+
+  - id: FN-N04-F35-startHighlightLoop
+    name: startHighlightLoop
+    description: arms requestAnimationFrame loop on <audio> play event; each frame calls lookupWord then positionMarker; cancels loop on pause; honours prefers-reduced-motion by suppressing CSS transitions
+    feature_refs: [N04/F35]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F35
+    source_path: player/js/player.js
+    status: implementing   # T-03 done
+
+  - id: FN-N04-F35-moveMarker
+    name: moveMarker
+    description: positionMarker(bbox, image_natural, image_rendered) — scales bbox pixel coords from natural image resolution to rendered size (retina-safe); sets CSS top/left/width/height on .marker element
+    feature_refs: [N04/F35]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F35
+    source_path: player/js/highlight.js
+    status: designed   # T-05 not yet started
+
+  - id: FN-N04-F35-loadTimingsAndPage
+    name: loadTimingsAndPage
+    description: async fetch of audio.json and page.json; validates against docs/schemas/audio.schema.json and docs/schemas/page.schema.json; caches parsed result in Player.state; emits error banner on partial failure
+    feature_refs: [N04/F35]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F35
+    source_path: player/js/player.js
+    status: implementing   # T-02 done
+
+  - id: FN-N04-F35-lookupWord
+    name: lookupWord
+    description: lookupWord(timings, t_seconds) — binary search returning mark_id where timings[i].start_s <= t < timings[i].end_s; returns null when t is before first or after last entry
+    feature_refs: [N04/F35]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F35
+    source_path: player/js/timing.js
+    status: designed   # T-04 not yet started
+
+# ADR decisions
+adr_decisions:
+  - id: adr:023
+    name: Vanilla HTML/JS for POC player (deviates from HLD Next.js)
+    description: POC speed-of-iteration; Next.js deferred to MVP. Influences all DEs.
+    feature_refs: [N04/F35]
+    bounded_context: audio_delivery
+    source_path: docs/ADR/ADR-023-poc-vanilla-html-player.md
+    status: proposed
+
+# Tasks — status reflects tasks.md checkbox state.
+tasks:
+  - id: task:N04/F35/T-01
+    name: static-html-scaffold
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-01]
+    test_path: tests/unit/test_player_html.py
+    status: implemented   # [x] T-01 done
+
+  - id: task:N04/F35/T-02
+    name: timings-and-page-loader
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-02]
+    test_path: tests/unit/test_timings_loader.py
+    status: implemented   # [x] T-02 done
+
+  - id: task:N04/F35/T-03
+    name: raf-loop
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-03]
+    test_path: tests/unit/test_raf_loop.py
+    status: implemented   # [x] T-03 done
+
+  - id: task:N04/F35/T-04
+    name: active-word-lookup
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-04]
+    test_path: tests/unit/test_lookup_word.py
+    status: designed   # [ ] T-04 done
+
+  - id: task:N04/F35/T-05
+    name: marker-positioning-bbox-scaling
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-05]
+    test_path: tests/unit/test_marker_position.py
+    status: designed   # [ ] T-05 done
+
+  - id: task:N04/F35/T-06
+    name: prefers-reduced-motion-and-wcag-contrast
+    feature_refs: [N04/F35]
+    spec_refs: [spec:N04/F35/DE-06]
+    test_path: tests/unit/test_a11y_player.py
+    status: designed   # [ ] T-06 done
+
+# Notes for merger:
+# - MOD-N04-F35 is NEW; player/ module did not exist in master before F35.
+# - All FN nodes are additive; no existing master FN IDs conflict.
+# - Tasks T-01..T-03 are "implemented"; T-04..T-06 are "designed".
+# - bounded_context: audio_delivery (underscore) matches project convention.
+# - No Python classes or adapter ports — JS-only feature per ADR-023.

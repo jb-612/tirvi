@@ -1,36 +1,30 @@
 ---
-feature_id: TBD
-status: scaffolded
-total_estimate_hours: 0
+feature_id: N05/F47
+status: ready
+total_estimate_hours: 2
+deferred: true
 ---
 
-# Tasks: TBD
+# Tasks: F47 — User Feedback Capture for Lexicon/Quality Improvements
 
-Atomic tasks (≤ 2h each), dependency-ordered, every task traced to a Design
-Element + Acceptance Criterion.
+Stub task list. Feature is deferred post-POC. Tasks will be expanded when
+biz-functional-design runs for N05.
 
-## T-01: TBD
+## T-01: Implement feedback API endpoint and GCS record writer
 
 - [ ] **T-01 done**
-- design_element: DE-01
+
+- design_element: DE-01, DE-02
 - acceptance_criteria: [AC-01]
-- estimate: 0h
-- test_file: TBD
+- estimate: 2h
+- test_file: tests/unit/test_feedback_capture.py
 - dependencies: []
-- hints: TBD
-
-## T-02: TBD
-
-- [ ] **T-02 done**
-- design_element: DE-01
-- acceptance_criteria: [AC-02]
-- estimate: 0h
-- test_file: TBD
-- dependencies: [T-01]
-- hints: TBD
+- hints: POST /documents/{id}/feedback validates word/page/expected_pronunciation;
+  writes feedback/{doc_id}/{ts}.json to GCS via StoragePort; feedback/ prefix
+  excluded from 7-day TTL lifecycle rule (F43).
 
 ## Dependency DAG
 
 ```
-T-01 → T-02
+T-01
 ```

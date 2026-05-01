@@ -1,0 +1,36 @@
+# Ontology delta — N04/F37 Spell-word (deferred MVP)
+# Owner: werbeH-design branch
+# Target: ontology/technical-implementation.yaml
+# Status: deferred MVP — design stub only; nodes are additive placeholders.
+
+version: 1
+feature_id: N04/F37
+
+modules:
+  - id: MOD-N04-F37
+    name: player.spell_word
+    description: spell-word on-demand letter-by-letter playback — tap-handler on active marker, letter sequence synthesizer; deferred MVP; no source yet
+    feature_refs: [N04/F37]
+    bounded_context: audio_delivery
+    source_path: player/
+    status: designed   # deferred MVP
+
+services: []
+ports: []
+adapters: []
+classes: []
+functions: []
+adr_decisions: []
+
+tasks:
+  - id: task:N04/F37/T-01
+    name: spell-word-stub
+    feature_refs: [N04/F37]
+    spec_refs: [spec:N04/F37/DE-01]
+    test_path: TBD
+    status: designed   # deferred MVP
+
+# Notes for merger:
+# - F37 is deferred MVP; all nodes are additive stubs.
+# - Requires F36 state machine extension (new `spelling` state) — coordinate at MVP design time.
+# - Hebrew letter synthesis strategy (Web Speech API vs Cloud TTS) must be decided at MVP.

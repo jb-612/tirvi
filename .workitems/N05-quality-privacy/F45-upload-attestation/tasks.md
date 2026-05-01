@@ -1,36 +1,29 @@
 ---
-feature_id: TBD
-status: scaffolded
-total_estimate_hours: 0
+feature_id: N05/F45
+status: ready
+total_estimate_hours: 2
+deferred: true
 ---
 
-# Tasks: TBD
+# Tasks: F45 — Upload Attestation (No-PII Verification Gate)
 
-Atomic tasks (≤ 2h each), dependency-ordered, every task traced to a Design
-Element + Acceptance Criterion.
+Stub task list. Feature is deferred post-POC. Tasks will be expanded when
+biz-functional-design runs for N05.
 
-## T-01: TBD
+## T-01: Extend upload API with attestation field and write attestation record
 
 - [ ] **T-01 done**
-- design_element: DE-01
+
+- design_element: DE-01, DE-02
 - acceptance_criteria: [AC-01]
-- estimate: 0h
-- test_file: TBD
+- estimate: 2h
+- test_file: tests/unit/test_upload_attestation.py
 - dependencies: []
-- hints: TBD
-
-## T-02: TBD
-
-- [ ] **T-02 done**
-- design_element: DE-01
-- acceptance_criteria: [AC-02]
-- estimate: 0h
-- test_file: TBD
-- dependencies: [T-01]
-- hints: TBD
+- hints: Add attested_no_pii: bool to POST /documents request schema; reject with
+  HTTP 422 if false/absent; write manifests/{doc_id}/attestation.json to GCS on success.
 
 ## Dependency DAG
 
 ```
-T-01 → T-02
+T-01
 ```

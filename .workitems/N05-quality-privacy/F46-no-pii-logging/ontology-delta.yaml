@@ -1,0 +1,17 @@
+version: "1.0"
+feature_id: N05/F46
+description: "Ontology delta for F46 — No-PII Logging Guard (Structured Log Scrubber)"
+deferred: true
+
+modules:
+  - id: "mod:pii-log-scrubber"
+    label: "PII Log Scrubber Middleware"
+    layer: domain
+    hld_ref: "HLD-§3.4"
+    notes: "Python logging.Filter subclass that redacts sensitive keys per scrub_config.yaml."
+
+tasks:
+  - id: "task:N05/F46/T-01"
+    label: "Implement PiiScrubFilter middleware and scrub_config.yaml"
+    module: "mod:pii-log-scrubber"
+    status: pending

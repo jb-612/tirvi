@@ -1,0 +1,133 @@
+# Ontology delta — N04/F36 Accessibility controls (4-button POC)
+# Owner: werbeH-design branch
+# Target: ontology/technical-implementation.yaml (merged serially by team-lead)
+#
+# Schema: matches ontology/schemas/technical-implementation.schema.yaml plus
+#   the "tasks" section convention used by the master file.
+# Idempotency: nodes are additive; lead deduplicates on `id` during merge.
+# F36 is a frontend JS feature — no Python classes or adapter ports.
+
+version: 1
+feature_id: N04/F36
+
+# Modules — coarse-grained code groupings.
+modules:
+  - id: MOD-N04-F36
+    name: player.accessibility_controls
+    description: vanilla-HTML POC control surface — 4-button play/pause/continue/reset panel, pure-function state machine, keyboard shortcut binding, ARIA labels, and WCAG-compliant focus styles; co-hosted on the same page as F35
+    feature_refs: [N04/F36]
+    bounded_context: audio_delivery
+    source_path: player/
+    status: implementing   # T-01 done; T-02..T-06 designed
+
+# Services — runtime processes.
+services: []
+
+# Ports — abstract interfaces.
+ports: []
+
+# Adapters — concrete vendor implementations.
+adapters: []
+
+# Classes — none; state machine is a plain pure function.
+classes: []
+
+# Functions — top-level callable entry points contributed by F36.
+functions:
+  - id: FN-N04-F36-nextState
+    name: nextState
+    description: "pure function nextState(current: PlayerState, event: PlayerEvent) -> PlayerState; exhaustive state machine over idle/playing/paused/ended; invalid transitions return current state unchanged; no side effects"
+    feature_refs: [N04/F36]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F36
+    source_path: player/js/controls.js
+    status: designed   # T-02 not yet started
+
+  - id: FN-N04-F36-bindButtons
+    name: bindButtons
+    description: "Controls.bind(audio): attaches click listeners to the 4 buttons; each click dispatches the matching PlayerEvent, derives side-effect (play/pause/reset), and calls renderButtons(state)"
+    feature_refs: [N04/F36]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F36
+    source_path: player/js/controls.js
+    status: designed   # T-03 not yet started
+
+  - id: FN-N04-F36-announceState
+    name: announceState
+    description: "renderButtons(state): flips button.disabled per state table (idle->Play only; playing->Pause only; paused->Continue+Reset; ended->Play+Reset); called after every state transition to keep DOM in sync"
+    feature_refs: [N04/F36]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F36
+    source_path: player/js/controls.js
+    status: designed   # T-04 not yet started
+
+  - id: FN-N04-F36-bindKeyboard
+    name: bindKeyboard
+    description: "bindKeyboard(controls): Space -> play/pause toggle based on current state; R -> always reset; both call event.preventDefault to suppress page scroll and browser default behaviours"
+    feature_refs: [N04/F36]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F36
+    source_path: player/js/keymap.js
+    status: designed   # T-05 not yet started
+
+# ADR decisions
+adr_decisions:
+  - id: adr:023
+    name: Vanilla HTML/JS for POC player (deviates from HLD Next.js)
+    description: Existing ADR covering F35 + F36 shared stack decision.
+    feature_refs: [N04/F36]
+    bounded_context: audio_delivery
+    source_path: docs/ADR/ADR-023-poc-vanilla-html-player.md
+    status: proposed
+
+# Tasks — status reflects tasks.md checkbox state.
+tasks:
+  - id: task:N04/F36/T-01
+    name: button-dom-scaffold
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-01]
+    test_path: tests/unit/test_button_scaffold.py
+    status: implemented   # [x] T-01 done
+
+  - id: task:N04/F36/T-02
+    name: player-state-machine
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-02]
+    test_path: tests/unit/test_player_state_machine.py
+    status: designed   # [ ] T-02 done
+
+  - id: task:N04/F36/T-03
+    name: button-event-handlers
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-03]
+    test_path: tests/unit/test_button_handlers.py
+    status: designed   # [ ] T-03 done
+
+  - id: task:N04/F36/T-04
+    name: enable-disable-per-state
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-04]
+    test_path: tests/unit/test_button_enable.py
+    status: designed   # [ ] T-04 done
+
+  - id: task:N04/F36/T-05
+    name: keyboard-shortcuts
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-05]
+    test_path: tests/unit/test_keyboard_shortcuts.py
+    status: designed   # [ ] T-05 done
+
+  - id: task:N04/F36/T-06
+    name: aria-focus-wcag-contrast
+    feature_refs: [N04/F36]
+    spec_refs: [spec:N04/F36/DE-06]
+    test_path: tests/unit/test_aria_focus.py
+    status: designed   # [ ] T-06 done
+
+# Notes for merger:
+# - MOD-N04-F36 is additive alongside MOD-N04-F35 (same source_path player/; different module ID).
+# - All FN nodes are NEW; no existing master FN IDs conflict.
+# - Task T-01 is "implemented"; T-02..T-06 are "designed".
+# - nextState (FN-N04-F36-nextState) is a pure function — CC trivially ≤ 5 per state (4 states × table lookup).
+# - bounded_context: audio_delivery (underscore) matches project convention.
+# - No Python classes or adapter ports — JS-only feature per ADR-023.

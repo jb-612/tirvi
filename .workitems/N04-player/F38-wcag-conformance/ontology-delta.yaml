@@ -1,0 +1,37 @@
+# Ontology delta — N04/F38 WCAG 2.1 AA conformance audit (deferred MVP)
+# Owner: werbeH-design branch
+# Target: ontology/technical-implementation.yaml
+# Status: deferred MVP — design stub only; nodes are additive placeholders.
+
+version: 1
+feature_id: N04/F38
+
+modules:
+  - id: MOD-N04-F38
+    name: player.wcag_audit
+    description: WCAG 2.1 AA automated audit pipeline (axe-core + Playwright) and remediation task generator; audit runs after all player features are implemented; deferred MVP
+    feature_refs: [N04/F38]
+    bounded_context: audio_delivery
+    source_path: player/
+    status: designed   # deferred MVP
+
+services: []
+ports: []
+adapters: []
+classes: []
+functions: []
+adr_decisions: []
+
+tasks:
+  - id: task:N04/F38/T-01
+    name: wcag-audit-pipeline-stub
+    feature_refs: [N04/F38]
+    spec_refs: [spec:N04/F38/DE-01]
+    test_path: TBD
+    status: designed   # deferred MVP
+
+# Notes for merger:
+# - F38 is a quality-gate feature; no production source code until audit runs.
+# - Task breakdown is violation-driven: one TDD task per WCAG criterion failure found by DE-01.
+# - Depends on N04/F35, F36, F33, F34 all being implemented before audit can run.
+# - HLD §11 explicitly defers formal a11y audit to MVP.

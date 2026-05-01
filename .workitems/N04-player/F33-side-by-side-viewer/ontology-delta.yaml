@@ -1,0 +1,121 @@
+# Ontology delta — N04/F33 Side-by-side debug viewer with feedback capture
+# Owner: werbeH-design branch
+# Target: ontology/technical-implementation.yaml (merged serially by team-lead)
+#
+# Status: MVP deferred — design is complete and approved but TDD has not started.
+# Schema: matches ontology/schemas/technical-implementation.schema.yaml.
+# Idempotency: nodes are additive; lead deduplicates on `id` during merge.
+# F33 folds in N05/F47 (feedback-capture) per design D-01.
+
+version: 1
+feature_id: N04/F33
+
+# Modules — coarse-grained code groupings.
+modules:
+  - id: MOD-N04-F33
+    name: player.debug_viewer
+    description: three-panel debug viewer — left artifact-tree sidebar, center constrained PDF+marker panel, right feedback capture form; plus tirvi/debug/ Python sink for per-stage artifact serialization; deferred MVP
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    source_path: player/
+    status: designed   # deferred MVP; no TDD yet
+
+  - id: MOD-N04-F33-debug
+    name: tirvi.debug
+    description: Python debug sink — per-stage write hooks called from pipeline.py when --debug is passed; serializes domain results to output/<N>/; builds manifest.json for sidebar.js
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    source_path: tirvi/debug/
+    status: designed   # deferred MVP; no TDD yet
+
+# Services — runtime processes.
+services: []
+
+# Ports — abstract interfaces.
+ports: []
+
+# Adapters — concrete vendor implementations.
+adapters: []
+
+# Classes — Python classes contributed by the debug sink.
+classes:
+  - id: CLS-N04-F33-DebugSink
+    name: DebugSink
+    description: per-stage write hooks (write_ocr, write_normalized, write_nlp, write_g2p, write_ssml, write_tts); consumes domain result types only; activated by --debug flag; writes to output/<N>/; updates in-memory manifest
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F33-debug
+    source_path: tirvi/debug/sink.py
+    status: designed
+
+# Functions — callable entry points contributed by F33.
+functions:
+  - id: FN-N04-F33-mountArtifactTree
+    name: mountArtifactTree
+    description: "mountArtifactTree(container, rootUrl): fetches output/<N>/manifest.json, renders collapsible tree grouped by stage prefix; click on leaf -> renderArtifact(node, panel)"
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F33
+    source_path: player/js/sidebar.js
+    status: designed
+
+  - id: FN-N04-F33-renderArtifact
+    name: renderArtifact
+    description: "renderArtifact(node, panel): dispatches by extension — .json syntax-highlighted, .txt plain, .png <img>, .mp3 <audio>, .ssml formatted; replaces center panel content for non-PDF artifacts"
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F33
+    source_path: player/js/preview.js
+    status: designed
+
+  - id: FN-N04-F33-mountFeedbackPanel
+    name: mountFeedbackPanel
+    description: "mountFeedbackPanel(state): subscribes to F35 rAF highlight state; when paused on a word shows markId+OCR text+diacritized text+4-button issue picker+note; submits feedback JSON to output/<N>/feedback/"
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F33
+    source_path: player/js/feedback.js
+    status: designed
+
+  - id: FN-N04-F33-buildManifest
+    name: buildManifest
+    description: "build_manifest(run_dir): enumerates artifacts under output/<N>/, emits manifest.json consumed by sidebar.js; called at end of debug pipeline run"
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    module_ref: MOD-N04-F33-debug
+    source_path: tirvi/debug/manifest.py
+    status: designed
+
+# ADR decisions
+adr_decisions:
+  - id: adr:023
+    name: Vanilla HTML/JS for POC player (deviates from HLD Next.js)
+    description: Existing ADR covering F35/F36/F33 shared stack decision. F33 extends the same HTML shell.
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    source_path: docs/ADR/ADR-023-poc-vanilla-html-player.md
+    status: proposed
+  - id: adr:025
+    name: Dicta REST response cached per F33 debug sink (ADR-025 influence)
+    description: F33 debug sink serializes Dicta REST raw response as 06-diacritize/raw-response.json, aligning with ADR-025 data provenance.
+    feature_refs: [N04/F33]
+    bounded_context: audio_delivery
+    source_path: docs/ADR/ADR-025-dicta-rest-diacritization.md
+    status: proposed
+
+# Tasks — all designed (deferred MVP; tasks.md contains TBD stubs).
+tasks:
+  - id: task:N04/F33/T-01
+    name: tbd-stub
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-01]
+    test_path: TBD
+    status: designed   # deferred MVP; tasks.md TBD
+
+# Notes for merger:
+# - F33 is deferred MVP — design is approved but TDD has not started.
+# - Two modules: MOD-N04-F33 (JS player extension) + MOD-N04-F33-debug (Python sink).
+# - Python classes are additive; no existing CLS nodes conflict.
+# - F33 folds in N05/F47 (feedback-capture) per design D-01; no separate F47 delta needed.
+# - bounded_context: audio_delivery (underscore) matches project convention.
+# - tasks.md stubs should be populated when TDD is scheduled.
