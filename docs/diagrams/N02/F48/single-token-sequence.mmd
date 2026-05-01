@@ -1,0 +1,42 @@
+%% F48 — sequence for one ambiguous token through the full cascade.
+%% Token "תגרוס" in context "האיוס תגרוס נזק כלכלי" (ADR-033 §Decision example).
+%% Refs: FT-318, FT-320, FT-322 (cache reuse on second pass).
+
+sequenceDiagram
+    autonumber
+    participant SVC as CorrectionCascadeService
+    participant NG as NakdanGate
+    participant WL as NakdanWordList (CO13)
+    participant MLM as DictaBertMLMScorer
+    participant LLM as OllamaLLMReviewer
+    participant CCH as LLMCache (sqlite)
+    participant LOG as CorrectionLog
+
+    SVC->>NG: evaluate("תגרוס", ctx)
+    NG->>WL: is_known_word("תגרוס")
+    WL-->>NG: false
+    NG-->>SVC: verdict=suspect
+
+    SVC->>MLM: evaluate("תגרוס", ctx)
+    MLM->>MLM: build candidates {"תגרוס","תגרום"}
+    MLM->>MLM: score under DictaBERT-MLM
+    Note over MLM: delta = score(תגרום) - score(תגרוס) = 3.4
+    MLM-->>SVC: verdict=auto_apply, corrected="תגרום"
+    Note over SVC: mode=full and delta ≥ threshold_high=3.0\nand תגרום ∈ NakdanWordList → auto_apply
+    SVC->>LOG: append CorrectionLogEntry (stages 1-2)
+
+    Note over SVC,LLM: --- Counter-example: ambiguous case ---
+    SVC->>MLM: evaluate("גורס", ctx)
+    MLM-->>SVC: verdict=ambiguous, candidates=[גורם,גורס,גורף]
+    SVC->>LLM: review("גורס", ctx, candidates)
+    LLM->>CCH: lookup cache_key
+    alt cache miss
+        CCH-->>LLM: none
+        LLM->>LLM: POST 127.0.0.1:11434 /api/generate\nmodel=gemma4:31b-nvfp4
+        LLM->>CCH: store verdict_json
+    else cache hit (BT-217 second pass)
+        CCH-->>LLM: verdict_json
+    end
+    LLM-->>SVC: verdict=apply, chosen="גורם", reason
+    Note over SVC: chosen ∈ candidates ∧ chosen ∈ WordList\nelse anti-hallucination reject (FT-321)
+    SVC->>LOG: append CorrectionLogEntry (stages 1-3)

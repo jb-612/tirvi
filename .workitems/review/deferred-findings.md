@@ -50,3 +50,21 @@ the deferred-finding-issue.md template fields (Severity / Area / Reason /
 Affected Files / Business Risk / Technical Risk / Re-Evaluation Trigger /
 Recommended Owner / Due Condition / Related Review Finding / Related Epic
 and Feature).
+
+---
+
+## Append: N02/F48 Hebrew correction cascade — deferred findings
+
+> **Issue stubs only — `gh issue create` was NOT called for this batch** per the
+> @biz-functional-design Stage 14 instruction in this run's spec. Each row is
+> portable into a GitHub issue via the deferred-finding-issue template once
+> approved by the user.
+
+| # | ID | Severity | Area | Reason for Deferral | Affected Files | Business Risk | Technical Risk | Re-Evaluation Trigger | Recommended Owner | Due Condition | Related Feature | Issue URL |
+|---|-----|---------|------|--------------------|----------------|---------------|----------------|----------------------|-------------------|---------------|-----------------|-----------|
+| F48-1 | D-RECALL-BENCH | Critical | Functional Test | F40 quality-gates wiring + F39 bench page count needed; F48 ships scaffold only | `.workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md`, `user_stories.md`, `ontology-delta.yaml` ASM12 | "≥ 90% recall" PRD claim cannot be validated against a real corpus until F39 lands | F48 quality target unmeasured; regressions silent | When F39 tirvi-bench-v0 has ≥ 20 provenance-cleared pages with OCR-error labels AND F40 quality-gates wires F48 metrics | Test author + product lead | Before MVP launch | N02/F48 + N05/F39 + N05/F40 | (stub) |
+| F48-2 | D-FAST-TIER-AB | Medium | Product / Architecture | Llama 3.1 8B vs Gemma 3 4B fast-tier A/B requires runtime; defer until F48 ships | `user_stories.llm-reviewer.md` open questions, ADR-033 §Decision | Quality / latency trade-off unknown for fast tier | Wrong default may degrade UX | When F48 lands and 1 month of runtime data is available | Pipeline engineer | Post-MVP tuning window | N02/F48 | (stub) |
+| F48-3 | D-AUTO-PROMOTE-POLICY | Medium | Adversarial / Security | Anti-Sybil + auto-promote policy beyond MVP; per-sha cap is partial | `user_stories.feedback-loop.md` open questions | Spam-driven false rule promotion possible if uploader can fabricate distinct shas | Lexicon poisoning vector | When auth lands (post-MVP, see ASM07) | Engineer + security review | Post-MVP | N02/F48 + post-MVP auth | (stub) |
+| F48-4 | D-LOG-INTEGRITY | Low | Compliance | Signature on `corrections.json` not in MVP scope; on-device only mitigates | `behavioural-test-plan.md` Misuse Behaviour | Forged audit trail in adversarial setting | Trust regression for QA flow | When MVP+1 introduces multi-user trust boundary | SRE + product | v1.1 | N02/F48 | (stub) |
+
+**F48 deferred tally**: 1 Critical · 0 High · 2 Medium · 1 Low — all carry explicit re-evaluation triggers.

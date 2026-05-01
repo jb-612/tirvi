@@ -147,3 +147,23 @@ deferred-findings rows with re-evaluation triggers. The design phase is
 
 All 20 completion-checklist criteria are satisfied (see RUN-SUMMARY.md).
 Stage 12 (final synthesis) proceeds.
+
+---
+
+## Append: N02/F48 Hebrew correction cascade — autoresearch loop
+
+### Iteration 1 (post-stage-8 panel + adversarial)
+- Read: ADR-033, UAT (both), user_stories(.*).md, functional-test-plan.md, behavioural-test-plan.md, ontology-delta.yaml, design-review.md.
+- Identified contradictions: "Recall ≥ 90%" stated as measured but no bench in F48 scope; "zero exam content leaves M4 Max" only documented; "deterministic LLM" not scoped.
+- Proposed revisions: AUD-03 (CI-enforced privacy invariant); ASM12 (recall aspirational); FT-328 determinism scoping (model_version + prompt_template_version); BO51.source_writer; BT-214 regression-bench requirement; per-sha cap on feedback (FT-325 second variant); LLM call cap per page (BT-F-05).
+- Applied all revisions; updated user_stories(.*).md, functional-test-plan.md, behavioural-test-plan.md, ontology-delta.yaml.
+- Re-ran focused review on changed areas; all reviewers confirmed close.
+
+### Iteration 2 (verification)
+- Cross-checked ontology delta against business-domains.yaml schema (id continuity, type taxonomy, owned_by_context); pass.
+- Cross-checked dependencies.yaml shape; pass.
+- Cross-checked testing.yaml shape (test_ranges + per-id entries); pass.
+- Re-validated 0 Critical / 0 High open at iteration 2 close.
+
+### F48 Loop Exit
+0 unresolved Critical, 0 unresolved High. 1 Critical + 0 High + 2 Medium + 1 Low deferred with explicit triggers (D-RECALL-BENCH, D-FAST-TIER-AB, D-AUTO-PROMOTE-POLICY, D-LOG-INTEGRITY). Loop exits. Stage 12 + Stage 14 (deferred-finding stubs) complete. Stage 15 reached: do NOT write design.md / tasks.md / traceability.yaml — owned by `@sw-designpipeline`.

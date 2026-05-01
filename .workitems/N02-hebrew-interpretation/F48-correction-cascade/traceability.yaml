@@ -1,0 +1,423 @@
+# Traceability index — N02/F48 Hebrew correction cascade.
+# Owner: @sw-designpipeline. Wave 3.
+feature_id: N02/F48
+status: designed
+wave: 3
+
+hld_refs:
+  - HLD-§4
+  - HLD-§5.2
+  - HLD-§5.4
+  - HLD-§10
+prd_refs:
+  - "PRD §6.4 — Reading plan"
+  - "PRD §7.1 — Accommodation quality"
+  - "PRD §9 — Privacy"
+adr_refs:
+  - ADR-019
+  - ADR-026
+  - ADR-029
+  - ADR-033
+  - ADR-034
+  - ADR-035
+
+biz_source:
+  functional_test_plan_path: ./functional-test-plan.md
+  behavioural_test_plan_path: ./behavioural-test-plan.md
+  corpus_e_id: F48-correction-cascade
+  imported_at: 2026-05-01T12:41:16Z
+  source_sha: 6d32f43f400d285dbccc0cca9aeee6d64517e813  # ADR-033 commit; biz files untracked at sw-pipeline run time
+
+ontology_refs:
+  - persona:P01
+  - persona:P02
+  - persona:P15
+  - bo:CorrectionCascade        # BO49
+  - bo:MLMSubstitutionCandidate # BO50
+  - bo:ConfusionPair            # BO51
+  - bo:StageDecision            # BO52
+  - bo:LLMReviewVerdict         # BO53
+  - bo:LLMPromptTemplate        # BO54
+  - bo:CorrectionLogEntry       # BO55
+  - bo:RuleSuggestion           # BO56
+  - bo:CorrectionApplied        # BO57
+  - bo:CorrectionRejected       # BO58
+  - bo:CascadeModeDegraded      # BO59
+  - co:NakdanWordList           # CO13
+  - co:DictaBERTMLMScorer       # CO14
+  - co:LLMReviewer              # CO15
+  - co:FeedbackAggregator       # CO16
+  - bc:hebrew_text
+  - bc:privacy_compliance
+  - asm:ASM11
+  - asm:ASM12
+  - asm:ASM13
+
+acm_nodes:
+  feature: feature:N02/F48
+  specs:
+    - spec:N02/F48/DE-01
+    - spec:N02/F48/DE-02
+    - spec:N02/F48/DE-03
+    - spec:N02/F48/DE-04
+    - spec:N02/F48/DE-05
+    - spec:N02/F48/DE-06
+    - spec:N02/F48/DE-07
+    - spec:N02/F48/DE-08
+  user_stories:
+    - story:N02/F48/F48-S01
+    - story:N02/F48/F48-S02
+    - story:N02/F48/F48-S03
+    - story:N02/F48/F48-S04
+    - story:N02/F48/F48-S05
+    - story:N02/F48/F48-S06
+  acceptance_criteria:
+    - criterion:N02/F48/F48-S01/AC-01
+    - criterion:N02/F48/F48-S01/AC-02
+    - criterion:N02/F48/F48-S02/AC-01
+    - criterion:N02/F48/F48-S02/AC-02
+    - criterion:N02/F48/F48-S02/AC-03
+    - criterion:N02/F48/F48-S03/AC-01
+    - criterion:N02/F48/F48-S03/AC-02
+    - criterion:N02/F48/F48-S03/AC-03
+    - criterion:N02/F48/F48-S04/AC-01
+    - criterion:N02/F48/F48-S04/AC-02
+    - criterion:N02/F48/F48-S04/AC-03
+    - criterion:N02/F48/F48-S05/AC-01
+    - criterion:N02/F48/F48-S05/AC-02
+    - criterion:N02/F48/F48-S05/AC-03
+    - criterion:N02/F48/F48-S05/AC-04
+    - criterion:N02/F48/F48-S06/AC-01
+    - criterion:N02/F48/F48-S06/AC-02
+    - criterion:N02/F48/F48-S06/AC-03
+    - criterion:N02/F48/F48-S06/AC-04
+  tasks:
+    - task:N02/F48/T-01
+    - task:N02/F48/T-02
+    - task:N02/F48/T-03
+    - task:N02/F48/T-04a
+    - task:N02/F48/T-04b
+    - task:N02/F48/T-05
+    - task:N02/F48/T-06
+    - task:N02/F48/T-07
+    - task:N02/F48/T-08
+    - task:N02/F48/T-09
+    - task:N02/F48/T-10
+  diagrams:
+    - diagram:N02/F48/cascade-flow
+    - diagram:N02/F48/single-token-sequence
+
+acm_edges:
+  # DE → HLD
+  - {from: spec:N02/F48/DE-01, to: HLD-§4,    type: TRACED_TO}
+  - {from: spec:N02/F48/DE-02, to: HLD-§5.2,  type: TRACED_TO}
+  - {from: spec:N02/F48/DE-03, to: HLD-§5.2,  type: TRACED_TO}
+  - {from: spec:N02/F48/DE-04, to: HLD-§5.2,  type: TRACED_TO}
+  - {from: spec:N02/F48/DE-05, to: HLD-§5.2,  type: TRACED_TO}
+  - {from: spec:N02/F48/DE-06, to: HLD-§5.2,  type: TRACED_TO}
+  - {from: spec:N02/F48/DE-07, to: HLD-§10,   type: TRACED_TO}
+  - {from: spec:N02/F48/DE-08, to: HLD-§5.4,  type: TRACED_TO}
+  # DE → ADR
+  - {from: spec:N02/F48/DE-01, to: adr:033, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-01, to: adr:029, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-02, to: adr:033, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-03, to: adr:033, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-03, to: adr:026, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-04, to: adr:033, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-04, to: adr:034, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-04, to: adr:029, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-05, to: adr:033, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-06, to: adr:035, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-07, to: adr:033, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-07, to: adr:019, type: INFLUENCED_BY}
+  - {from: spec:N02/F48/DE-08, to: adr:033, type: INFLUENCED_BY}
+  # Story HAS_CRITERION
+  - {from: story:N02/F48/F48-S01, to: criterion:N02/F48/F48-S01/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S01, to: criterion:N02/F48/F48-S01/AC-02, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S02, to: criterion:N02/F48/F48-S02/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S02, to: criterion:N02/F48/F48-S02/AC-02, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S02, to: criterion:N02/F48/F48-S02/AC-03, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S03, to: criterion:N02/F48/F48-S03/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S03, to: criterion:N02/F48/F48-S03/AC-02, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S03, to: criterion:N02/F48/F48-S03/AC-03, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S04, to: criterion:N02/F48/F48-S04/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S04, to: criterion:N02/F48/F48-S04/AC-02, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S04, to: criterion:N02/F48/F48-S04/AC-03, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S05, to: criterion:N02/F48/F48-S05/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S05, to: criterion:N02/F48/F48-S05/AC-02, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S05, to: criterion:N02/F48/F48-S05/AC-03, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S05, to: criterion:N02/F48/F48-S05/AC-04, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S06, to: criterion:N02/F48/F48-S06/AC-01, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S06, to: criterion:N02/F48/F48-S06/AC-02, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S06, to: criterion:N02/F48/F48-S06/AC-03, type: HAS_CRITERION}
+  - {from: story:N02/F48/F48-S06, to: criterion:N02/F48/F48-S06/AC-04, type: HAS_CRITERION}
+  # Story → DE (verifies)
+  - {from: story:N02/F48/F48-S01, to: spec:N02/F48/DE-02, type: VERIFIED_BY}
+  - {from: story:N02/F48/F48-S02, to: spec:N02/F48/DE-03, type: VERIFIED_BY}
+  - {from: story:N02/F48/F48-S03, to: spec:N02/F48/DE-04, type: VERIFIED_BY}
+  - {from: story:N02/F48/F48-S04, to: spec:N02/F48/DE-06, type: VERIFIED_BY}
+  - {from: story:N02/F48/F48-S05, to: spec:N02/F48/DE-08, type: VERIFIED_BY}
+  - {from: story:N02/F48/F48-S06, to: spec:N02/F48/DE-07, type: VERIFIED_BY}
+  # Feature CONTAINS specs
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-01, type: CONTAINS}
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-02, type: CONTAINS}
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-03, type: CONTAINS}
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-04, type: CONTAINS}
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-05, type: CONTAINS}
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-06, type: CONTAINS}
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-07, type: CONTAINS}
+  - {from: feature:N02/F48, to: spec:N02/F48/DE-08, type: CONTAINS}
+  # BC ownership
+  - {from: spec:N02/F48/DE-01, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F48/DE-02, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F48/DE-03, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F48/DE-04, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F48/DE-05, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F48/DE-06, to: bc:privacy_compliance, type: BELONGS_TO}
+  - {from: spec:N02/F48/DE-07, to: bc:hebrew_text, type: BELONGS_TO}
+  - {from: spec:N02/F48/DE-08, to: bc:hebrew_text, type: BELONGS_TO}
+  # Diagram EXPLAINS
+  - {from: "diagram:N02/F48/cascade-flow", to: spec:N02/F48/DE-05, type: EXPLAINS}
+  - {from: "diagram:N02/F48/cascade-flow", to: spec:N02/F48/DE-07, type: EXPLAINS}
+  - {from: "diagram:N02/F48/cascade-flow", to: spec:N02/F48/DE-08, type: EXPLAINS}
+  - {from: "diagram:N02/F48/single-token-sequence", to: spec:N02/F48/DE-03, type: EXPLAINS}
+  - {from: "diagram:N02/F48/single-token-sequence", to: spec:N02/F48/DE-04, type: EXPLAINS}
+  # Task IMPLEMENTED_BY DE
+  - {from: task:N02/F48/T-01, to: spec:N02/F48/DE-01, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-02, to: spec:N02/F48/DE-02, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-03, to: spec:N02/F48/DE-03, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-04b, to: spec:N02/F48/DE-04, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-05, to: spec:N02/F48/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-06, to: spec:N02/F48/DE-06, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-07, to: spec:N02/F48/DE-07, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-08, to: spec:N02/F48/DE-08, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-09, to: spec:N02/F48/DE-05, type: IMPLEMENTED_BY}
+  - {from: task:N02/F48/T-10, to: spec:N02/F48/DE-04, type: IMPLEMENTED_BY}
+  # Cross-feature edges
+  - {from: feature:N02/F48, to: feature:N02/F14, type: CONSUMES}      # DEP-057
+  - {from: feature:N02/F48, to: feature:N02/F19, type: FEEDS}         # DEP-052
+  - {from: feature:N02/F48, to: feature:N02/F22, type: FEEDS}         # DEP-053
+  - {from: feature:N02/F48, to: feature:F50,     type: FEEDS}         # DEP-055
+  - {from: feature:N02/F48, to: feature:N05/F47, type: COLLABORATES_WITH} # DEP-054
+  - {from: feature:N02/F48, to: feature:N02/F21, type: PROMOTES_TO}   # DEP-058
+  - {from: feature:N02/F48, to: feature:N05/F40, type: VALIDATED_BY}  # DEP-056
+
+de_to_hld:
+  DE-01: HLD-§4
+  DE-02: HLD-§5.2
+  DE-03: HLD-§5.2
+  DE-04: HLD-§5.2
+  DE-05: HLD-§5.2
+  DE-06: HLD-§5.2
+  DE-07: HLD-§10
+  DE-08: HLD-§5.4
+
+story_to_prd:
+  F48-S01: "PRD §6.4 — Reading plan"
+  F48-S02: "PRD §6.4 — Reading plan"
+  F48-S03: "PRD §7.1 — Accommodation quality"
+  F48-S04: "PRD §9 — Privacy"
+  F48-S05: "PRD §6.4 — Reading plan"
+  F48-S06: "PRD §7.1 — Accommodation quality"
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04a: DE-04
+  T-04b: DE-04
+  T-05: DE-05
+  T-06: DE-06
+  T-07: DE-07
+  T-08: DE-08
+  T-09: DE-05
+  T-10: DE-04
+
+ac_to_story:
+  F48-S01/AC-01: F48-S01
+  F48-S01/AC-02: F48-S01
+  F48-S02/AC-01: F48-S02
+  F48-S02/AC-02: F48-S02
+  F48-S02/AC-03: F48-S02
+  F48-S03/AC-01: F48-S03
+  F48-S03/AC-02: F48-S03
+  F48-S03/AC-03: F48-S03
+  F48-S04/AC-01: F48-S04
+  F48-S04/AC-02: F48-S04
+  F48-S04/AC-03: F48-S04
+  F48-S05/AC-01: F48-S05
+  F48-S05/AC-02: F48-S05
+  F48-S05/AC-03: F48-S05
+  F48-S05/AC-04: F48-S05
+  F48-S06/AC-01: F48-S06
+  F48-S06/AC-02: F48-S06
+  F48-S06/AC-03: F48-S06
+  F48-S06/AC-04: F48-S06
+
+# Test execution map (filled by TDD; see ADR-013 §tests[].status semantics)
+tests:
+  - {ontology_id: "task:N02/F48/T-01", test_path: tests/unit/test_correction_ports.py,    status: pending}
+  - {ontology_id: "task:N02/F48/T-02", test_path: tests/unit/test_nakdan_gate.py,         status: pending}
+  - {ontology_id: "task:N02/F48/T-03", test_path: tests/unit/test_mlm_scorer.py,          status: pending}
+  - {ontology_id: "task:N02/F48/T-04a", test_path: tests/unit/test_ollama_client.py, status: pending}
+  - {ontology_id: "task:N02/F48/T-04b", test_path: tests/unit/test_llm_reviewer.py, status: pending}
+  - {ontology_id: "task:N02/F48/T-05", test_path: tests/unit/test_cascade_service.py,     status: pending}
+  - {ontology_id: "task:N02/F48/T-06", test_path: tests/unit/test_correction_log.py,      status: pending}
+  - {ontology_id: "task:N02/F48/T-07", test_path: tests/unit/test_health_probe.py,        status: pending}
+  - {ontology_id: "task:N02/F48/T-08", test_path: tests/unit/test_feedback_aggregator.py, status: pending}
+  - {ontology_id: "task:N02/F48/T-09", test_path: tests/unit/test_pipeline.py,            status: pending}
+  - {ontology_id: "task:N02/F48/T-10", test_path: tests/unit/test_privacy_invariant.py,   status: pending}
+
+# Functional / behavioural / negative / boundary / audit / integration coverage map
+test_coverage:
+  functional:
+    FT-316: [T-02, T-05]
+    FT-317: [T-02]
+    FT-318: [T-03]
+    FT-319: [T-03]
+    FT-320: [T-04b]
+    FT-321: [T-04a]
+    FT-322: [T-04b]
+    FT-323: [T-06]
+    FT-324: [T-06]
+    FT-325: [T-08]
+    FT-326: [T-05, T-07]
+    FT-327: [T-07]
+    FT-328: [T-03, T-04b, T-05]
+    FT-329: [T-05, T-09]   # FT-329 also runs in @test-functional Track B
+    FT-330: [T-01, T-06]
+  behavioural:
+    BT-209: [T-02, T-05, T-09]
+    BT-210: [T-01, T-06]   # F50 inspector consumer (cross-feature)
+    BT-211: [T-05, T-08]
+    BT-212: [T-03, T-04a]   # threshold tuning surface (config-only)
+    BT-213: [T-07]
+    BT-214: [T-03]
+    BT-215: [T-08]
+    BT-216: [T-10]
+    BT-217: [T-04b]
+    BT-218: [T-07]         # F48 emits event; F50 owns banner copy (cross-feature)
+    BT-219: [T-08]         # CascadeConfigInvalid pathway
+    BT-220: [T-04a, T-08]
+  negative:
+    NT-01: [T-08]
+    NT-02: [T-04b]
+    NT-03: [T-04b]
+    NT-04: [T-02]
+    NT-05: [T-04b]
+  boundary:
+    BT-F-01: [T-06]
+    BT-F-02: [T-05]
+    BT-F-03: [T-02]
+    BT-F-04: [T-03]
+    BT-F-05: [T-04a]
+  audit:
+    AUD-01: [T-06]
+    AUD-02: [T-06]
+    AUD-03: [T-10]
+  integration:    # Track C — @integration-test after Track A green
+    INT-01: [T-09]
+    INT-02: [T-05, T-09]
+    INT-03: [T-05]
+    INT-04: [T-06]
+    INT-05: [T-08]
+  permission:     # informational — no auth in MVP
+    PR-01: [T-03, T-04]
+    PR-02: [T-08]
+    PR-03: [T-08]
+
+# Bounded-context block (DDD-7L precursor)
+bounded_contexts:
+  hebrew_text:
+    features:
+      CorrectionCascade:
+        feature_id: N02/F48
+        scope_specs: [DE-01, DE-02, DE-03, DE-04, DE-05, DE-07, DE-08]
+        user_stories: [F48-S01, F48-S02, F48-S03, F48-S05, F48-S06]
+        acceptance_criteria:
+          - F48-S01/AC-01
+          - F48-S01/AC-02
+          - F48-S02/AC-01
+          - F48-S02/AC-02
+          - F48-S02/AC-03
+          - F48-S03/AC-01
+          - F48-S03/AC-02
+          - F48-S03/AC-03
+          - F48-S05/AC-01
+          - F48-S05/AC-02
+          - F48-S05/AC-03
+          - F48-S05/AC-04
+          - F48-S06/AC-01
+          - F48-S06/AC-02
+          - F48-S06/AC-03
+          - F48-S06/AC-04
+        domain_layer:
+          aggregates: [CorrectionCascade]
+          value_objects:
+            - CorrectionVerdict
+            - MLMSubstitutionCandidate
+            - ConfusionPair
+            - StageDecision
+            - LLMReviewVerdict
+            - LLMPromptTemplate
+            - RuleSuggestion
+            - CascadeMode
+          domain_events:
+            - CorrectionApplied
+            - CorrectionRejected
+            - CascadeModeDegraded
+          errors:
+            - ConfusionTableMissing
+            - CascadeConfigInvalid
+            - LLMParseFailure
+            - LLMWordListViolation
+          invariants:
+            - "INV-CCS-001 (DE-05): token-in / token-out — never split or merge tokens (DEP-052/053)"
+            - "INV-CCS-002 (DE-04): chosen ∈ candidates ∧ chosen ∈ NakdanWordList (anti-hallucination)"
+            - "INV-CCS-003 (DE-06): every corrected token has a CorrectionLogEntry (audit hard rule)"
+            - "INV-CCS-004 (DE-04): privacy — outbound DNS resolves only to 127.0.0.1 / ::1 during cascade"
+            - "INV-CCS-005 (DE-07): mode is fixed per-page once selected (no mid-page mode flip)"
+            - "INV-CCS-006 (DE-08): per-sha contribution to support_count is capped at 1 (anti-spam)"
+        ports:
+          implements: []
+          defined: [ICascadeStage, NakdanWordListPort, LLMClientPort, FeedbackReadPort]
+        adapters:
+          - OllamaLLMClient            # tirvi/correction/adapters/ollama.py
+          - SqliteFeedbackReader       # tirvi/correction/adapters/feedback_sqlite.py
+          - DictaBertLoaderAdapter     # reuse F17 loader
+        tests:
+          unit:
+            - tests/unit/test_correction_ports.py
+            - tests/unit/test_nakdan_gate.py
+            - tests/unit/test_mlm_scorer.py
+            - tests/unit/test_llm_reviewer.py
+            - tests/unit/test_cascade_service.py
+            - tests/unit/test_correction_log.py
+            - tests/unit/test_health_probe.py
+            - tests/unit/test_feedback_aggregator.py
+            - tests/unit/test_pipeline.py
+            - tests/unit/test_privacy_invariant.py
+  privacy_compliance:
+    features:
+      CorrectionLog:
+        feature_id: N02/F48
+        scope_specs: [DE-06]
+        user_stories: [F48-S04]
+        acceptance_criteria:
+          - F48-S04/AC-01
+          - F48-S04/AC-02
+          - F48-S04/AC-03
+        domain_layer:
+          aggregates: []
+          value_objects: [CorrectionLogEntry, CorrectionsSchemaV1]
+          domain_events: []
+          errors: [AuditGapWriteFailure]
+          invariants:
+            - "INV-LOG-001 (DE-06): corrections.json conforms to schema_version 1 (ADR-035)"
+            - "INV-LOG-002 (DE-06): on write failure, audit_gaps.json receives a row; pipeline does NOT abort"
+        ports:
+          implements: []
+          defined: []
+        tests:
+          unit:
+            - tests/unit/test_correction_log.py

@@ -46,4 +46,6 @@ Proposed → Accepted | Superseded | Deprecated.
 - Reference HLD section IDs in **Context** (e.g., `HLD-§8`, `HLD-§12-OQ2`).
 - Cross-reference related ADRs in **References**, not in the body.
 - ADRs are first-class graph nodes (`adr:NNN`) consumed by traceability.yaml.
-| ADR-033 | Hebrew OCR correction cascade — Nakdan + DictaBERT-MLM + Gemma | Proposed | hebrew-interpretation | F-new |
+| ADR-033 | Hebrew OCR correction cascade — Nakdan + DictaBERT-MLM + Gemma | Proposed | hebrew-interpretation | F48 |
+| ADR-034 | LLM reviewer prompt template + cache-key strategy | Proposed | hebrew-interpretation | F48 |
+| ADR-035 | `corrections.json` schema and chunking policy | Proposed | hebrew-interpretation | F48 |

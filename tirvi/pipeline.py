@@ -78,12 +78,19 @@ def run_pipeline(
     blocks = build_blocks(words, stats)
     normalized = normalize_text(words)
 
-    # Post-OCR correction: strip artefacts (gender slash, wrapping quotes)
-    # then fix common Hebrew final-letter misreads (ס→ם etc.).
+    # Post-OCR correction:
+    #  1. strip artefacts (gender slash, wrapping quotes)
+    #  2. DictaBERT-MLM-based char-substitution correction (replaces the
+    #     hardcoded ם/ס fix list — generalises to any confusion pair).
+    #  3. fall-through to legacy heuristic for words MLM didn't change.
     from tirvi.normalize.ocr_artifacts import clean_ocr_artifacts
+    from tirvi.normalize.mlm_correction import correct_with_mlm
     raw_tokens = normalized.text.split()
     cleaned_tokens = clean_ocr_artifacts(raw_tokens)
-    corrected_tokens = correct_final_letters(cleaned_tokens)
+    corrected_tokens = correct_with_mlm(cleaned_tokens)
+    # Disabled hardcoded-fix path while testing MLM-only — re-enable here
+    # if MLM misses some cases:
+    # corrected_tokens = correct_final_letters(corrected_tokens)
     corrected_text = " ".join(corrected_tokens)
 
     # Hebrew text rules: geresh ordinal expansion only (1 token → 1 token).

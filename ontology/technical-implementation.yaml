@@ -193,6 +193,27 @@ modules:
     bounded_context: hebrew_nlp
     source_path: tirvi/nlp/overrides.py
     status: designed
+  - id: MOD-N02-F48
+    name: tirvi.correction
+    description: Hebrew OCR correction cascade — NakdanGate, DictaBertMLMScorer, OllamaLLMReviewer, CorrectionCascadeService, CorrectionLog, HealthProbe, FeedbackAggregator. Inserted between F14 normalize and F19 Dicta-Nakdan.
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: tirvi/correction/
+    status: designed
+  - id: MOD-N02-F48-adapters
+    name: tirvi.correction.adapters
+    description: Vendor-isolated adapters — Ollama HTTP client and sqlite feedback reader. ADR-029 boundary discipline.
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: tirvi/correction/adapters/
+    status: designed
+  - id: MOD-N02-F48-prompts
+    name: tirvi.correction.prompts
+    description: Versioned LLM prompt assets (he_reviewer/v1.txt + _meta.yaml). Prompt-version bump invalidates LLM cache automatically (ADR-034).
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: tirvi/correction/prompts/
+    status: designed
 services: []
 
 # Ports — abstract interfaces.
@@ -238,6 +259,34 @@ ports:
     feature_refs: [N00/F03]
     bounded_context: audio_delivery
     source_path: tirvi/ports.py
+    status: designed
+  - id: PORT-N02-F48-CASCADE-STAGE
+    name: ICascadeStage
+    description: single-method port `evaluate(token, context) -> CorrectionVerdict`; realised by NakdanGate, DictaBertMLMScorer, OllamaLLMReviewer
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: tirvi/correction/ports.py
+    status: designed
+  - id: PORT-N02-F48-WORDLIST
+    name: NakdanWordListPort
+    description: in-process Hebrew word-list lookup (`is_known_word(token) -> bool`); collaborator CO13
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: tirvi/correction/ports.py
+    status: designed
+  - id: PORT-N02-F48-LLM
+    name: LLMClientPort
+    description: transport-only LLM port (`generate(prompt, model_id, temperature, seed) -> str`); concrete impl POSTs to Ollama at 127.0.0.1
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: tirvi/correction/ports.py
+    status: designed
+  - id: PORT-N02-F48-FEEDBACK
+    name: FeedbackReadPort
+    description: read user-rejection rows from drafts/feedback.db; cascade reads at init to revert corrections per BT-211
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: tirvi/correction/ports.py
     status: designed
 
 # Adapters — concrete implementations (fakes only in F03).
@@ -346,6 +395,46 @@ adapters:
     bounded_context: audio_delivery
     port_ref: PORT-06
     source_path: tirvi/adapters/tts_marks/__init__.py
+    status: designed
+  - id: ADP-N02-F48-NAKDAN-GATE
+    name: NakdanGate
+    description: first-stage cascade gate over NakdanWordListPort; in-process; ≤ 5 ms p95 per token
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    port_ref: PORT-N02-F48-CASCADE-STAGE
+    source_path: tirvi/correction/nakdan_gate.py
+    status: designed
+  - id: ADP-N02-F48-MLM-SCORER
+    name: DictaBertMLMScorer
+    description: confusion-table candidate generator + DictaBERT-MLM scorer; reuses F17 loader
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    port_ref: PORT-N02-F48-CASCADE-STAGE
+    source_path: tirvi/correction/mlm_scorer.py
+    status: designed
+  - id: ADP-N02-F48-LLM-REVIEWER
+    name: OllamaLLMReviewer
+    description: domain-layer Gemma reviewer with anti-hallucination guard; cache-key per ADR-034
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    port_ref: PORT-N02-F48-CASCADE-STAGE
+    source_path: tirvi/correction/llm_reviewer.py
+    status: designed
+  - id: ADP-N02-F48-OLLAMA-CLIENT
+    name: OllamaLLMClient
+    description: concrete LLMClientPort impl — POSTs to 127.0.0.1:11434/api/generate; isolates httpx import per ADR-029
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    port_ref: PORT-N02-F48-LLM
+    source_path: tirvi/correction/adapters/ollama.py
+    status: designed
+  - id: ADP-N02-F48-FEEDBACK-READER
+    name: SqliteFeedbackReader
+    description: concrete FeedbackReadPort impl; reads drafts/feedback.db (extends F47 schema)
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    port_ref: PORT-N02-F48-FEEDBACK
+    source_path: tirvi/correction/adapters/feedback_sqlite.py
     status: designed
 
 # Classes / structs — result-object value types.
@@ -485,6 +574,125 @@ classes:
     - N02/F21
     module_ref: MOD-N02-F18-overrides
     source_path: tirvi/nlp/overrides.py
+    status: designed
+  - id: CLS-N02-F48-CorrectionCascade
+    name: CorrectionCascade
+    description: per-page transient aggregate root (BO49); accumulates StageDecisions, emits domain events, never persisted across pages
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/aggregate.py
+    status: designed
+  - id: CLS-N02-F48-CorrectionVerdict
+    name: CorrectionVerdict
+    description: frozen value object — (stage, verdict, original, corrected_or_none, score?, candidates?, mode, cache_hit, reason?, model_versions?)
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-StageDecision
+    name: StageDecision
+    description: BO52 — recorded per token per stage; embedded in CorrectionLogEntry
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-MLMSubstitutionCandidate
+    name: MLMSubstitutionCandidate
+    description: BO50 — (text, score, in_word_list); ranked output of confusion-table substitution scoring
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-ConfusionPair
+    name: ConfusionPair
+    description: BO51 — (a, b, source_writer); loaded from confusion_pairs.yaml (data, not code)
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-LLMReviewVerdict
+    name: LLMReviewVerdict
+    description: BO53 — parsed Ollama response (model_id, prompt_template_version, verdict, chosen, reason, latency_ms, cache_key)
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-LLMPromptTemplate
+    name: LLMPromptTemplate
+    description: BO54 — versioned prompt asset (version, body, language=he); ADR-034 cache-key includes version
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48-prompts
+    source_path: tirvi/correction/prompts/he_reviewer/v1.txt
+    status: designed
+  - id: CLS-N02-F48-CorrectionLogEntry
+    name: CorrectionLogEntry
+    description: BO55 — row in drafts/<sha>/corrections.json; full reasoning trail per corrected token
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-RuleSuggestion
+    name: RuleSuggestion
+    description: BO56 — aggregator output (pattern, support_count, distinct_shas, sample_contexts); engineer-gated promotion
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-CascadeMode
+    name: CascadeMode
+    description: enum value object — full | no_llm | no_mlm | emergency_fixes | bypass; fixed per page at init
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/value_objects.py
+    status: designed
+  - id: CLS-N02-F48-CorrectionApplied
+    name: CorrectionApplied
+    description: BO57 — domain event emitted on auto_apply or apply
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/events.py
+    status: designed
+  - id: CLS-N02-F48-CorrectionRejected
+    name: CorrectionRejected
+    description: BO58 — domain event emitted on hallucination reject, threshold miss, or user override
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/events.py
+    status: designed
+  - id: CLS-N02-F48-CascadeModeDegraded
+    name: CascadeModeDegraded
+    description: BO59 — domain event emitted at init when health probe fails; carries mode
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/events.py
+    status: designed
+  - id: CLS-N02-F48-CorrectionCascadeService
+    name: CorrectionCascadeService
+    description: stateless orchestrator — run_page(tokens, sentences) -> PageCorrections; holds a transient CorrectionCascade aggregate per page
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/service.py
+    status: designed
+  - id: CLS-N02-F48-CorrectionLog
+    name: CorrectionLog
+    description: writer for drafts/<sha>/corrections.json per ADR-035; disk-full degrades to audit_gaps.json
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/log.py
+    status: designed
+  - id: CLS-N02-F48-HealthProbe
+    name: HealthProbe
+    description: init-time Ollama + DictaBERT health check; returns CascadeMode (fixed per page); emits CascadeModeDegraded on failure
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/health.py
+    status: designed
+  - id: CLS-N02-F48-FeedbackAggregator
+    name: FeedbackAggregator
+    description: cron / on-demand script that reads drafts/feedback.db and emits drafts/rule_suggestions.json with per-sha cap and ≥ 3 distinct-sha threshold
+    feature_refs: [N02/F48]
+    module_ref: MOD-N02-F48
+    source_path: tirvi/correction/feedback_aggregator.py
     status: designed
 functions:
   - id: FN-01
@@ -785,6 +993,27 @@ adr_decisions:
     - N02/F16
     bounded_context: hebrew-interpretation
     source_path: docs/ADR/ADR-031-hebrew-nlp-mixed-language-detection-rule-strategy.md
+    status: proposed
+  - id: adr:033
+    name: Hebrew OCR/diacritization correction cascade
+    description: 3-stage cascade — Nakdan word-list filter, DictaBERT-MLM substitution, Gemma reviewer (Ollama on-device); deprecates _KNOWN_OCR_FIXES
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: docs/ADR/ADR-033-hebrew-correction-cascade.md
+    status: proposed
+  - id: adr:034
+    name: LLM reviewer prompt template + cache-key strategy
+    description: cache_key = sha256(model_id || prompt_template_version || sentence_hash || sorted(candidates)); prompts versioned on disk; cache lives at drafts/<sha>/llm_cache.sqlite
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: docs/ADR/ADR-034-hebrew-interpretation-llm-reviewer-cache-key.md
+    status: proposed
+  - id: adr:035
+    name: corrections.json schema and chunking policy
+    description: single JSON object per page, chunked corrections.<page>.json when document > 50 pages, schema_version 1; audit_gaps.json captures write failures
+    feature_refs: [N02/F48]
+    bounded_context: hebrew_text
+    source_path: docs/ADR/ADR-035-hebrew-interpretation-corrections-log-schema.md
     status: proposed
 tasks:
   - id: task:N00/F03/T-01
@@ -1464,3 +1693,63 @@ tasks:
     test_path: tests/unit/test_disambiguate.py
     status: designed
     demo_critical: true
+  - id: task:N02/F48/T-01
+    name: cascade-ports-and-verdict-vo
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-01]
+    test_path: tests/unit/test_correction_ports.py
+    status: designed
+  - id: task:N02/F48/T-02
+    name: nakdan-gate-stage
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-02]
+    test_path: tests/unit/test_nakdan_gate.py
+    status: designed
+  - id: task:N02/F48/T-03
+    name: dictabert-mlm-scorer
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-03]
+    test_path: tests/unit/test_mlm_scorer.py
+    status: designed
+  - id: task:N02/F48/T-04
+    name: ollama-llm-reviewer-with-cache
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-04]
+    test_path: tests/unit/test_llm_reviewer.py
+    status: designed
+  - id: task:N02/F48/T-05
+    name: cascade-orchestrator-service
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-05]
+    test_path: tests/unit/test_cascade_service.py
+    status: designed
+  - id: task:N02/F48/T-06
+    name: corrections-log-writer
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-06]
+    test_path: tests/unit/test_correction_log.py
+    status: designed
+  - id: task:N02/F48/T-07
+    name: health-probe-and-degraded-mode
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-07]
+    test_path: tests/unit/test_health_probe.py
+    status: designed
+  - id: task:N02/F48/T-08
+    name: feedback-aggregator-script
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-08]
+    test_path: tests/unit/test_feedback_aggregator.py
+    status: designed
+  - id: task:N02/F48/T-09
+    name: pipeline-wire-cascade
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-05]
+    test_path: tests/unit/test_pipeline.py
+    status: designed
+  - id: task:N02/F48/T-10
+    name: privacy-localhost-only-invariant
+    feature_refs: [N02/F48]
+    spec_refs: [spec:N02/F48/DE-04]
+    test_path: tests/unit/test_privacy_invariant.py
+    status: designed

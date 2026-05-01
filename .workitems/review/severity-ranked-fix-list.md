@@ -32,3 +32,31 @@ contract. Source of truth is the synthesis; if these diverge, synthesis wins.
 - Critical: 5 (2 fixed / 3 deferred — all 3 deferreds tracked with explicit re-evaluation triggers)
 - High: 4 (3 fixed / 1 deferred to v1.0 prep)
 - Medium: 12 (7 fixed / 5 deferred — all to v1 / v1.1 with rows)
+
+---
+
+## Append: N02/F48 Hebrew correction cascade
+
+| ID | Severity | Area | Finding | Status | Files Fixed | Issue / Deferred Row |
+|----|---------|------|---------|--------|------------|---------------------|
+| F48-R1-1 | Critical | Architecture | Privacy invariant must be CI-enforced, not just documented | Fixed | `.workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md` (AUD-03) | — |
+| F48-R1-2 | Critical | FT | Recall ≥ 90% claim unmeasurable in F48 alone | Fixed (scoped) | `user_stories.md`, `ontology-delta.yaml` (ASM12) | D-RECALL-BENCH |
+| F48-AC-01 | Critical | FT | Recall corpus + ground-truth labelling | Deferred | — | D-RECALL-BENCH |
+| F48-AC-02 | Critical | Security | 127.0.0.1 enforcement test | Fixed | `functional-test-plan.md` (AUD-03) | — |
+| F48-AC-03 | High | FT | LLM determinism scoped to model_version + prompt_template_version | Fixed | `functional-test-plan.md` FT-328, `user_stories.llm-reviewer.md` | — |
+| F48-AC-04 | High | Arch | "Generalizes" claim requires regression bench | Fixed | `behavioural-test-plan.md` BT-214; `ontology-delta.yaml` BO51.source_writer | — |
+| F48-R1-3 | High | DDD | CorrectionCascade is transient per-page aggregate | Fixed | `user_stories.md`, `ontology-delta.yaml` BO49 | — |
+| F48-R1-4 | High | UX | Degraded-mode banner accessibility (he+en) | Fixed | `behavioural-test-plan.md` BT-218 | — |
+| F48-R1-5 | High | Security | CI gate on outbound network | Fixed | `functional-test-plan.md` AUD-03 | — |
+| F48-AC-05 | Medium | Adv | Anti-Sybil on rule promotion | Fixed (partial) | `user_stories.feedback-loop.md`, FT-325 | D-AUTO-PROMOTE-POLICY |
+| F48-AC-06 | Medium | FT | 1:1 token boundary preservation enforced in CI | Fixed | `functional-test-plan.md` INT-03 | — |
+| F48-R1-6 | Medium | FT | Cap LLM calls per page; boundary test | Fixed | `functional-test-plan.md` BT-F-05; FT-329 | — |
+| F48-R1-7 | Medium | DDD | LLMReviewer as collaboration_object (CO15) | Fixed | `ontology-delta.yaml` CO15 | — |
+| F48-R1-8 | Medium | Delivery | F50 schema producer/consumer direction | Fixed | `user_stories.correction-log.md`; `ontology-delta.yaml` DEP-055 | — |
+| F48-R1-9 | Medium | Adv | Per-sha cap on feedback DB | Fixed | `user_stories.feedback-loop.md`; FT-325 | — |
+| F48-Defer-1 | Medium | Product | Llama 3.1 8B vs Gemma 4B fast tier A/B | Deferred | — | D-FAST-TIER-AB |
+| F48-R1-10 | Low | Onto | ConfusionPair naming standardised | Fixed | `ontology-delta.yaml` BO51 | — |
+| F48-R1-11 | Low | Product | _KNOWN_OCR_FIXES deprecation explicit | Fixed | `user_stories.degradation.md` | — |
+| F48-Defer-2 | Low | FT | corrections.json signature scheme | Deferred | — | D-LOG-INTEGRITY |
+
+**F48 tally**: Critical 4 (3 fixed / 1 deferred-with-trigger) · High 5 (5 fixed) · Medium 7 (6 fixed / 1 deferred-with-trigger) · Low 3 (2 fixed / 1 deferred-with-trigger). 0 unresolved Critical / 0 unresolved High after iteration 2.

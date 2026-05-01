@@ -147,4 +147,71 @@ upstream contract.
 | R-10 | Medium | Onto | dependency-map FUT-* edges | Fixed | dependency-map.yaml | — |
 | R-11 | Medium | Product | PRD §10 language soften | Deferred | (none) | D-PRD-MOS-LANGUAGE-REWRITE |
 | R-12 | Medium | Adv | Latin transliteration FP rate | Deferred | (none) | D-TRANSLIT-BENCH |
+
+---
+
+## Append: N02/F48 Hebrew correction cascade (Wave 3 increment)
+
+### F48 Executive Summary
+
+F48 lands the 3-stage Hebrew OCR correction cascade (NakdanGate → DictaBERT-MLM → Gemma reviewer) per ADR-033, replacing the hardcoded `_KNOWN_OCR_FIXES` list with a data-driven confusion-pair pipeline that generalizes to any new OCR confusion class. Output is fully on-device (HARD privacy rule), auditable (100% reasoning trail), and degrades gracefully when Ollama or DictaBERT is unavailable. A feedback loop captures teacher overrides and emits engineer-gated rule promotion suggestions. After 1 review iteration + adversarial loop, 0 Critical / 0 High findings remain unresolved; 4 deferred findings carry explicit re-evaluation triggers.
+
+### F48 Coverage Summary
+
+| Phase | Feature | Stories | FTs | BTs | Status |
+|-------|---------|---------|-----|-----|--------|
+| N02 | F48 — correction cascade | 6 | 15 (FT-316..FT-330) + 5 NTs + 5 boundary | 12 (BT-209..BT-220) | **Reached** consensus |
+
+### F48 Major Findings (severity-ranked)
+
+- **Critical (resolved in iteration 1):** privacy invariant must be CI-enforced (AUD-03); recall ≥ 90% target marked aspirational pending F39+F40.
+- **High (resolved in iteration 1):** transient aggregate boundary clarified; degraded-mode banner accessibility; CI gate on outbound network; LLM determinism scoping.
+- **Medium (resolved in iteration 2):** LLM call-cap per page; LLMReviewer modeled as collaboration_object; F50 dependency direction; spam protection on feedback DB.
+- **Low (resolved in iteration 2):** ConfusionPair naming standardisation; explicit `_KNOWN_OCR_FIXES` deprecation citation.
+
+### F48 Fixes Applied
+
+| Finding ID | Severity | Files Changed | Summary |
+|-----------|---------|--------------|---------|
+| F48-R1-1 | Critical | functional-test-plan.md (AUD-03) | Network-monitor test asserts 127.0.0.1 only |
+| F48-R1-2 | Critical | user_stories.md / ontology-delta.yaml ASM12 | Recall target marked aspirational pending F40 |
+| F48-R1-3 | High | user_stories.md / ontology-delta.yaml BO49 | CorrectionCascade is transient per-page aggregate |
+| F48-R1-4 | High | behavioural-test-plan.md BT-218 | Banner copy accessibility |
+| F48-R1-5 | High | functional-test-plan.md AUD-03 | CI hard gate on outbound network |
+| F48-R1-6 | Medium | functional-test-plan.md BT-F-05 | LLM call-cap boundary test |
+| F48-R1-7 | Medium | ontology-delta.yaml CO15 | LLMReviewer as collaboration_object |
+| F48-R1-8 | Medium | user_stories.correction-log.md | F48 owns JSON schema; F50 reader |
+| F48-R1-9 | Medium | user_stories.feedback-loop.md, FT-325 | Per-sha cap on feedback contribution |
+| F48-R1-10 | Low | ontology-delta.yaml BO51 | ConfusionPair naming consistent |
+| F48-R1-11 | Low | user_stories.degradation.md | _KNOWN_OCR_FIXES deprecation explicit |
+
+### F48 Deferred Findings
+
+| Finding ID | Severity | Reason for Deferral | Issue Stub |
+|-----------|---------|--------------------|-----------|
+| D-FAST-TIER-AB | Medium | Llama 3.1 8B vs Gemma 3 4B A/B requires runtime; defer until F48 ships | deferred-findings.md |
+| D-RECALL-BENCH | High | F40 quality-gates wiring + F39 bench page count needed | deferred-findings.md |
+| D-AUTO-PROMOTE-POLICY | Medium | Anti-Sybil + auto-promote policy beyond MVP | deferred-findings.md |
+| D-LOG-INTEGRITY | Low | Signature on corrections.json not in MVP scope | deferred-findings.md |
+
+### F48 Remaining Risks
+
+- F40 quality-gates wiring not in F48 scope; recall/precision SLOs are aspirational until F40 lands.
+- Ollama runtime is an out-of-band dependency; `mode="no_llm"` covers absence but practice quality is reduced.
+- Per-cohort prompt tuning (engineer story F48-S05) implies prompt-template churn; requires governance.
+
+### F48 Ontology Status
+
+- Biz delta is in `.workitems/N02-hebrew-interpretation/F48-correction-cascade/ontology-delta.yaml`. Append-only contract per F14/F15/F16/F18 wave-2 pattern. The actual `ontology/*.yaml` merge is owned by `@sw-designpipeline` (sw phase) under HITL because `ontology/**` is a protected path.
+- `business-domains.yaml` delta: 1 persona, 11 BOs (BO49..BO59), 4 COs (CO13..CO16), 3 ASMs (ASM11..ASM13).
+- `dependencies.yaml` delta: 9 edges (DEP-052..DEP-060) covering biz-level realises / triggers / requires / emits.
+- `testing.yaml` delta: FT-316..FT-330 (15) + BT-209..BT-220 (12); critical-path entries fully indexed.
+
+### F48 Traceability Status
+
+Every story traces to ADR-033 §Decision row + UAT root cause. Every FT/BT references stories + business objects. Yes.
+
+### F48 Final Conclusion
+
+**F48 business and functional design phase status:** Complete with deferred issues (4 deferred; all carry re-evaluation triggers; none block sw-design start).
 | Coref-MVP | Medium | Delivery | E04-F04 MVP-vs-v1.1 | Deferred | (none) | D-COREF-MVP-SCOPE |

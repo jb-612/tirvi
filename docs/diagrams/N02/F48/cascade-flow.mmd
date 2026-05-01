@@ -1,0 +1,41 @@
+%% F48 Hebrew correction cascade — high-level flow.
+%% Origin: F14 normalized text. Sink: F19 Dicta-Nakdan diacritization.
+%% Refs: ADR-033 (cascade), ADR-034 (LLM cache key), ADR-035 (corrections.json).
+
+flowchart LR
+    F14["F14 normalized text\n(post wrap-char strip,\nslash suffix, ordinals)"]
+    HP["DE-07 HealthProbe\nOllama /api/tags + DictaBERT load\nemits CascadeModeDegraded\nfixes mode per page"]
+    SVC["DE-05 CorrectionCascadeService.run_page\ntoken-in/token-out invariant"]
+    NG["DE-02 NakdanGate\nis_known_word\np95 ≤ 5 ms\npass | suspect | skip_*"]
+    MLM["DE-03 DictaBertMLMScorer\nconfusion_pairs.yaml + MLM head\ndelta vs original\nauto_apply | ambiguous | keep_original"]
+    LLM["DE-04 OllamaLLMReviewer\ngemma4:31b-nvfp4 default\nllama3.1:8b fast tier\ntemperature=0 seed=0\nanti-hallucination guard\ncap=10/page"]
+    CACHE["LLM cache (per-draft sqlite)\nkey = sha256(model || prompt_v ||\nsentence_hash || sorted(candidates))\nADR-034"]
+    DEP["deprecated _KNOWN_OCR_FIXES\n(no_mlm / emergency_fixes only)\nFT-327"]
+    LOG["DE-06 CorrectionLog\ndrafts/sha/corrections.json\nschema_v=1\nADR-035"]
+    GAPS["audit_gaps.json\non disk-full\nFT-324"]
+    AGG["DE-08 FeedbackAggregator\nreads drafts/feedback.db\nper-sha cap=1\nthreshold ≥ 3 distinct shas"]
+    SUG["rule_suggestions.json\nengineer-gated promotion"]
+    F19["F19 Dicta-Nakdan\ndiacritization\nDEP-052"]
+    F50["F50 inspector OCR tab\nDEP-055\nrenders reasoning trail"]
+    F47["F47 feedback capture\nDEP-054\nFeedbackEntry rows"]
+
+    F14 --> SVC
+    HP --> SVC
+    SVC --> NG
+    NG -- pass --> F19
+    NG -- suspect --> MLM
+    MLM -- auto_apply --> LOG
+    MLM -- keep_original --> LOG
+    MLM -- ambiguous --> LLM
+    LLM <--> CACHE
+    LLM -- apply --> LOG
+    LLM -- keep_original --> LOG
+    HP -. mode=no_mlm .-> DEP
+    DEP --> LOG
+    LOG --> F19
+    LOG -. on write failure .-> GAPS
+    LOG -.-> F50
+    F50 -- mark wrong --> F47
+    F47 --> AGG
+    AGG --> SUG
+    SUG -. engineer accepts .-> MLM

@@ -280,3 +280,80 @@ Cost SLO breached during rotation event.
   (post-design-phase blocker; documented in deferred-findings.md).
 - AC-03 — PRD §10 language softening is a documentation change in a file
   (`docs/PRD.md`) outside this skill's scope; deferred.
+
+---
+
+## Append: N02/F48 Hebrew correction cascade — adversarial loop
+
+The Adversarial Reviewer challenged every load-bearing claim in F48. Loop ran 2 iterations; exited with 0 unresolved Critical / 0 unresolved High.
+
+### F48-AC-01: "Recall ≥ 90% of OCR errors that affect TTS pronunciation"
+- **Challenged claim:** spec / ADR-033 quality requirement; user_stories.md acceptance.
+- **Source:** `user_stories.md`, `functional-test-plan.md` non-functional section.
+- **Challenge:** Recall on what corpus? Wave-1 fixture is 1 page (5 known errors). The metric needs F39 bench + F40 quality-gates wiring. F48 cannot own the SLO measurement.
+- **Evidence gap:** F39 bench-page count is 20; ground-truth labelling for OCR-error class is incomplete.
+- **Risk if unchallenged:** "Recall ≥ 90%" appears measured when it is aspirational.
+- **Severity:** Critical
+- **Original reviewer (Functional Testing) response:**
+  - Outcome: **Revised**
+  - Revised claim: F48 ships the recall *test scaffold* (FT-329 + FT-330) and exposes per-stage decisions for downstream gates. SLO measurement is delegated to F40 (depends on F39 bench).
+  - Files updated: `user_stories.md` (ASM12), `ontology-delta.yaml` (ASM12), `design-review.md` finding F48-R1-2.
+
+### F48-AC-02: "Zero exam content leaves the M4 Max" — is this *enforced*, or merely *intended*?
+- **Challenged claim:** spec hard rule; ADR-033 §Consequences §Negative.
+- **Source:** `user_stories.llm-reviewer.md` non-functional, AUD-03.
+- **Challenge:** Documentation is not enforcement. A misconfiguration could route Ollama to a remote host. CI must fail if any non-127.0.0.1 socket opens during cascade tests.
+- **Risk if unchallenged:** privacy regression undetected.
+- **Severity:** Critical
+- **Original reviewer (Architecture) response:**
+  - Outcome: **Revised**
+  - Revised claim: AUD-03 in functional-test-plan.md uses socket monkey-patch to assert all addrinfo calls resolve to `127.0.0.1`. CI fails on any non-localhost connect during cascade tests.
+  - Files updated: `functional-test-plan.md` Audit and Traceability Tests, `design-review.md` F48-R1-1, F48-R1-5.
+
+### F48-AC-03: "LLM Reviewer is deterministic with temperature=0"
+- **Challenged claim:** ADR-033 §Consequences §Negative acknowledges residual variance; user_stories.llm-reviewer.md F48-S03 acceptance criterion 3 asserts cache-hit-eliminates-call.
+- **Challenge:** Cache hit is deterministic; cache miss isn't. If `prompt_template_version` is bumped, all caches invalidate. If `model_version` shifts (Ollama update), all caches invalidate. The determinism claim must be scoped.
+- **Risk if unchallenged:** users assume reproducibility when in fact a silent model bump breaks it.
+- **Severity:** High
+- **Original reviewer (Functional Testing) response:**
+  - Outcome: **Revised**
+  - Revised claim: Determinism is asserted *given (input, model_id, prompt_template_version, config)*; FT-328 pins this with model_version captured in CorrectionLogEntry. Model-version change → cache invalidates → test reruns LLM. This is documented behaviour, not silent regression.
+  - Files updated: `functional-test-plan.md` FT-328, `user_stories.llm-reviewer.md` non-functional.
+
+### F48-AC-04: "Confusion table generalizes to any new pair without code change"
+- **Challenged claim:** ADR-033 §Consequences §Positive "generalizes"; BT-214.
+- **Challenge:** What if a new pair causes a regression on the print corpus (the new pair is a real Hebrew letter swap that produces a *different* but also valid word)? The "no code change" claim is true for the table but not for the regression bench.
+- **Severity:** High
+- **Original reviewer (Architecture) response:**
+  - Outcome: **Revised**
+  - Revised claim: Adding a confusion pair is data-only; *validating* it requires running the held-out bench (regression test). BT-214 acceptance now requires no regression on the 20-page print bench when a new pair is added; `source_writer` field on ConfusionPair allows scoping pairs to writer mode.
+  - Files updated: `behavioural-test-plan.md` BT-214, `ontology-delta.yaml` BO51 with source_writer field.
+
+### F48-AC-05: "≥ 3 occurrences threshold prevents bad rule promotion"
+- **Challenged claim:** F48-S05; BT-215.
+- **Challenge:** A single adversarial teacher could create 3 sham "drafts" by uploading the same PDF 3 times → 3 distinct shas → satisfies threshold.
+- **Severity:** Medium
+- **Original reviewer (Adversarial) response:**
+  - Outcome: **Defended with revision**
+  - Revised claim: Per-sha cap is one safeguard; "≥ 3 distinct shas" without per-uploader limit is acknowledged-incomplete. Engineer is the gate (no auto-promote in MVP). FT-325 second variant (per-sha cap) covers the simpler case; full anti-Sybil deferred to `D-AUTO-PROMOTE-POLICY`.
+  - Files updated: `user_stories.feedback-loop.md` open questions, `deferred-findings.md`.
+
+### F48-AC-06: "Cascade preserves token boundaries (1:1 in/out)"
+- **Challenged claim:** F48-S04 / DEP-053 / INT-03.
+- **Challenge:** F-3 marker drift in UAT was caused by token *count* changes. F48 should test this explicitly, not just document.
+- **Severity:** Medium
+- **Original reviewer (Functional Testing) response:**
+  - Outcome: **Revised**
+  - Revised claim: INT-03 in functional-test-plan.md asserts `len(tokens_out) == len(tokens_in)` after every cascade run. CI hard gate.
+  - Files updated: `functional-test-plan.md` Integration Tests.
+
+### F48 Adversarial Summary
+- Total challenges issued: **6**
+- Defended without change: **0**
+- Revised: **6**
+- Withdrawn: **0**
+- Escalated to autoresearch loop: 0 (all closed within iteration 2).
+- Deferred with explicit issue stub: `D-AUTO-PROMOTE-POLICY` (anti-Sybil), `D-RECALL-BENCH` (F40 dependency), `D-FAST-TIER-AB` (Llama vs Gemma 4B), `D-LOG-INTEGRITY` (corrections.json signature).
+
+### F48 Remaining Unresolved Challenges
+- None at the Critical / High tier.

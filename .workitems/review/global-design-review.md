@@ -174,3 +174,44 @@ Three load-bearing debates converged on these conclusions:
 - Overall: **Partial** — consensus reached on direction; 4 Critical revisions
   must close before this design phase is complete.
 - Blockers remaining: R-01, R-02, R-03, R-04 (queued for autoresearch loop).
+
+---
+
+## Append: N02/F48 Hebrew correction cascade (Wave 3 increment)
+
+Per-feature stub: `.workitems/N02-hebrew-interpretation/F48-correction-cascade/design-review.md`.
+Inputs reviewed: ADR-033, UAT-2026-05-01-tts-quality, UAT-2026-05-01-why-models-miss, the 6 user-stories files, functional-test-plan.md, behavioural-test-plan.md, ontology-delta.yaml.
+
+### F48 Reviewer Opening Positions (concise)
+
+- **Product Strategy** — ADR-033 is treated as the contract. Stories cover all 5 sub-features (NakdanGate, MLM, LLM, log, feedback) plus the degradation requirement. Recall and precision targets are explicit but unmeasurable in F48 alone; flagged ASM12.
+- **DDD** — `CorrectionCascade` (BO49) modeled as a *transient* aggregate per page. `StageDecision` (BO52) is the central VO. 3 domain events (CorrectionApplied, CorrectionRejected, CascadeModeDegraded) added. Naming consistent with existing taxonomy (BO## continuation).
+- **Functional Testing** — 15 FTs (FT-316..FT-330) cover the cascade end-to-end. NTs cover hallucination + missing config. AUD-03 enforces privacy invariant via socket monkey-patch. Determinism FT-328 covers cache stability.
+- **Behavioural UX** — 12 BTs (BT-209..BT-220) cover passive listening, override, threshold tuning, outage, new pair, rule promotion, privacy audit, cache replay, abandonment, and adversarial spam.
+- **Architecture** — On-device-only invariant aligned to HLD §3 and ADR-033 §Decision. No cloud calls. `127.0.0.1` allowlist enforced in CI.
+- **Data and Ontology** — Delta is append-only (mirrors F14/F15/F16/F18 wave-2 pattern). 11 new BOs + 4 COs + 1 persona + 3 ASMs. No edits to existing entries.
+- **Security and Compliance** — Privacy hard rule covered by AUD-03. Retention follows F43 TTL. corrections.json is on-device, document-scoped.
+- **Delivery Risk** — F48 is producer for F50 (under design); F48 owns the JSON schema; F50 reads. No circular blocker.
+- **Adversarial** — see global-adversarial-review.md append.
+- **Team Lead Synthesizer** — All R1 findings are addressed in the per-feature review.md; loop exits at iteration 2.
+
+### F48 Required Revisions
+
+| ID | Severity | Reviewer | File | Required Change | Status |
+|----|---------|---------|------|----------------|--------|
+| F48-R1-1 | Critical | Architecture | functional-test-plan.md | Add network-monitor test for 127.0.0.1 invariant | Fixed (AUD-03) |
+| F48-R1-2 | Critical | Functional Testing | user_stories.md / ASM12 | Mark recall ≥ 90% as aspirational pending F39 bench / F40 measurement | Fixed (ASM12) |
+| F48-R1-3 | High | DDD | user_stories.md / business-domains | Clarify CorrectionCascade is a transient per-page aggregate, not persisted | Fixed |
+| F48-R1-4 | High | Behavioural UX | behavioural-test-plan.md | Banner copy must be accessible (he + en) | Fixed (BT-218) |
+| F48-R1-5 | High | Security | functional-test-plan.md | CI gate on outbound network | Fixed (AUD-03) |
+| F48-R1-6 | Medium | Functional Testing | functional-test-plan.md | Cap LLM calls per page; cover boundary | Fixed (BT-F-05; FT-329 budget) |
+| F48-R1-7 | Medium | DDD | business-domains.yaml | Model LLMReviewer as collaboration_object (CO15) | Fixed |
+| F48-R1-8 | Medium | Delivery | user_stories.correction-log.md | F50 dependency direction (F48 producer of schema) | Fixed |
+| F48-R1-9 | Medium | Adversarial | feedback-loop user_stories | Per-sha cap on feedback to prevent spam promotion | Fixed (FT-325 variant) |
+| F48-R1-10 | Low | Ontology | ontology-delta.yaml | Standardize ConfusionPair naming | Fixed |
+| F48-R1-11 | Low | Product | user_stories.degradation.md | Cite _KNOWN_OCR_FIXES deprecation explicitly | Fixed |
+
+### F48 Consensus Status
+
+- Overall: **Reached** for F48 scope (0 Critical / 0 High open after iteration 2).
+- Deferred (explicit, with re-evaluation triggers): D-FAST-TIER-AB, D-RECALL-BENCH, D-AUTO-PROMOTE-POLICY, D-LOG-INTEGRITY. See `deferred-findings.md`.

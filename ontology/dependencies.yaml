@@ -560,3 +560,105 @@ dependencies:
     risk_if_broken: highlight cannot step at word level.
     related_files:
       - path: .workitems/N03-audio-sync/F30-word-timing-port/design.md
+
+  # --- F48 sw-layer edges (REALIZES, INFLUENCED_BY, USES) ---
+  - id: DEP-100
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: port, id: PORT-N02-F48-CASCADE-STAGE, name: tirvi.correction.ICascadeStage }
+    relationship: realizes
+    rationale: F48 ships the three concrete cascade stages (NakdanGate, DictaBertMLMScorer, OllamaLLMReviewer) behind the new ICascadeStage port.
+    strength: strong
+    direction: one_way
+    risk_if_broken: cascade has no extension point — new stages cannot be added without source edits.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/design.md
+  - id: DEP-101
+    source: { type: spec, id: spec:N02/F48/DE-01, name: ICascadeStage port + CorrectionVerdict VO }
+    target: { type: adr, id: adr:033, name: Hebrew OCR correction cascade }
+    relationship: influenced_by
+    rationale: ADR-033 fixes the three-stage architecture that DE-01 surfaces as a port.
+    strength: strong
+    direction: one_way
+    risk_if_broken: design drift from ADR-033.
+    related_files:
+      - path: docs/ADR/ADR-033-hebrew-correction-cascade.md
+  - id: DEP-102
+    source: { type: spec, id: spec:N02/F48/DE-04, name: OllamaLLMReviewer with anti-hallucination guard }
+    target: { type: adr, id: adr:034, name: LLM reviewer prompt template + cache-key strategy }
+    relationship: influenced_by
+    rationale: DE-04 cache-key shape is fixed by ADR-034.
+    strength: strong
+    direction: one_way
+    risk_if_broken: cache-key drift breaks determinism (FT-322, FT-328).
+    related_files:
+      - path: docs/ADR/ADR-034-hebrew-interpretation-llm-reviewer-cache-key.md
+  - id: DEP-103
+    source: { type: spec, id: spec:N02/F48/DE-06, name: CorrectionLog }
+    target: { type: adr, id: adr:035, name: corrections.json schema and chunking policy }
+    relationship: influenced_by
+    rationale: DE-06 file format and chunking policy are fixed by ADR-035.
+    strength: strong
+    direction: one_way
+    risk_if_broken: F50 inspector reader breaks; auditability target slips.
+    related_files:
+      - path: docs/ADR/ADR-035-hebrew-interpretation-corrections-log-schema.md
+  - id: DEP-104
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: port, id: PORT-N02-F48-LLM, name: tirvi.correction.LLMClientPort }
+    relationship: uses
+    rationale: F48 calls the LLM via a transport-only port; concrete OllamaLLMClient lives under tirvi/correction/adapters/ollama.py per ADR-029.
+    strength: strong
+    direction: one_way
+    risk_if_broken: vendor SDK leaks into domain layer.
+    related_files:
+      - path: docs/ADR/ADR-029-platform-vendor-boundary-discipline.md
+  - id: DEP-105
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: port, id: PORT-N02-F48-WORDLIST, name: tirvi.correction.NakdanWordListPort }
+    relationship: uses
+    rationale: NakdanGate (DE-02) depends on an in-process word-list lookup port, supplied by F19's adapter-side word list.
+    strength: strong
+    direction: one_way
+    risk_if_broken: gate cannot short-circuit ~98% of valid words; latency budget breaks.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories.nakdan-gate.md
+  - id: DEP-106
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: port, id: PORT-N02-F48-FEEDBACK, name: tirvi.correction.FeedbackReadPort }
+    relationship: uses
+    rationale: Cascade reads user-rejection rows at init via FeedbackReadPort; sqlite adapter under tirvi/correction/adapters/feedback_sqlite.py.
+    strength: medium
+    direction: one_way
+    risk_if_broken: BT-211 user override pathway broken.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories.feedback-loop.md
+  - id: DEP-107
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: business_object, id: BO49, name: CorrectionCascade }
+    relationship: realizes
+    rationale: F48 software layer (CorrectionCascadeService + aggregate) realises the BO49 aggregate root defined in business-domains.yaml.
+    strength: strong
+    direction: one_way
+    risk_if_broken: domain layer drifts from biz model.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/ontology-delta.yaml
+  - id: DEP-108
+    source: { type: spec, id: spec:N02/F48/DE-04, name: OllamaLLMReviewer }
+    target: { type: collaboration_object, id: CO15, name: LLMReviewer (Ollama) }
+    relationship: realizes
+    rationale: DE-04 software class is the realisation of CO15.
+    strength: strong
+    direction: one_way
+    risk_if_broken: biz CO is not implemented.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/ontology-delta.yaml
+  - id: DEP-109
+    source: { type: spec, id: spec:N02/F48/DE-08, name: FeedbackAggregator }
+    target: { type: collaboration_object, id: CO16, name: FeedbackAggregator }
+    relationship: realizes
+    rationale: DE-08 software script is the realisation of CO16.
+    strength: strong
+    direction: one_way
+    risk_if_broken: biz CO is not implemented.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/ontology-delta.yaml

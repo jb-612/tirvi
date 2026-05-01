@@ -1,0 +1,450 @@
+# F48 Hebrew correction cascade — biz ontology delta (append-only).
+# Targets:
+#   ontology/business-domains.yaml — personas, business_objects, collaboration_objects, assumptions
+#   ontology/dependencies.yaml     — biz portion only (REQUIRES, USES_OBJECT, EMITS, REALIZES at biz level)
+#   ontology/testing.yaml          — FT-316..FT-330 + BT-209..BT-220
+#
+# Append-only convention (matches F14/F15/F16/F18 deltas already merged in
+# Wave 2). The sw-design pipeline (next phase) will write
+# ontology/technical-implementation.yaml entries; this delta does NOT.
+#
+# Source: ADR-033, UAT-2026-05-01-tts-quality, UAT-2026-05-01-why-models-miss
+# Stories: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories(.*).md
+
+version: 1
+feature_id: N02/F48
+wave: 3
+revision: r1
+
+# -----------------------------------------------------------------------------
+# To be appended to ontology/business-domains.yaml
+# -----------------------------------------------------------------------------
+business_domains_delta:
+  personas:
+    - id: P15
+      name: Pipeline Engineer
+      role: tirvi internal — tunes thresholds, prompts, model versions; reads correction logs; reviews rule promotion suggestions
+      collaboration_level: solo
+
+  business_objects:
+    - id: BO49
+      name: CorrectionCascade
+      type: aggregate_root
+      description: per-page transient aggregate orchestrating NakdanGate to DictaBERTMLMScorer to LLMReviewer; accumulates StageDecision rows; emits CorrectionLogEntry on close
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO50
+      name: MLMSubstitutionCandidate
+      type: value_object
+      description: (text, score, in_word_list); ranked output of confusion-table substitution scoring
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO51
+      name: ConfusionPair
+      type: value_object
+      description: (a, b, source_writer); loaded from confusion_pairs.yaml; data-driven not code-driven
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO52
+      name: StageDecision
+      type: value_object
+      description: (stage, verdict, mode, scores?, candidates?, llm_response?); recorded per token per stage
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO53
+      name: LLMReviewVerdict
+      type: value_object
+      description: (model_id, prompt_template_version, verdict, chosen, reason, latency_ms, cache_key); parsed Ollama response
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO54
+      name: LLMPromptTemplate
+      type: value_object
+      description: (version, body, language=he); versioned prompt asset
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO55
+      name: CorrectionLogEntry
+      type: value_object
+      description: row in drafts/<sha>/corrections.json — full reasoning trail per corrected token
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO56
+      name: RuleSuggestion
+      type: value_object
+      description: aggregator output (pattern, support_count, distinct_shas, sample_contexts); engineer-gated promotion
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO57
+      name: CorrectionApplied
+      type: domain_event
+      description: emitted when a stage commits a correction (auto_apply or apply)
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO58
+      name: CorrectionRejected
+      type: domain_event
+      description: emitted on hallucination reject, threshold miss, or user override
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+    - id: BO59
+      name: CascadeModeDegraded
+      type: domain_event
+      description: emitted on init when health probe fails; carries mode value
+      owned_by_context: hebrew_text
+      related_features: [N02/F48]
+
+  collaboration_objects:
+    - id: CO13
+      name: NakdanWordList
+      type: system
+      responsibilities:
+        - in-process word-list lookup (fnotfromwl); first-stage gate
+      interacts_with: [CO03]
+    - id: CO14
+      name: DictaBERTMLMScorer
+      type: system
+      responsibilities:
+        - mask-and-score candidate substitutions in sentence context
+      interacts_with: [CO02]
+    - id: CO15
+      name: LLMReviewer
+      type: external_party
+      responsibilities:
+        - on-device semantic / grammatical review of ambiguous tokens via Ollama
+      interacts_with: []
+    - id: CO16
+      name: FeedbackAggregator
+      type: system
+      responsibilities:
+        - read drafts/feedback.db; emit rule_suggestions.json; per-sha cap; threshold-gated
+      interacts_with: []
+
+  assumptions:
+    - id: ASM11
+      description: Local Ollama runtime (gemma3:27b or :4b) is available on the M4 Max. Offline mode covers absence.
+      source: ADR-033 Decision row 3, Consequences
+      confidence: high
+      validation_needed: false
+    - id: ASM12
+      description: 90 percent recall target is aspirational pending F39 bench + F40 quality-gates measurement; F48 ships the recall test scaffold but does not own SLO measurement.
+      source: spec quality requirements + global review F48-R1-2
+      confidence: medium
+      validation_needed: true
+    - id: ASM13
+      description: Confusion pairs are data, not code. New pairs land via YAML edit (F48-S05 / BT-214), not module changes.
+      source: ADR-033 Consequences (generalizes)
+      confidence: high
+      validation_needed: false
+
+# -----------------------------------------------------------------------------
+# To be appended to ontology/dependencies.yaml (biz portion only)
+# -----------------------------------------------------------------------------
+dependencies_delta:
+  - id: DEP-052
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: feature, id: N02/F19, name: Dicta-Nakdan adapter }
+    relationship: triggers
+    rationale: F48 produces the corrected token stream that F19 diacritizes. Token-in / token-out invariant must hold (regression of UAT F-3 marker drift).
+    strength: strong
+    direction: one_way
+    risk_if_broken: marker drift recurrence; word-sync UX regresses.
+    related_files:
+      - path: docs/ADR/ADR-033-hebrew-correction-cascade.md
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+  - id: DEP-053
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: feature, id: N02/F22, name: Reading-plan output }
+    relationship: requires
+    rationale: F48 must preserve token boundaries so plan-stage marks remain 1:1 with OCR words.
+    strength: strong
+    direction: one_way
+    risk_if_broken: highlight desync.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+  - id: DEP-054
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: feature, id: N05/F47, name: Feedback capture }
+    relationship: requires
+    rationale: F48 feedback loop reads/writes the same sqlite F47 owns; schema-compatible extension.
+    strength: medium
+    direction: bidirectional
+    risk_if_broken: feedback loss; rule promotion blocked.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories.feedback-loop.md
+  - id: DEP-055
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: feature, id: F50, name: Inspector (under design) }
+    relationship: validates
+    rationale: F48 produces corrections.json consumed by F50; F48 holds schema contract.
+    strength: strong
+    direction: one_way
+    risk_if_broken: inspector cannot render reasoning trail.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories.correction-log.md
+  - id: DEP-056
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: feature, id: N05/F40, name: Quality gates CI }
+    relationship: validates
+    rationale: F40 measures the recall and precision SLOs that F48 ships scaffolding for.
+    strength: medium
+    direction: one_way
+    risk_if_broken: quality target unmeasurable.
+    related_files:
+      - path: docs/ADR/ADR-033-hebrew-correction-cascade.md
+  - id: DEP-057
+    source: { type: feature, id: N02/F14, name: Normalization pass }
+    target: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    relationship: requires
+    rationale: F14 strips wrap chars / ordinals / slash suffixes BEFORE F48; otherwise F48 inherits UAT F-9 / F-6 regressions.
+    strength: strong
+    direction: one_way
+    risk_if_broken: cascade operates on dirty tokens; precision drops.
+    related_files:
+      - path: docs/UAT/UAT-2026-05-01-tts-quality.md
+  - id: DEP-058
+    source: { type: feature, id: N02/F48, name: Hebrew correction cascade }
+    target: { type: feature, id: N02/F21, name: Homograph overrides }
+    relationship: triggers
+    rationale: Promoted rule suggestions land in F21 lexicon (one promotion target).
+    strength: medium
+    direction: one_way
+    risk_if_broken: rule promotion has no destination.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories.feedback-loop.md
+  - id: DEP-059
+    source: { type: business_object, id: BO49, name: CorrectionCascade }
+    target: { type: business_object, id: BO52, name: StageDecision }
+    relationship: uses_object
+    rationale: Cascade aggregates StageDecisions per token per stage.
+    strength: strong
+    direction: one_way
+    risk_if_broken: lost reasoning trail.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories.md
+  - id: DEP-060
+    source: { type: business_object, id: BO49, name: CorrectionCascade }
+    target: { type: domain_event, id: BO57, name: CorrectionApplied }
+    relationship: emits
+    rationale: Successful auto_apply or LLM-confirmed apply emits this event.
+    strength: strong
+    direction: one_way
+    risk_if_broken: downstream observability blind to corrections.
+    related_files:
+      - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/user_stories.md
+
+# -----------------------------------------------------------------------------
+# To be appended to ontology/testing.yaml
+# -----------------------------------------------------------------------------
+testing_delta:
+  test_ranges:
+    - { feature_id: N02/F48, ft: [FT-316, FT-330], bt: [BT-209, BT-220] }
+
+  functional_tests:
+    - id: FT-316
+      name: NakdanGate passes >=95 percent of valid words on a representative page
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [F48-S01]
+      related_business_objects: [BO49, BO52]
+      related_contexts: [hebrew_text]
+      related_aggregates: [BO49]
+      expected_future_implementation:
+        classes:
+          - { name: tirvi.cascade.NakdanGate, responsibility: first-stage word-list filter }
+        functions:
+          - { name: tirvi.cascade.nakdan_gate.is_known_word, responsibility: in-process lookup wrapper }
+        services:
+          - { name: tirvi.cascade.CorrectionCascadeService, responsibility: orchestrate stages }
+      priority: critical
+      risk_covered: ADR-033 cascade economics; per-page latency budget
+      status: drafted
+    - id: FT-318
+      name: DictaBERT-MLM auto-applies aleph-mem-samekh swap when delta>=3.0
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [F48-S02]
+      related_business_objects: [BO50, BO51, BO52]
+      related_contexts: [hebrew_text]
+      related_aggregates: [BO49]
+      expected_future_implementation:
+        classes:
+          - { name: tirvi.cascade.DictaBERTMLMScorer, responsibility: substitution scoring }
+        functions:
+          - { name: tirvi.cascade.mlm.score_candidates, responsibility: rank candidates by MLM probability }
+      priority: critical
+      risk_covered: UAT F-2 generalisation; deprecates _KNOWN_OCR_FIXES path
+      status: drafted
+    - id: FT-320
+      name: LLMReviewer applies REPLACE when chosen in candidates and in NakdanWordList
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [F48-S03]
+      related_business_objects: [BO53, BO54, BO52]
+      related_contexts: [hebrew_text]
+      related_aggregates: [BO49]
+      expected_future_implementation:
+        classes:
+          - { name: tirvi.cascade.LLMReviewer, responsibility: Gemma reviewer wrapper with anti-hallucination guard }
+          - { name: tirvi.cascade.LLMClient, responsibility: Ollama HTTP client (testable fake) }
+      priority: critical
+      risk_covered: ADR-033 reviewer correctness on ambiguous cases
+      status: drafted
+    - id: FT-321
+      name: LLMReviewer rejects hallucinations whose chosen token is not in candidate set
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [F48-S03]
+      related_business_objects: [BO53]
+      related_contexts: [hebrew_text]
+      priority: critical
+      risk_covered: precision target <=1 percent FP
+      status: drafted
+    - id: FT-326
+      name: Mode no_llm applies stricter threshold and skips LLM
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [F48-S06]
+      related_business_objects: [BO52, BO59]
+      related_contexts: [hebrew_text]
+      priority: critical
+      risk_covered: graceful degradation hard requirement
+      status: drafted
+    - id: FT-328
+      name: Cascade is deterministic across two runs of the same input plus model versions
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [F48-S02, F48-S03]
+      related_business_objects: [BO53, BO55]
+      related_contexts: [hebrew_text]
+      priority: critical
+      risk_covered: determinism (cache by sentence_hash + prompt_hash)
+      status: drafted
+    - id: FT-329
+      name: Page-level latency budget — full mode median <=1s/sentence; p95 <=5s; full page <=90s
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [all]
+      related_business_objects: [BO49]
+      related_contexts: [hebrew_text]
+      priority: critical
+      risk_covered: spec latency hard requirement
+      status: drafted
+    - id: FT-330
+      name: 100 percent of corrections have reasoning trail (auditability)
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/functional-test-plan.md
+      test_type: functional
+      related_stories: [F48-S04]
+      related_business_objects: [BO55]
+      related_contexts: [hebrew_text, privacy_compliance]
+      priority: critical
+      risk_covered: spec auditability hard requirement
+      status: drafted
+    # FT-317, FT-319, FT-322, FT-323, FT-324, FT-325, FT-327 documented in
+    # functional-test-plan.md; not enumerated here to keep ontology delta tight.
+    # sw-pipeline expands the full set into traceability.yaml.
+
+  behavioural_tests:
+    - id: BT-209
+      name: Student listens — cascade is invisible, page sounds right
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/behavioural-test-plan.md
+      test_type: behavioural
+      related_personas: [P01]
+      related_collaboration_objects: [CO13, CO14, CO15]
+      related_stories: [F48-S01, F48-S02, F48-S03]
+      behaviour_pattern: passive_listening
+      priority: critical
+      risk_covered: practice-mode UX hard requirement
+      status: drafted
+    - id: BT-211
+      name: Teacher disagrees with a Gemma correction → marks no → reverted; preference cached
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/behavioural-test-plan.md
+      test_type: behavioural
+      related_personas: [P02]
+      related_collaboration_objects: [CO16]
+      related_stories: [F48-S05]
+      behaviour_pattern: manual_override
+      priority: critical
+      risk_covered: trust loss if overrides ignored
+      status: drafted
+    - id: BT-213
+      name: Ollama is down — pipeline still runs with warning + deprecated fixes
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/behavioural-test-plan.md
+      test_type: behavioural
+      related_personas: [P01, P15]
+      related_collaboration_objects: [CO15]
+      related_stories: [F48-S06]
+      behaviour_pattern: graceful_degradation
+      priority: critical
+      risk_covered: spec offline-mode hard requirement
+      status: drafted
+    - id: BT-214
+      name: New OCR confusion pair (e.g., bet/kaf in handwriting) → caught by DictaBERT-MLM, zero code change
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/behavioural-test-plan.md
+      test_type: behavioural
+      related_personas: [P15, P01]
+      related_collaboration_objects: [CO14]
+      related_stories: [F48-S02]
+      behaviour_pattern: zero_code_extension
+      priority: critical
+      risk_covered: ADR-033 generalisation claim
+      status: drafted
+    - id: BT-215
+      name: Correction recurs 3 times → system suggests promoting to a permanent rule
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/behavioural-test-plan.md
+      test_type: behavioural
+      related_personas: [P15]
+      related_collaboration_objects: [CO16]
+      related_stories: [F48-S05]
+      behaviour_pattern: feedback_loop
+      priority: high
+      risk_covered: rule promotion threshold + spam resistance
+      status: drafted
+    - id: BT-216
+      name: Engineer audits privacy invariant — runs cascade with network monitor
+      feature_id: N02/F48
+      epic_id: N02
+      test_file: .workitems/N02-hebrew-interpretation/F48-correction-cascade/behavioural-test-plan.md
+      test_type: behavioural
+      related_personas: [P15, P04]
+      related_collaboration_objects: [CO15]
+      related_stories: [F48-S03]
+      behaviour_pattern: compliance_audit
+      priority: critical
+      risk_covered: privacy hard rule (zero exam content leaves M4 Max)
+      status: drafted
+    # BT-210, BT-212, BT-217..BT-220 documented in behavioural-test-plan.md;
+    # not enumerated here to keep ontology delta tight.
+
+# -----------------------------------------------------------------------------
+# Permission note: ontology/*.yaml are protected paths per
+# .claude/rules/orchestrator.md. This delta is the safe biz output;
+# @sw-designpipeline (next phase) will request HITL for the merge into
+# the canonical ontology files, mirroring the F14/F15/F16/F18 Wave 2 flow.
+# -----------------------------------------------------------------------------
