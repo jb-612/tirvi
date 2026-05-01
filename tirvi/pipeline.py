@@ -48,6 +48,16 @@ class PipelineDeps:
     nlp_ensemble: list[tuple[str, NLPBackend]] = dataclasses.field(default_factory=list)
     # [(display_name, adapter), ...] — run in parallel with primary for inspector display
 
+    # F48 — Hebrew correction cascade (DE-05 / T-09).
+    #   Set ``correction_cascade`` to a wired ``CorrectionCascadeService``
+    #   to enable the cascade between OCR cleanup and Nakdan
+    #   diacritization. ``None`` disables the cascade and the pipeline
+    #   falls through to the legacy normalize path.
+    #   Default left ``None`` while cascade adapters bake; flag toggled
+    #   in ``run_pipeline`` via ``enable_correction_cascade``.
+    correction_cascade: Any = None
+    enable_correction_cascade: bool = True
+
 
 def run_pipeline(
     pdf_bytes: bytes,
@@ -91,6 +101,21 @@ def run_pipeline(
     # Disabled hardcoded-fix path while testing MLM-only — re-enable here
     # if MLM misses some cases:
     # corrected_tokens = correct_final_letters(corrected_tokens)
+
+    # F48 — Hebrew correction cascade (DE-05 / T-09).
+    # Inserted between F14 normalize (DEP-057) and F19 Nakdan
+    # diacritization (DEP-052). Token-in/token-out invariant is enforced
+    # inside CorrectionCascadeService (INV-CCS-001). When the cascade is
+    # not wired (deps.correction_cascade is None) or the flag disables it,
+    # the pipeline falls through to the legacy normalize output so the
+    # existing pipeline stays runnable while cascade adapters bake.
+    if deps.enable_correction_cascade and deps.correction_cascade is not None:
+        corrected_tokens = _run_cascade_for_page(  # AC-F48-S01/AC-01 — TDD T-09 fills
+            deps.correction_cascade,
+            corrected_tokens,
+            page_index=0,
+            sha="pending",
+        )
     corrected_text = " ".join(corrected_tokens)
 
     # Hebrew text rules: geresh ordinal expansion only (1 token → 1 token).
@@ -164,6 +189,28 @@ def run_pipeline(
     )
 
     return {"sha": sha, "drafts_dir": drafts_dir}
+
+
+def _run_cascade_for_page(
+    service: Any,
+    tokens: list[str],
+    *,
+    page_index: int,
+    sha: str,
+) -> list[str]:
+    """Bridge from pipeline tokens to ``CorrectionCascadeService.run_page``.
+
+    Spec: F48 DE-05 / T-09. AC-F48-S01/AC-01.
+
+    TODO T-09: build ``SentenceContext`` per token (single-sentence POC),
+        select cascade ``CascadeMode`` from ``HealthProbe.run/select_mode``,
+        call ``service.run_page(...)``, return
+        ``page_corrections.corrected_tokens`` as a list[str] preserving
+        the token-in/token-out invariant (INV-CCS-001).
+    """
+    raise NotImplementedError(
+        "AC-F48-S01/AC-01 / FT-329 — TDD T-09 fills the cascade bridge"
+    )
 
 
 def _build_page_json(
@@ -261,6 +308,14 @@ def make_poc_deps() -> PipelineDeps:
     except Exception:
         pass
 
+    # F48 — Hebrew correction cascade (DE-05 / T-09).
+    # Adapters are wired here so make_poc_deps stays the canonical POC
+    # entry point. Until TDD fills the cascade adapter constructors,
+    # ``correction_cascade`` is left None and ``enable_correction_cascade``
+    # gates the call site in ``run_pipeline``. This keeps the POC pipeline
+    # runnable end-to-end while T-02..T-08 land.
+    correction_cascade = _build_poc_correction_cascade()  # noqa: F841 — TDD T-09 wires
+
     return PipelineDeps(
         ocr=TesseractOCRAdapter(),
         nlp=DictaBERTAdapter(),
@@ -269,7 +324,31 @@ def make_poc_deps() -> PipelineDeps:
         tts=WavenetTTSAdapter(),
         rasterize=_rasterize,
         nlp_ensemble=ensemble,
+        correction_cascade=correction_cascade,
+        enable_correction_cascade=False,  # default off until TDD greenlights
     )
+
+
+def _build_poc_correction_cascade() -> Any:
+    """Construct the wired ``CorrectionCascadeService`` for POC deps.
+
+    Spec: F48 DE-05 / T-09.
+    Wires:
+      - NakdanGate over Nakdan word-list adapter (CO13).
+      - DictaBertMLMScorer over reused F17 DictaBERT loader.
+      - OllamaLLMReviewer over OllamaLLMClient adapter (DE-04).
+      - SqliteFeedbackReader (CO16) for user-rejection reads.
+      - HealthProbe selects the per-page CascadeMode at run time.
+
+    TODO T-09: import the four adapters once they exist; wire them with
+        the policies in ``tirvi.correction.domain.policies``; return the
+        ``CorrectionCascadeService`` instance.
+    """
+    # Until TDD lands T-04a / T-04b / T-07 / T-08 the cascade is left
+    # unwired. Returning ``None`` is intentional — the call site in
+    # ``run_pipeline`` short-circuits the cascade and falls through to
+    # legacy normalize output so the POC pipeline remains runnable.
+    return None
 
 
 def _make_deps() -> PipelineDeps:

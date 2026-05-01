@@ -172,3 +172,35 @@ class TestMakePocDeps:
         from tirvi.pipeline import make_poc_deps
         deps = make_poc_deps()
         assert isinstance(deps.g2p, PhonikudG2PAdapter)
+
+
+# ---------------------------------------------------------------------------
+# F48 — correction-cascade wiring (T-09)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.skip(reason="scaffold — /tdd fills (T-09)")
+class TestCorrectionCascadeWiring:
+    """T-09 — wire CorrectionCascadeService between F14 and F19.
+
+    AC: F48-S01/AC-01. FT-329. BT-209.
+    """
+
+    def test_pipeline_calls_cascade_after_normalize_before_dia(self):
+        # FT-329 — order: ocr → normalize → cascade → nakdan
+        pass
+
+    def test_enable_correction_cascade_flag_default_true(self):
+        # Pipeline still runnable while cascade adapters bake
+        pass
+
+    def test_disable_flag_skips_cascade(self):
+        pass
+
+    def test_make_poc_deps_injects_cascade_adapters(self):
+        # Four adapters: NakdanGate / MLM / LLMReviewer / FeedbackReader
+        pass
+
+    def test_token_in_token_out_holds_through_full_pipeline(self):
+        # INV-CCS-001 cross-pipeline assertion (DEP-052/053)
+        pass
