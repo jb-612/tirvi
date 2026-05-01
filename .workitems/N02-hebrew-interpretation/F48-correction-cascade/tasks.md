@@ -143,7 +143,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-06: Implement `CorrectionLog` writer (DE-06) + audit-gap path
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [F48-S04/AC-01, F48-S04/AC-02, F48-S04/AC-03]
 - ft_anchors: [FT-323, FT-324, FT-330]

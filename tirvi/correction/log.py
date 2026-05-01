@@ -4,21 +4,13 @@ Spec: F48 DE-06.
 AC: F48-S04/AC-01, F48-S04/AC-02, F48-S04/AC-03.
 ADR-035 (corrections.json schema + chunking).
 T-06.
-
-Writes ``drafts/<sha>/corrections.json`` (single JSON array per page) with
-``corrections_schema_version: 1``. When document > 50 pages, chunked as
-``corrections.<page>.json`` with an index file (ADR-035).
-
-On disk-full / IO error, appends to ``drafts/<sha>/audit_gaps.json`` and
-marks the page header ``audit_quality: "audit-incomplete"`` — pipeline
-does NOT abort (FT-324).
-
-Strict scaffold rule: NO BUSINESS LOGIC. ``write_page`` body raises
-``NotImplementedError`` — TDD T-06 fills.
 """
 
 from __future__ import annotations
 
+import dataclasses
+import json
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -28,6 +20,8 @@ from .service import PageCorrections
 
 CORRECTIONS_SCHEMA_VERSION: int = 1
 CHUNKING_PAGE_THRESHOLD: int = 50
+
+_PASS_THROUGH_VERDICTS = frozenset(("pass", "skip_empty", "skip_short", "skip_non_hebrew"))
 
 
 @dataclass(frozen=True)
@@ -69,59 +63,87 @@ class CorrectionLog:
     log_passthrough: bool = False
     schema_version: int = CORRECTIONS_SCHEMA_VERSION
 
-    # ---- entry point ------------------------------------------------------
+    def write_page(self, page: PageCorrections, *, clock: object | None = None) -> Path:
+        entries = self._entries_for_page(page)
+        sha_dir = self.drafts_dir / page.sha
+        sha_dir.mkdir(parents=True, exist_ok=True)
+        is_chunked = page.page_index >= CHUNKING_PAGE_THRESHOLD
+        path = self._page_path(sha_dir, page.page_index, is_chunked)
+        try:
+            self._atomic_write(path, self._page_doc(page, entries))
+            if is_chunked:
+                self._update_index(sha_dir, page, path.name)
+        except OSError as exc:
+            self._record_audit_gap(page.page_index, path, exc)
+        return path
 
-    def write_page(
-        self,
-        page: PageCorrections,
-        *,
-        clock: object | None = None,
-    ) -> Path:
-        """Write the page's correction log to disk; return the file path.
+    def _entries_for_page(self, page: PageCorrections) -> list[CorrectionLogEntry]:
+        ts = datetime.utcnow().isoformat()
+        result = []
+        for i, verdict in enumerate(page.stage_decisions):
+            if self._should_skip(verdict):
+                continue
+            result.append(CorrectionLogEntry(
+                page_index=page.page_index, token_index=i,
+                original=verdict.original, corrected=verdict.corrected_or_none,
+                stage=verdict.stage, verdict=verdict.verdict,
+                score=verdict.score, candidates=verdict.candidates,
+                cache_hit_chain=(verdict.cache_hit,),
+                sentence_hash="",
+                model_versions=dict(verdict.model_versions),
+                prompt_template_version=verdict.prompt_template_version,
+                ts_iso=ts, mode=page.mode.name,
+            ))
+        return result
 
-        TODO INV-CCS-003 (T-06): assert every applied event has a
-            matching ``CorrectionLogEntry``; raise
-            ``CascadeInvariantViolation`` on cardinality mismatch.
-        TODO AC-F48-S04/AC-01 (T-06): build entries from
-            ``page.stage_decisions``; skip pass-through unless
-            ``self.log_passthrough``.
-        TODO AC-F48-S04/AC-02 (T-06): atomic write — write
-            ``corrections.<page>.json.tmp`` then ``os.replace``.
-        TODO AC-F48-S04/AC-03 (ADR-035): if the doc exceeds
-            ``CHUNKING_PAGE_THRESHOLD`` pages, also update the index
-            ``corrections.json`` `chunks` array.
-        TODO FT-324 (T-06): on ``OSError`` from ``os.replace``, append
-            to ``audit_gaps.json`` and stamp the page
-            ``audit_quality: "audit-incomplete"``; do NOT re-raise.
-        """
-        raise NotImplementedError(
-            "AC-F48-S04/AC-01..AC-03 / FT-323 / FT-324 / INV-CCS-003 — "
-            "TDD T-06 fills"
-        )
+    def _should_skip(self, verdict) -> bool:
+        if self.log_passthrough:
+            return False
+        return verdict.verdict in _PASS_THROUGH_VERDICTS
 
-    # ---- helpers (named, NotImplemented) ----------------------------------
+    def _page_path(self, sha_dir: Path, page_index: int, is_chunked: bool) -> Path:
+        if is_chunked:
+            return sha_dir / f"corrections.{page_index}.json"
+        return sha_dir / "corrections.json"
 
-    def _entries_for_page(
-        self, page: PageCorrections
-    ) -> Sequence[CorrectionLogEntry]:
-        """Project ``PageCorrections`` into log entries.
+    def _page_doc(self, page: PageCorrections, entries: list[CorrectionLogEntry]) -> dict:
+        return {
+            "corrections_schema_version": self.schema_version,
+            "sha": page.sha, "page_index": page.page_index,
+            "mode": page.mode.name, "audit_quality": "complete",
+            "entries": [dataclasses.asdict(e) for e in entries],
+        }
 
-        TODO T-06: filter pass-through if ``not self.log_passthrough``;
-            map each ``CorrectionVerdict`` → ``CorrectionLogEntry``;
-            stamp ``ts_iso`` from injected clock (deterministic tests).
-        """
-        raise NotImplementedError("AC-F48-S04/AC-01 — TDD T-06 fills")
+    def _atomic_write(self, path: Path, doc: dict) -> None:
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, path)
 
-    def _record_audit_gap(
-        self, page_index: int, original_path: Path, error: Exception
-    ) -> None:
-        """Record a disk-full / IO error to ``audit_gaps.json``.
+    def _update_index(self, sha_dir: Path, page: PageCorrections, chunk_name: str) -> None:
+        index_path = sha_dir / "corrections.json"
+        if index_path.exists():
+            data = json.loads(index_path.read_text(encoding="utf-8"))
+        else:
+            data = {"corrections_schema_version": self.schema_version, "sha": page.sha, "chunks": []}
+        if chunk_name not in data["chunks"]:
+            data["chunks"].append(chunk_name)
+        self._atomic_write(index_path, data)
 
-        TODO FT-324 (T-06): append a row
-            ``{page_index, attempted_path, error_class, error_msg, ts_iso}``
-            to ``audit_gaps.json``; create the file with `[]` if missing.
-        """
-        raise NotImplementedError("FT-324 — TDD T-06 fills")
+    def _record_audit_gap(self, page_index: int, original_path: Path, error: Exception) -> None:
+        gaps_path = original_path.parent / "audit_gaps.json"
+        if gaps_path.exists():
+            gaps = json.loads(gaps_path.read_text(encoding="utf-8"))
+        else:
+            gaps = []
+        gaps.append({
+            "page_index": page_index,
+            "attempted_path": str(original_path),
+            "error_class": type(error).__name__,
+            "error_msg": str(error),
+            "audit_quality": "audit-incomplete",
+            "ts_iso": datetime.utcnow().isoformat(),
+        })
+        gaps_path.write_text(json.dumps(gaps, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 __all__ = [
