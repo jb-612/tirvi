@@ -1,0 +1,33 @@
+# Ontology delta — N03/F31 WhisperX Forced-Alignment Fallback (Deferred MVP)
+# Owner: sw-design session (werbeH-design, 2026-05-01)
+# Status: deferred stub — raises NotImplementedError unconditionally per ADR-015
+
+version: 1
+feature_id: N03/F31
+
+modules:
+  - id: MOD-N03-F31
+    name: tirvi.adapters.whisperx
+    description: WhisperX forced-alignment fallback WordTimingProvider stub. Always raises NotImplementedError per ADR-015. MVP scope.
+    feature_refs: [N03/F31]
+    bounded_context: audio_sync
+    source_path: tirvi/adapters/whisperx/
+    status: designed
+
+functions:
+  - id: FN-N03-F31-align-with-whisperx
+    name: align_with_whisperx
+    description: Raises NotImplementedError("WhisperX fallback deferred to MVP per ADR-015") unconditionally. No WhisperX dep in POC.
+    feature_refs: [N03/F31]
+    bounded_context: audio_sync
+    module_ref: MOD-N03-F31
+    source_path: tirvi/adapters/whisperx/__init__.py
+    status: designed
+
+tasks:
+  - id: task:N03/F31/T-01
+    name: whisperx-deferred-stub
+    feature_refs: [N03/F31]
+    spec_refs: [spec:N03/F31/DE-01]
+    test_path: tests/unit/test_whisperx_stub.py
+    status: designed

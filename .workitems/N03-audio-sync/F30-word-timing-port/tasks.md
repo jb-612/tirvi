@@ -62,6 +62,19 @@ total_estimate_hours: 5.5
 - dependencies: [T-02, T-03, T-04]
 - hints: len(marks) == len(transcript_tokens) else raise MarkCountMismatch; pass through assert_adapter_contract; tests use F03 WordTimingProviderFake; ForcedAlignmentAdapter slot raises NotImplementedError("forced-alignment deferred")
 
+## T-06: Truncation-aware graceful alignment (DE-05 graceful path)
+
+- [ ] **T-06 done**
+- design_element: DE-05
+- acceptance_criteria: [US-01/AC-01]
+- estimate: 0.75h
+- test_file: tests/unit/test_tts_marks_adapter.py
+- dependencies: [T-05, N03/F26 T-04]
+- hints: when voice_meta.get("tts_marks_truncated") is True, align marks to
+  transcript_tokens up to min(len(marks), len(tokens)) and log a warning with
+  counts. T-05's strict MarkCountMismatch applies only when flag is absent/False.
+  Separate test case from T-05 to avoid conflating strict vs graceful paths.
+
 ## Dependency DAG
 
 ```
@@ -69,6 +82,7 @@ T-01 → T-02
 T-01 → T-03
 T-01 → T-04
 T-02, T-03, T-04 → T-05
+T-05 → T-06 (also depends on N03/F26 T-04)
 ```
 
-Critical path: T-01 → T-02 → T-05 (4h)
+Critical path: T-01 → T-02 → T-05 → T-06 (4.75h)
