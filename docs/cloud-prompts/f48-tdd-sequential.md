@@ -17,6 +17,23 @@ green, commit after each task, and never stop to ask the user a question.
 
 ---
 
+### STARTUP CHECKLIST (run these first, before any TDD work)
+
+```bash
+git rev-parse --abbrev-ref HEAD        # must print: werbeH
+git log --oneline -3                   # must show scaffold commit as most recent
+git status --short                     # must be clean (no untracked or modified files)
+uv run pytest tests/unit/ -q --co 2>&1 | tail -5   # must show ~850 tests collected
+```
+
+If `HEAD` is not `werbeH`, run `git checkout werbeH` before proceeding.
+If `git status` is not clean, investigate before editing any file.
+If test collection fails, check that `uv` and `pytest` are available in the environment.
+
+Only proceed to T-01 once all four checks pass.
+
+---
+
 ### 0. MANDATORY RULES — READ FIRST
 
 #### 0a. Never pause or invoke these skills (they have HITL gates)
