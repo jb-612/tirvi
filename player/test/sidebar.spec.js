@@ -291,3 +291,131 @@ describe("mountArtifactTree — accessibility", () => {
     expect(hasRole || hasLabel).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// mountRunSelector — N04/F33 T-11
+// AC: US-06/AC-25, US-06/AC-26, US-06/AC-27, US-06/AC-28
+// FT: FT-323, FT-325  BT: BT-216
+// ---------------------------------------------------------------------------
+
+import { mountRunSelector } from "../js/sidebar.js";
+
+describe("mountRunSelector", () => {
+  let container;
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    if (container && container.parentNode) {
+      container.remove();
+    }
+  });
+
+  function stubRuns(runs) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => runs,
+      })
+    );
+  }
+
+  it("renders select.run-selector", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001", ts: "2026-05-01T10:00:00Z" }]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const sel = container.querySelector("select.run-selector");
+    expect(sel).not.toBeNull();
+  });
+
+  it("select has aria-label", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001", ts: "2026-05-01T10:00:00Z" }]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const sel = container.querySelector("select.run-selector");
+    expect(sel.getAttribute("aria-label")).toBe("Select pipeline run");
+  });
+
+  it("renders one option per run", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([
+      { run: "001", ts: "2026-05-01T10:00:00Z" },
+      { run: "002", ts: "2026-05-02T10:00:00Z" },
+    ]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const options = container.querySelectorAll("select.run-selector option");
+    expect(options).toHaveLength(2);
+  });
+
+  it("option value is run number", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001", ts: "2026-05-01T10:00:00Z" }]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const option = container.querySelector("select.run-selector option");
+    expect(option.value).toBe("001");
+  });
+
+  it("option text includes run number", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001", ts: "2026-05-01T10:00:00Z" }]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const option = container.querySelector("select.run-selector option");
+    expect(option.textContent).toContain("001");
+  });
+
+  it("option text includes date from ts", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001", ts: "2026-05-01T10:00:00Z" }]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const option = container.querySelector("select.run-selector option");
+    expect(option.textContent).toContain("2026-05-01");
+  });
+
+  it("option text omits date when ts absent", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001" }]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const option = container.querySelector("select.run-selector option");
+    expect(option).not.toBeNull();
+    expect(option.textContent).toContain("001");
+  });
+
+  it("selecting run calls onRunSwitch with run number", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001", ts: "2026-05-01T10:00:00Z" }]);
+    const onRunSwitch = vi.fn();
+    await mountRunSelector(container, "http://localhost/runs", { onRunSwitch });
+    const sel = container.querySelector("select.run-selector");
+    sel.value = "001";
+    sel.dispatchEvent(new Event("change"));
+    expect(onRunSwitch).toHaveBeenCalledOnce();
+    expect(onRunSwitch).toHaveBeenCalledWith("001");
+  });
+
+  it("empty run list renders empty-state", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([]);
+    await mountRunSelector(container, "http://localhost/runs");
+    const empty = container.querySelector(".run-selector-empty");
+    expect(empty).not.toBeNull();
+  });
+
+  it("clears container before render", async () => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    stubRuns([{ run: "001", ts: "2026-05-01T10:00:00Z" }]);
+    await mountRunSelector(container, "http://localhost/runs");
+    await mountRunSelector(container, "http://localhost/runs");
+    const selects = container.querySelectorAll("select.run-selector");
+    expect(selects).toHaveLength(1);
+  });
+});

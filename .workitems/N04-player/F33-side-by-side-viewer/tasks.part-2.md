@@ -23,7 +23,7 @@ T-10..T-13 + Dependency DAG here. T-01..T-09 in `tasks.md`.
 
 ## T-11: Run-switching in version navigator
 
-- [ ] **T-11 done**
+- [x] **T-11 done**
 - design_element: DE-05
 - acceptance_criteria: [US-06/AC-25, US-06/AC-26, US-06/AC-27, US-06/AC-28]
 - ft_anchors: [FT-323, FT-325]

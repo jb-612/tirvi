@@ -1,6 +1,12 @@
 // N04/F33 T-06 — sidebar.js: mountArtifactTree
 // DE-03  AC: US-03/AC-11, US-03/AC-13, US-03/AC-14
 // FT-320, FT-321, FT-325, FT-329  BT-211
+//
+// N04/F33 T-11 — mountRunSelector
+// DE-05  AC: US-06/AC-25, US-06/AC-26, US-06/AC-27, US-06/AC-28
+// FT-323, FT-325  BT-216
+
+import { listAvailableRuns } from "./runner.js";
 
 /**
  * Render an artifact tree into container from manifest.json at rootUrl.
@@ -105,4 +111,54 @@ function _buildFileItem(filename, stage, rootUrl, onArtifactClick) {
   });
   li.appendChild(btn);
   return li;
+}
+
+// ---------------------------------------------------------------------------
+// mountRunSelector — T-11
+// ---------------------------------------------------------------------------
+
+/**
+ * Render a run-selector dropdown into container.
+ *
+ * @param {HTMLElement} container - DOM element to render into.
+ * @param {string} baseUrl - Base URL passed to listAvailableRuns.
+ * @param {object} [opts]
+ * @param {function} [opts.onRunSwitch] - Called with run number string on change.
+ */
+export async function mountRunSelector(container, baseUrl, { onRunSwitch } = {}) {
+  container.innerHTML = "";
+  const runs = await listAvailableRuns(baseUrl);
+  if (runs.length === 0) {
+    return _renderRunEmpty(container);
+  }
+  const sel = _buildRunSelect(runs, onRunSwitch);
+  container.appendChild(sel);
+}
+
+function _renderRunEmpty(container) {
+  const p = document.createElement("p");
+  p.className = "run-selector-empty";
+  p.textContent = "No runs available";
+  container.appendChild(p);
+}
+
+function _buildRunSelect(runs, onRunSwitch) {
+  const sel = document.createElement("select");
+  sel.className = "run-selector";
+  sel.setAttribute("aria-label", "Select pipeline run");
+  for (const run of runs) {
+    sel.appendChild(_buildRunOption(run));
+  }
+  sel.addEventListener("change", () => {
+    if (onRunSwitch) onRunSwitch(sel.value);
+  });
+  return sel;
+}
+
+function _buildRunOption(run) {
+  const opt = document.createElement("option");
+  opt.value = run.run;
+  const date = run.ts ? " — " + run.ts.slice(0, 10) : "";
+  opt.textContent = `Run ${run.run}${date}`;
+  return opt;
 }
