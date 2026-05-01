@@ -1,0 +1,35 @@
+# Ontology delta — N04/F34 Per-block playback controls (deferred MVP)
+# Owner: werbeH-design branch
+# Target: ontology/technical-implementation.yaml
+# Status: deferred MVP — design stub only; nodes are additive placeholders.
+
+version: 1
+feature_id: N04/F34
+
+modules:
+  - id: MOD-N04-F34
+    name: player.per_block_controls
+    description: per-block playback UI — block-level play buttons and audio sub-range player; deferred MVP; no source yet
+    feature_refs: [N04/F34]
+    bounded_context: audio_delivery
+    source_path: player/
+    status: designed   # deferred MVP
+
+services: []
+ports: []
+adapters: []
+classes: []
+functions: []
+adr_decisions: []
+
+tasks:
+  - id: task:N04/F34/T-01
+    name: per-block-controls-stub
+    feature_refs: [N04/F34]
+    spec_refs: [spec:N04/F34/DE-01]
+    test_path: TBD
+    status: designed   # deferred MVP
+
+# Notes for merger:
+# - F34 is deferred MVP; all nodes are additive stubs.
+# - Populate functions/classes when MVP design cycle produces a concrete breakdown.

@@ -1,27 +1,39 @@
-# Traceability index — ACM-graph-compatible.
-# Filled by @design-pipeline; read by validate-hld-refs.sh and ACM ingestion.
+# Traceability index — N04/F37 Spell-word (deferred MVP).
+feature_id: N04/F37
+status: designed
+gate: deferred_mvp
 
-feature_id: TBD
-status: scaffolded
+hld_refs:
+  - HLD-§3.1/Frontend
+prd_refs:
+  - "PRD §6.6 — Player controls"
+adr_refs: []
 
-# Source-document references
-hld_refs: []        # e.g. ["HLD-3.3/Worker", "HLD-5.2/SharedStore"]
-prd_refs: []        # e.g. ["PRD §6.4 — Reading plan"]
-adr_refs: []        # e.g. ["ADR-001"]
+biz_source:
+  corpus_e_id: E09-F05
+  functional_test_plan_path: null   # not yet produced; deferred MVP
+  behavioural_test_plan_path: null  # not yet produced; deferred MVP
 
-# ACM nodes
 acm_nodes:
-  feature: feature:TBD
-  specs: []         # spec:<feature_id>/DE-NN
-  user_stories: []  # story:<feature_id>/US-NN
-  acceptance_criteria: []  # criterion:<feature_id>/US-NN/AC-NN
-  tasks: []         # task:<feature_id>/T-NN
+  feature: feature:N04/F37
+  specs:
+    - spec:N04/F37/DE-01
+    - spec:N04/F37/DE-02
+  user_stories: []
+  acceptance_criteria: []
+  tasks:
+    - task:N04/F37/T-01
 
-# ACM edges
-acm_edges: []       # entries: {from: <node>, to: <node>, type: TRACED_TO|IMPLEMENTED_BY|HAS_CRITERION|CONTAINS|VERIFIED_BY}
+acm_edges:
+  - {from: spec:N04/F37/DE-01, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: spec:N04/F37/DE-02, to: HLD-§3.1/Frontend, type: TRACED_TO}
+  - {from: feature:N04/F37, to: spec:N04/F37/DE-01, type: CONTAINS}
+  - {from: feature:N04/F37, to: spec:N04/F37/DE-02, type: CONTAINS}
 
-# Per-element traces (denormalized for quick lookup)
-de_to_hld: {}       # DE-NN -> HLD-X.Y/Element
-story_to_prd: {}    # US-NN -> PRD §X.Y
-task_to_de: {}      # T-NN -> DE-NN
-ac_to_story: {}     # AC-NN -> US-NN
+de_to_hld:
+  DE-01: HLD-§3.1/Frontend
+  DE-02: HLD-§3.1/Frontend
+story_to_prd: {}
+task_to_de:
+  T-01: DE-01
+ac_to_story: {}
