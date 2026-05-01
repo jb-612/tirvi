@@ -12,7 +12,7 @@ biz-functional-design runs for N05.
 
 ## T-01: Author DPIA document and release checklist
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 
 - design_element: DE-01, DE-02
 - acceptance_criteria: [AC-01]

@@ -19,7 +19,7 @@ total_estimate_hours: 6.5
 
 ## T-02: Page statistics aggregator
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-074]
@@ -53,7 +53,7 @@ total_estimate_hours: 6.5
 
 ## T-05: Block bbox aggregation
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-074]

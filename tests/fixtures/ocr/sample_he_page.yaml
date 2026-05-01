@@ -1,0 +1,15 @@
+# F10 T-03 — canonical OCRResult fixture (single Hebrew page, two words).
+# Loaded by tirvi.fixtures.ocr.OCRResultBuilder.from_yaml.
+provider: tesseract-5.3.4-heb-best
+confidence: 0.92
+pages:
+  - lang_hints: ["he"]
+    words:
+      - text: "שלום"
+        bbox: [10, 20, 80, 60]
+        conf: 0.95
+        lang_hint: "he"
+      - text: "עולם"
+        bbox: [90, 20, 160, 60]
+        conf: 0.88
+        lang_hint: "he"

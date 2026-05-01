@@ -13,7 +13,7 @@ a violation report — one TDD task per WCAG criterion failure.
 
 ## T-01: Set up automated audit pipeline and run baseline audit (stub)
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0h

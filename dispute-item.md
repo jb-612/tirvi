@@ -28,6 +28,21 @@ Format:
 - **Decision taken**: Play and Continue both get `aria-keyshortcuts="Space"`; Reset gets `aria-keyshortcuts="R"`; Pause also gets `aria-keyshortcuts="Space"` since Space pauses when playing.
 - **Review needed**: low — convention check at code-review.
 
+## [F08 / T-05] cv2 (OpenCV) not installed in dev env
+- **Uncertainty**: T-05 deskew calls for `cv2.HoughLinesP` + numpy edge gradient. `uv run python -c "import cv2"` fails. Task hint says "if cv2 import fails, write function with try/except + raise NotImplementedError; mock cv2 in tests".
+- **Decision taken**: implement `tirvi/adapters/tesseract/deskew.py` with lazy `_load_cv2()` raising `NotImplementedError("cv2 not available")` on ImportError. Cover disabled-by-default + env-var gate + |angle|<5 threshold via tests using `unittest.mock.patch` to inject a fake cv2 module.
+- **Review needed**: yes — when cv2 is added to runtime deps, replace mocked tests with real-image fixtures.
+
+## [F08 / T-06] pytesseract not installed in dev env; assembly logic already in adapter.py
+- **Uncertainty**: `tirvi/adapters/tesseract/invoker.py` does an unconditional top-level `import pytesseract`; `uv run python -c "import pytesseract"` fails. `tests/unit/test_tesseract_adapter.py` cannot be collected without the module. Task hint says "tests use `@pytest.mark.skip(reason='requires pytesseract — integration only')`" — already true.
+- **Decision taken**: T-06 OCRResult assembly is already implemented in `tirvi/adapters/tesseract/adapter.py::TesseractOCRAdapter.ocr_pdf`. Mark T-06 done on that basis. Do not author new tests against the unimportable invoker module — the existing adapter test file stays skipped at the integration boundary.
+- **Review needed**: yes — when pytesseract lands, write a contract test asserting `assert_adapter_contract` round-trip.
+
+## [F10 / T-01,T-05] OCRWord field naming + frozen-result extension blocked
+- **Uncertainty**: tasks.md T-01 hint says "extend OCRWord with bbox: BBox, confidence: float | None, lang_hint" — but `tirvi/results.py` is protected and already defines `OCRWord(text, bbox, conf, lang_hint)`. Field is `conf`, not `confidence`. Similarly T-05 hint says "blocks[i].metadata: dict[str,str]" — but `OCRResult` has `pages` (not `blocks`) and the frozen, protected dataclass cannot grow a new `metadata` field.
+- **Decision taken**: T-01 lands as confirming tests over the existing `conf`/`lang_hint`/`bbox` surface. T-02 lands as a standalone helper `tirvi.ocr.aggregation.aggregate_lang_hints(result)` returning sorted set-union — does not mutate the frozen dataclass. T-04 invariants (`assert_ocr_result_v1`) created at `tirvi/ocr/contracts.py` and check `conf in [0,1] | None` and `lang_hint in {"he","en",None}`. T-05 lands as a conformance test that the `provider` field carries the version stamp (e.g. `"tesseract-5.3.4-heb-best"`); free-form for POC. Builder fixture under `tests/fixtures/ocr/sample_he_page.yaml`.
+- **Review needed**: yes — when the result schema next ships a breaking change (ADR-014), revisit whether OCRResult needs a structured `provider_version` separate from `provider`, and whether per-block `metadata` belongs.
+
 ## [F40/F41/F42/F43 / test paths] tasks.md test_file fields drift from team-lead globs
 - **Uncertainty**: each tasks.md specifies a test_file (e.g. `tests/bench/test_quality_gates.py` for F40, `tests/unit/test_mos_aggregation.py` for F41, `tests/unit/test_latency_cost_profiler.py` for F42, `tests/unit/test_ttl_cleanup.py` for F43) that diverges from the team-lead's glob territory (`test_quality_gates*.py`, `test_mos*.py`, `test_profiling*.py`, `test_ttl*.py`).
 - **Decision taken**: used the team-lead globs as authoritative since these are gate-stub tests living in `tests/unit/`. Files: `test_quality_gates.py`, `test_mos_study.py`, `test_profiling.py`, `test_ttl_automation.py`. Real bench-CI test under `tests/bench/` will be authored when F40 is un-deferred.
