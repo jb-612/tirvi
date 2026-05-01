@@ -99,7 +99,7 @@ Element + Acceptance Criterion.
 
 ## T-08: Implement feedback.js — word annotation panel
 
-- [ ] **T-08 done**
+- [x] **T-08 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-05, US-02/AC-06, US-02/AC-07, US-02/AC-08, US-02/AC-09, US-02/AC-10]
 - ft_anchors: [FT-317, FT-318, FT-323, FT-327]
