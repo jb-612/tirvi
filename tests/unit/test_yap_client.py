@@ -30,7 +30,7 @@ class TestYapClient:
 
         assert mock_urlopen.call_count == 1
         request = mock_urlopen.call_args[0][0]
-        assert request.full_url.endswith("/api/v0/joint")
+        assert request.full_url.endswith("/yap/heb/joint")
         assert request.get_method() == "POST"
         assert request.get_header("Content-type") == "application/json"
 
@@ -45,7 +45,7 @@ class TestYapClient:
             yap_joint_via_api("הבחינה")
 
         body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
-        assert body["text"] == "הבחינה"
+        assert body["Text"] == "הבחינה"
 
     def test_us_01_ac_01_returns_parsed_response_dict(self) -> None:
         from tirvi.adapters.alephbert.client import yap_joint_via_api
@@ -85,4 +85,4 @@ class TestYapClient:
             yap_joint_via_api("שלום")
 
         request = mock_urlopen.call_args[0][0]
-        assert request.full_url == "http://yap.example:9000/api/v0/joint"
+        assert request.full_url == "http://yap.example:9000/yap/heb/joint"
