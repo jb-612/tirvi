@@ -11,7 +11,7 @@ T-10..T-13 + Dependency DAG here. T-01..T-09 in `tasks.md`.
 
 ## T-10: Draft annotation persistence via localStorage
 
-- [ ] **T-10 done**
+- [x] **T-10 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-09]
 - ft_anchors: [FT-324]

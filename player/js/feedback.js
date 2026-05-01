@@ -1,6 +1,6 @@
-// N04/F33 T-08 — feedback.js: mountFeedbackPanel word annotation panel.
+// N04/F33 T-08/T-10 — feedback.js: mountFeedbackPanel word annotation panel.
 // DE-06  AC: US-02/AC-05, US-02/AC-06, US-02/AC-07, US-02/AC-08, US-02/AC-09, US-02/AC-10
-// FT-317, FT-318, FT-323, FT-327  BT-210, BT-212
+// FT-317, FT-318, FT-323, FT-324, FT-327  BT-209, BT-210, BT-212
 
 const CATEGORIES = [
   { id: "wrong_pronunciation", label: "Wrong pronunciation" },
@@ -21,15 +21,42 @@ const CATEGORIES = [
  */
 export function mountFeedbackPanel(state) {
   const endpoint = state.feedbackEndpoint ?? "/feedback";
+  // Track which markIds have been successfully submitted (cleared drafts)
+  const submitted = new Set();
   _renderEmpty(state.panel);
 
   state.onHighlight((word) => {
     if (!word) {
       _renderEmpty(state.panel);
     } else {
-      _renderForm(state.panel, word, state, endpoint);
+      _renderForm(state.panel, word, state, endpoint, submitted);
     }
   });
+}
+
+// ---------------------------------------------------------------------------
+// Draft helpers
+// ---------------------------------------------------------------------------
+
+function _draftKey(run, markId) {
+  return `feedback-draft:${run}:${markId}`;
+}
+
+function _saveDraft(markId, category, note) {
+  const run = _getRunParam();
+  localStorage.setItem(_draftKey(run, markId), JSON.stringify({ category, note }));
+}
+
+function _loadDraft(markId) {
+  const run = _getRunParam();
+  const raw = localStorage.getItem(_draftKey(run, markId));
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (_) { return null; }
+}
+
+function _clearDraft(markId) {
+  const run = _getRunParam();
+  localStorage.removeItem(_draftKey(run, markId));
 }
 
 // ---------------------------------------------------------------------------
@@ -44,14 +71,14 @@ function _renderEmpty(panel) {
   panel.appendChild(msg);
 }
 
-function _renderForm(panel, word, state, endpoint) {
+function _renderForm(panel, word, state, endpoint, submitted) {
   panel.innerHTML = "";
 
   const wrapper = document.createElement("div");
   wrapper.className = "feedback-panel";
 
   wrapper.appendChild(_buildWordInfo(word));
-  const { buttons, getCategory } = _buildIssuePicker();
+  const { buttons, getCategory, setCategory } = _buildIssuePicker();
   wrapper.appendChild(buttons);
   const ta = _buildTextarea();
   wrapper.appendChild(ta);
@@ -60,11 +87,35 @@ function _renderForm(panel, word, state, endpoint) {
   const submitBtn = _buildSubmitBtn();
   wrapper.appendChild(submitBtn);
 
+  // Restore draft if available and not yet submitted
+  if (!submitted.has(word.markId)) {
+    _restoreDraft(word.markId, ta, setCategory);
+  }
+
+  // Persist draft on every keystroke
+  ta.addEventListener("input", () =>
+    _saveDraft(word.markId, getCategory(), ta.value)
+  );
+
+  // Persist draft on category selection (delegated from issue-picker).
+  // The individual button listener runs first (bubble), so getCategory()
+  // already reflects the new value when this container listener fires.
+  buttons.addEventListener("click", () =>
+    _saveDraft(word.markId, getCategory(), ta.value)
+  );
+
   submitBtn.addEventListener("click", () =>
-    _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl })
+    _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl, submitted })
   );
 
   panel.appendChild(wrapper);
+}
+
+function _restoreDraft(markId, ta, setCategory) {
+  const draft = _loadDraft(markId);
+  if (!draft) return;
+  ta.value = draft.note ?? "";
+  if (draft.category) setCategory(draft.category);
 }
 
 function _buildWordInfo(word) {
@@ -94,18 +145,29 @@ function _buildIssuePicker() {
   container.className = "issue-picker";
   let selectedId = null;
 
+  const setter = (next) => { selectedId = next; };
+
   CATEGORIES.forEach(({ id, label }) => {
     const btn = document.createElement("button");
     btn.className = "issue-btn";
     btn.dataset.category = id;
     btn.textContent = label;
-    btn.addEventListener("click", () => _toggleCategory(container, btn, id, selectedId, (next) => { selectedId = next; }));
+    btn.addEventListener("click", () => _toggleCategory(container, btn, id, selectedId, setter));
     container.appendChild(btn);
   });
+
+  function setCategory(id) {
+    const btn = container.querySelector(`.issue-btn[data-category="${id}"]`);
+    if (!btn) return;
+    container.querySelectorAll(".issue-btn").forEach((b) => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    setter(id);
+  }
 
   return {
     buttons: container,
     getCategory: () => selectedId,
+    setCategory,
   };
 }
 
@@ -147,7 +209,7 @@ function _buildSubmitBtn() {
 // Submit handler (CC ≤ 5 each)
 // ---------------------------------------------------------------------------
 
-async function _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl }) {
+async function _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl, submitted }) {
   const category = getCategory();
   if (!category) {
     errorEl.style.display = "";
@@ -162,6 +224,8 @@ async function _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, t
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+    _clearDraft(word.markId);
+    submitted.add(word.markId);
     _onSuccess({ wrapper, word });
   } catch (_) {
     // Network failure — leave form visible

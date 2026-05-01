@@ -395,3 +395,132 @@ describe("annotated word gets .annotated CSS class on its .marker element", () =
     marker.remove();
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-10: localStorage draft persistence
+// ---------------------------------------------------------------------------
+
+describe("T-10: localStorage draft persistence", () => {
+  function _makeLocalStorageMock() {
+    const store = new Map();
+    return {
+      getItem: vi.fn((key) => store.get(key) ?? null),
+      setItem: vi.fn((key, value) => store.set(key, value)),
+      removeItem: vi.fn((key) => store.delete(key)),
+      _store: store,
+    };
+  }
+
+  let lsMock;
+
+  beforeEach(() => {
+    lsMock = _makeLocalStorageMock();
+    vi.stubGlobal("localStorage", lsMock);
+    // Ensure default run param (no ?run= in URL)
+    Object.defineProperty(window, "location", {
+      value: { ...window.location, search: "" },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("saves draft to localStorage on textarea input", () => {
+    mountFeedbackPanel(state);
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    const ta = state.panel.querySelector(".feedback-note");
+    ta.value = "my note";
+    ta.dispatchEvent(new Event("input"));
+
+    expect(lsMock.setItem).toHaveBeenCalled();
+    const [key, val] = lsMock.setItem.mock.calls[lsMock.setItem.mock.calls.length - 1];
+    expect(key).toBe("feedback-draft:001:word-3");
+    const parsed = JSON.parse(val);
+    expect(parsed.note).toBe("my note");
+  });
+
+  it("saves draft to localStorage on category button click", () => {
+    mountFeedbackPanel(state);
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    const btn = state.panel.querySelector('.issue-btn[data-category="wrong_stress"]');
+    btn.click();
+
+    expect(lsMock.setItem).toHaveBeenCalled();
+    const [key, val] = lsMock.setItem.mock.calls[lsMock.setItem.mock.calls.length - 1];
+    expect(key).toBe("feedback-draft:001:word-3");
+    const parsed = JSON.parse(val);
+    expect(parsed.category).toBe("wrong_stress");
+  });
+
+  it("restores draft when same markId highlighted again", () => {
+    mountFeedbackPanel(state);
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    // Type a note and pick a category
+    const ta = state.panel.querySelector(".feedback-note");
+    ta.value = "restored note";
+    ta.dispatchEvent(new Event("input"));
+
+    const catBtn = state.panel.querySelector('.issue-btn[data-category="wrong_nikud"]');
+    catBtn.click();
+
+    // Deselect by firing null highlight
+    state._fireHighlight(null);
+
+    // Re-highlight same markId
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    const restoredTa = state.panel.querySelector(".feedback-note");
+    expect(restoredTa.value).toBe("restored note");
+
+    const selectedBtn = state.panel.querySelector('.issue-btn[data-category="wrong_nikud"]');
+    expect(selectedBtn.classList.contains("selected")).toBe(true);
+  });
+
+  it("clears draft from localStorage after successful POST", async () => {
+    vi.stubGlobal("fetch", _makeFetchOk());
+
+    mountFeedbackPanel(state);
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    const btn = state.panel.querySelector('.issue-btn[data-category="other"]');
+    btn.click();
+    state.panel.querySelector(".feedback-submit").click();
+
+    await vi.waitFor(() =>
+      expect(lsMock.removeItem).toHaveBeenCalledWith("feedback-draft:001:word-3")
+    );
+  });
+
+  it("does not restore draft after successful POST", async () => {
+    vi.stubGlobal("fetch", _makeFetchOk());
+
+    mountFeedbackPanel(state);
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    const ta = state.panel.querySelector(".feedback-note");
+    ta.value = "should not restore";
+    ta.dispatchEvent(new Event("input"));
+
+    const btn = state.panel.querySelector('.issue-btn[data-category="other"]');
+    btn.click();
+    state.panel.querySelector(".feedback-submit").click();
+
+    await vi.waitFor(() =>
+      expect(state.panel.querySelector(".feedback-success")).not.toBeNull()
+    );
+
+    // Re-highlight same markId — draft was cleared, form should be blank
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    const restoredTa = state.panel.querySelector(".feedback-note");
+    expect(restoredTa.value).toBe("");
+    const selectedBtns = state.panel.querySelectorAll(".issue-btn.selected");
+    expect(selectedBtns.length).toBe(0);
+  });
+});
