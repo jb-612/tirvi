@@ -8,6 +8,7 @@ total_estimate_hours: 5.5
 
 ## T-01: TTSEmittedTimingAdapter class
 
+- [ ] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-213]
@@ -18,6 +19,7 @@ total_estimate_hours: 5.5
 
 ## T-02: WordMark → WordTiming projection
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-213]
@@ -28,6 +30,7 @@ total_estimate_hours: 5.5
 
 ## T-03: Per-block scope guard
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h
@@ -37,6 +40,7 @@ total_estimate_hours: 5.5
 
 ## T-04: Monotonicity invariant
 
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-215]
@@ -48,6 +52,7 @@ total_estimate_hours: 5.5
 
 ## T-05: WordTimingProvider integration + adapter contract + count match
 
+- [x] **T-05 done**
 - design_element: DE-05, DE-06
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-214, FT-216, FT-217]

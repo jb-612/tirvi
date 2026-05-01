@@ -8,6 +8,7 @@ total_estimate_hours: 6.5
 
 ## T-01: BlockType taxonomy + OutOfScope guard
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-074, FT-075]
@@ -18,6 +19,7 @@ total_estimate_hours: 6.5
 
 ## T-02: Page statistics aggregator
 
+- [ ] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-074]
@@ -28,6 +30,7 @@ total_estimate_hours: 6.5
 
 ## T-03: Heuristic classifier with low-confidence default
 
+- [x] **T-03 done**
 - design_element: DE-03, DE-04
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-075, FT-076]
@@ -39,6 +42,7 @@ total_estimate_hours: 6.5
 
 ## T-04: Word-to-block linkage
 
+- [x] **T-04 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-074]
@@ -49,6 +53,7 @@ total_estimate_hours: 6.5
 
 ## T-05: Block bbox aggregation
 
+- [ ] **T-05 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-074]

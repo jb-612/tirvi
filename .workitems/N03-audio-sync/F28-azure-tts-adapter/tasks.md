@@ -11,6 +11,7 @@ Element + Acceptance Criterion.
 
 ## T-01: TBD
 
+- [ ] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [AC-01]
 - estimate: 0h
@@ -20,6 +21,7 @@ Element + Acceptance Criterion.
 
 ## T-02: TBD
 
+- [ ] **T-02 done**
 - design_element: DE-01
 - acceptance_criteria: [AC-02]
 - estimate: 0h

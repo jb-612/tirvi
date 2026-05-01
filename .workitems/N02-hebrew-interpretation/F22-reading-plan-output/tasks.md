@@ -8,6 +8,7 @@ total_estimate_hours: 8.5
 
 ## T-01: Plan value types (ReadingPlan / PlanBlock / PlanToken)
 
+- [ ] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-168]
@@ -18,6 +19,7 @@ total_estimate_hours: 8.5
 
 ## T-02: build_plan combinator
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-168, FT-173]
@@ -28,6 +30,7 @@ total_estimate_hours: 8.5
 
 ## T-03: Per-token provenance dict
 
+- [ ] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-171]
@@ -39,6 +42,7 @@ total_estimate_hours: 8.5
 
 ## T-04: assert_plan_v1 invariants
 
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-169]
@@ -50,6 +54,7 @@ total_estimate_hours: 8.5
 
 ## T-05: Empty-block skip filter
 
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-172]
@@ -60,6 +65,7 @@ total_estimate_hours: 8.5
 
 ## T-06: Deterministic JSON serialization
 
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-170]
@@ -71,6 +77,7 @@ total_estimate_hours: 8.5
 
 ## T-07: page.json projection (post-review C4)
 
+- [x] **T-07 done**
 - design_element: DE-07
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1.5h

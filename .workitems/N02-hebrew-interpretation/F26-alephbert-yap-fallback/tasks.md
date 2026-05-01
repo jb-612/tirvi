@@ -8,6 +8,7 @@ total_estimate_hours: 8.0
 
 ## T-01: YAP HTTP client (POST + parse)
 
+- [ ] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-131]
@@ -19,6 +20,7 @@ total_estimate_hours: 8.0
 
 ## T-02: YAP response parser (lattice → token list)
 
+- [ ] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-133]
@@ -29,6 +31,7 @@ total_estimate_hours: 8.0
 
 ## T-03: UD-Hebrew schema mapper
 
+- [ ] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-133, FT-134]
@@ -39,6 +42,7 @@ total_estimate_hours: 8.0
 
 ## T-04: AlephBertYapFallbackAdapter (NLPBackend implementor)
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-131]
@@ -49,6 +53,7 @@ total_estimate_hours: 8.0
 
 ## T-05: Connection-failed degraded path
 
+- [ ] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-135]
@@ -60,6 +65,7 @@ total_estimate_hours: 8.0
 
 ## T-06: Integration test — F17 → F26 failover chain
 
+- [ ] **T-06 done**
 - design_element: DE-06 (verifies F17 T-06 wiring)
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-131, FT-132]
@@ -70,6 +76,7 @@ total_estimate_hours: 8.0
 
 ## T-07: Adapter contract conformance
 
+- [ ] **T-07 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - estimate: 0.5h
@@ -79,6 +86,7 @@ total_estimate_hours: 8.0
 
 ## T-08: YAP availability health probe (DE-07)
 
+- [ ] **T-08 done**
 - design_element: DE-07
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h
@@ -88,6 +96,7 @@ total_estimate_hours: 8.0
 
 ## T-09: YAP API JSON fixture capture (one-time, manual)
 
+- [ ] **T-09 done**
 - design_element: DE-02 (precondition)
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h
@@ -98,6 +107,7 @@ total_estimate_hours: 8.0
 
 ## T-10: F22 reading-plan tolerance assertion (cross-feature integration)
 
+- [ ] **T-10 done**
 - design_element: DE-05 (verifies degraded contract)
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h

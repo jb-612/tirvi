@@ -8,6 +8,7 @@ total_estimate_hours: 8.5
 
 ## T-01: In-process model loader for `dicta-il/dictabert-morph`
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-125]
@@ -19,6 +20,7 @@ total_estimate_hours: 8.5
 
 ## T-02: Inference path → NLPResult (morph head decoder)
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-124, FT-130]
@@ -31,6 +33,7 @@ total_estimate_hours: 8.5
 
 ## T-03: Prefix segmentation from BIO labels
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-126]
@@ -41,6 +44,7 @@ total_estimate_hours: 8.5
 
 ## T-04: Per-attribute confidence (top1 - top2 margin)
 
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-128]
@@ -52,6 +56,7 @@ total_estimate_hours: 8.5
 
 ## T-05: Long-sentence chunking with overlap merge
 
+- [ ] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 2h
@@ -61,6 +66,7 @@ total_estimate_hours: 8.5
 
 ## T-06: Adapter contract + F26 fallback wiring
 
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-127]

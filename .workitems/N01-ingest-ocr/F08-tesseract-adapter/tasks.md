@@ -8,6 +8,7 @@ total_estimate_hours: 8.5
 
 ## T-01: PDF page rasterizer (300 dpi)
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-061]
@@ -18,6 +19,7 @@ total_estimate_hours: 8.5
 
 ## T-02: Tesseract invoker with image_to_data
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-056, FT-057]
@@ -29,6 +31,7 @@ total_estimate_hours: 8.5
 
 ## T-03: RTL column reorder
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-057, FT-062]
@@ -39,6 +42,7 @@ total_estimate_hours: 8.5
 
 ## T-04: Inline lang_hint detector
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-058]
@@ -49,6 +53,7 @@ total_estimate_hours: 8.5
 
 ## T-05: Deskew preprocessor (≥ 5° threshold)
 
+- [ ] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-059]
@@ -60,6 +65,7 @@ total_estimate_hours: 8.5
 
 ## T-06: OCRResult assembly + adapter contract
 
+- [ ] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-060]

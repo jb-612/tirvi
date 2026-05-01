@@ -8,6 +8,7 @@ total_estimate_hours: 7.0
 
 ## T-01: Static HTML scaffold
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
@@ -17,6 +18,7 @@ total_estimate_hours: 7.0
 
 ## T-02: Timings + page loader
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-244]
@@ -27,6 +29,7 @@ total_estimate_hours: 7.0
 
 ## T-03: requestAnimationFrame loop
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-248]
@@ -37,6 +40,7 @@ total_estimate_hours: 7.0
 
 ## T-04: Active-word lookup (binary search)
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-244]
@@ -48,6 +52,7 @@ total_estimate_hours: 7.0
 
 ## T-05: Marker positioning + bbox scaling
 
+- [ ] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-248]
@@ -59,6 +64,7 @@ total_estimate_hours: 7.0
 
 ## T-06: prefers-reduced-motion + WCAG contrast
 
+- [ ] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-246, FT-247]

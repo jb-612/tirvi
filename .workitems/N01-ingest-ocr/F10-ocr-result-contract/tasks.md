@@ -8,6 +8,7 @@ total_estimate_hours: 6.0
 
 ## T-01: Per-word semantic field anchors (bbox, conf, lang_hint)
 
+- [ ] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-069, FT-070]
@@ -19,6 +20,7 @@ total_estimate_hours: 6.0
 
 ## T-02: Page-level lang_hints aggregation
 
+- [ ] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-069]
@@ -29,6 +31,7 @@ total_estimate_hours: 6.0
 
 ## T-03: YAML fixture builder
 
+- [ ] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-071]
@@ -40,6 +43,7 @@ total_estimate_hours: 6.0
 
 ## T-04: v1 invariant assertion in contract test
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-072, FT-073]
@@ -51,6 +55,7 @@ total_estimate_hours: 6.0
 
 ## T-05: provider_version metadata
 
+- [ ] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-069]

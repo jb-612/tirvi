@@ -8,6 +8,7 @@ total_estimate_hours: 5.5
 
 ## T-01: Button DOM scaffold (4 buttons + ARIA)
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
@@ -17,6 +18,7 @@ total_estimate_hours: 5.5
 
 ## T-02: Player state machine (pure function)
 
+- [ ] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-249, FT-250]
@@ -28,6 +30,7 @@ total_estimate_hours: 5.5
 
 ## T-03: Button event handlers + audio side effects
 
+- [ ] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
@@ -37,6 +40,7 @@ total_estimate_hours: 5.5
 
 ## T-04: Enable/disable per state
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
@@ -46,6 +50,7 @@ total_estimate_hours: 5.5
 
 ## T-05: Keyboard shortcuts (Space, R)
 
+- [ ] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-253]
@@ -57,6 +62,7 @@ total_estimate_hours: 5.5
 
 ## T-06: ARIA labels + focus + WCAG contrast
 
+- [ ] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-03/AC-01]
 - ft_anchors: [FT-252]

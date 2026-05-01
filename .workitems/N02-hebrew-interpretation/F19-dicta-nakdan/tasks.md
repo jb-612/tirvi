@@ -10,6 +10,7 @@ POC scope: T-01..T-04 + T-06 are GREEN (code lives in `tirvi/adapters/nakdan/`);
 
 ## T-01: Dicta REST HTTP client
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - bt_anchors: [BT-099]
@@ -21,6 +22,7 @@ POC scope: T-01..T-04 + T-06 are GREEN (code lives in `tirvi/adapters/nakdan/`);
 
 ## T-02: NLP-context option scoring (gated on F17 reroute)
 
+- [ ] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-146, FT-147]
@@ -33,6 +35,7 @@ POC scope: T-01..T-04 + T-06 are GREEN (code lives in `tirvi/adapters/nakdan/`);
 
 ## T-03: Selection priority (override > sep > confidence > fallback)
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-150]
@@ -44,6 +47,7 @@ POC scope: T-01..T-04 + T-06 are GREEN (code lives in `tirvi/adapters/nakdan/`);
 
 ## T-04: Token-skip filter via Dicta `sep` flag
 
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h
@@ -54,6 +58,7 @@ POC scope: T-01..T-04 + T-06 are GREEN (code lives in `tirvi/adapters/nakdan/`);
 
 ## T-05: NFC→NFD nikud ordering
 
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h
@@ -64,6 +69,7 @@ POC scope: T-01..T-04 + T-06 are GREEN (code lives in `tirvi/adapters/nakdan/`);
 
 ## T-06: Adapter contract conformance + REST client wiring
 
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - estimate: 1.5h

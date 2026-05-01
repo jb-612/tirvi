@@ -8,6 +8,7 @@ total_estimate_hours: 9.5
 
 ## T-01: Scaffold tirvi Python package
 
+- [ ] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h
@@ -17,6 +18,7 @@ total_estimate_hours: 9.5
 
 ## T-02: Define result dataclasses (OCR, NLP, Diacritization, G2P, TTS)
 
+- [ ] **T-02 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-011, FT-012, FT-013]
@@ -27,6 +29,7 @@ total_estimate_hours: 9.5
 
 ## T-03: Define WordTimingResult with Literal source field
 
+- [ ] **T-03 done**
 - design_element: DE-01, DE-03
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-014]
@@ -37,6 +40,7 @@ total_estimate_hours: 9.5
 
 ## T-04: Define 6 port Protocols (tirvi/ports.py)
 
+- [ ] **T-04 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-011, FT-016]
@@ -48,6 +52,7 @@ total_estimate_hours: 9.5
 
 ## T-05: Implement WordTimingProvider coordinator (ADR-015 fallback)
 
+- [ ] **T-05 done**
 - design_element: DE-03
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-014]
@@ -59,6 +64,7 @@ total_estimate_hours: 9.5
 
 ## T-06: Fake registry for OCR, NLP, Diacritizer, G2P ports
 
+- [ ] **T-06 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-015]
@@ -70,6 +76,7 @@ total_estimate_hours: 9.5
 
 ## T-07: Fake registry for TTS and WordTimingProvider ports
 
+- [ ] **T-07 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-012, FT-013, FT-014]
@@ -81,6 +88,7 @@ total_estimate_hours: 9.5
 
 ## T-08: Implement assert_adapter_contract + run against all fakes
 
+- [ ] **T-08 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-016]
@@ -92,6 +100,7 @@ total_estimate_hours: 9.5
 
 ## T-09: Vendor-import boundary lint (ruff + import test)
 
+- [ ] **T-09 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01]
 - bt_anchors: [BT-012]

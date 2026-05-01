@@ -8,6 +8,7 @@ total_estimate_hours: 5.0
 
 ## T-01: SSML block builder (open speak, body, close)
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-174, FT-176]
@@ -18,6 +19,7 @@ total_estimate_hours: 5.0
 
 ## T-02: Per-word mark insertion
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-174]
@@ -28,6 +30,7 @@ total_estimate_hours: 5.0
 
 ## T-03: Inter-block break insertion
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-175]
@@ -39,6 +42,7 @@ total_estimate_hours: 5.0
 
 ## T-04: XML-safe escape
 
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
@@ -48,6 +52,7 @@ total_estimate_hours: 5.0
 
 ## T-05: assert_ssml_v1 + plan re-emit
 
+- [x] **T-05 done**
 - design_element: DE-05, DE-06
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-178]

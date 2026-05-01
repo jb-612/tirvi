@@ -18,6 +18,7 @@ total_estimate_hours: 7.5
 
 ## T-01: NormalizedText value type + RepairLogEntry
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-094, FT-098]
@@ -28,6 +29,7 @@ total_estimate_hours: 7.5
 
 ## T-02: Pass-through joiner
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
@@ -37,6 +39,7 @@ total_estimate_hours: 7.5
 
 ## T-03: Line-break rejoin rule
 
+- [ ] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-094, FT-095]
@@ -48,6 +51,7 @@ total_estimate_hours: 7.5
 
 ## T-04: Stray-punctuation drop rule
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-096]
@@ -59,6 +63,7 @@ total_estimate_hours: 7.5
 
 ## T-05: bbox→span round-trip property
 
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-094, FT-097]
@@ -69,6 +74,7 @@ total_estimate_hours: 7.5
 
 ## T-06: Repair-log emitter
 
+- [ ] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-098]

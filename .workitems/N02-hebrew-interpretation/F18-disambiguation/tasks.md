@@ -9,6 +9,7 @@ wave: 2
 
 ## T-00: Wave-1 → Wave-2 migration (NEW — must run first)
 
+- [ ] **T-00 done**
 - design_element: (cross-cutting; resolves R2 C-4 + C-5 + R-2)
 - acceptance_criteria: [AC-N02/F18/US-01/AC-04, AC-N02/F18/US-01/AC-05, AC-N02/F18/US-01/AC-06]
 - ft_anchors: []
@@ -34,6 +35,7 @@ wave: 2
 
 ## T-01: Per-token semantic field anchors (POS, lemma, confidence, ambiguous)
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-136, FT-137]
@@ -52,6 +54,7 @@ wave: 2
 
 ## T-02: morph_features dict whitelist — UD-canonical TitleCase
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-136]
@@ -73,6 +76,7 @@ wave: 2
 
 ## T-03: pick_sense — context-aware morphological disambiguation (v2)
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01, AC-N02/F18/US-01/AC-02, AC-N02/F18/US-01/AC-03]
 - ft_anchors: [FT-127]
@@ -112,6 +116,7 @@ wave: 2
 
 ## T-04: NLP YAML fixture builder (POC-DEFERRED)
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-138]
@@ -130,6 +135,7 @@ wave: 2
 
 ## T-05: v1 invariant assertion + provider whitelist (PROMOTED)
 
+- [ ] **T-05 done**
 - design_element: DE-05, DE-06
 - acceptance_criteria: [US-01/AC-01, AC-N02/F18/US-01/AC-04, AC-N02/F18/US-01/AC-05, AC-N02/F18/US-01/AC-06]
 - ft_anchors: [FT-139, FT-140]

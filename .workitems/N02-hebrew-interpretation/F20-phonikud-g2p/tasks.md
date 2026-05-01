@@ -10,6 +10,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-01: Phonikud lazy loader
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h
@@ -20,6 +21,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-02: phonemize() invocation in inference
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-152]
@@ -31,6 +33,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-03: Vocal-shva via predict_vocal_shva parameter
 
+- [ ] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-154]
@@ -42,6 +45,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-04: Empty-input short-circuit + skip-filter cleanup
 
+- [ ] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-157]
@@ -52,6 +56,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-05: G2PResult shape (whole-text IPA) + dead-VO cleanup
 
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.75h
@@ -62,6 +67,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-06: Adapter contract conformance
 
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-152]
@@ -73,6 +79,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-07: Pipeline rewire — switch `_StubG2P()` → `PhonikudG2PAdapter()`
 
+- [ ] **T-07 done**
 - design_element: DE-04 (cross-reference)
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.25h
@@ -91,6 +98,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-08: Update F03 G2P fake to emit 1-element string list
 
+- [ ] **T-08 done**
 - design_element: DE-05 (cross-reference)
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.25h

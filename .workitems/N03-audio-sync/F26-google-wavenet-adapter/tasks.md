@@ -8,6 +8,7 @@ total_estimate_hours: 7.5
 
 ## T-01: Wavenet client wrapper (v1beta1)
 
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 1h
@@ -17,6 +18,7 @@ total_estimate_hours: 7.5
 
 ## T-02: synthesize_speech with mark timepoints
 
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-193, FT-198]
@@ -27,6 +29,7 @@ total_estimate_hours: 7.5
 
 ## T-03: TTSResult assembly
 
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-198]
@@ -37,6 +40,7 @@ total_estimate_hours: 7.5
 
 ## T-04: Mark-truncation detector
 
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-194]
@@ -48,6 +52,7 @@ total_estimate_hours: 7.5
 
 ## T-05: drafts/<sha>/ writer
 
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-196]
@@ -58,6 +63,7 @@ total_estimate_hours: 7.5
 
 ## T-06: Adapter contract + retry policy
 
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-01/AC-01, US-02/AC-01]
 - ft_anchors: [FT-197]
