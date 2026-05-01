@@ -100,7 +100,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-04b: `OllamaLLMReviewer` domain wrapper + anti-hallucination guards
 
-- [ ] **T-04b done**
+- [x] **T-04b done**
 - design_element: DE-04
 - acceptance_criteria: [F48-S03/AC-01, F48-S03/AC-03]
 - ft_anchors: [FT-320, FT-322]

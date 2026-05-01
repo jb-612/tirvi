@@ -1,14 +1,12 @@
-# Placeholder — TDD T-04b fills the actual reviewer prompt.
-# DE-04 / ADR-034: prompt template version is part of the LLM cache key.
-# This file is intentionally minimal: the real prompt is filled during TDD
-# from biz behavioural test inputs (BT-217) and the anti-hallucination
-# constraints (chosen ∈ candidates ∧ chosen ∈ NakdanWordList).
-#
-# When TDD fills this file, also bump prompt_template_version in
-# _meta.yaml so the LLM cache key invalidates correctly (ADR-034).
-#
-# Variables expected (TDD will pin these):
-#   {sentence}    — Hebrew sentence containing the suspect token
-#   {original}    — the suspect OCR token
-#   {candidates}  — sorted list of MLM substitution candidates
-SCAFFOLD-PLACEHOLDER
+אתה מומחה לתיקון שגיאות OCR בעברית. עיין במשפט הבא ובדוק אם המילה המסומנת שגויה.
+
+משפט: {sentence}
+מילה חשודה: {original}
+תיקונים מוצעים: {candidates}
+
+ענה בפורמט JSON בלבד, ללא טקסט נוסף:
+{{"verdict": "OK", "chosen": null, "reason": "..."}}
+אם המילה נכונה כפי שהיא.
+
+{{"verdict": "REPLACE", "chosen": "מילה", "reason": "..."}}
+אם יש לתקן — "chosen" חייב להיות אחד מהתיקונים המוצעים בלבד.

@@ -1,31 +1,30 @@
 """OllamaLLMReviewer — local Gemma reviewer with anti-hallucination guard (DE-04).
 
-Spec: F48 DE-04.
-AC: F48-S03/AC-01, F48-S03/AC-02, F48-S03/AC-03. T-04b.
-ADR-033 (privacy: localhost only) + ADR-034 (cache key strategy).
-
-Domain wrapper around ``LLMClientPort``. Builds prompt from
-``prompts/he_reviewer/v1.txt``; loads ``prompt_template_version``
-from sibling ``_meta.yaml``.
-
-Anti-hallucination guard (INV-CCS-002) via ``AntiHallucinationPolicy``:
-  - ``chosen ∈ candidates`` (LLM cannot invent words outside MLM proposals)
-  - ``chosen ∈ NakdanWordList`` (chosen must be a real Hebrew word)
-
-Parse-failure path (NT-02): one re-prompt with stricter prompt; second
-failure → ``keep_original``.
-
-Per-page LLM-call cap (BT-F-05) is checked via the ``CorrectionCascade``
-aggregate's ``llm_cap_reached()`` before issuing each call.
+Spec: F48 DE-04. AC: F48-S03/AC-01, F48-S03/AC-02, F48-S03/AC-03. T-04b.
 """
 
 from __future__ import annotations
 
+import dataclasses
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from .domain.policies import AntiHallucinationPolicy, PerPageLLMCapPolicy
+from .errors import LLMWordListViolation
 from .ports import ICascadeStage, LLMClientPort
 from .value_objects import CorrectionVerdict, SentenceContext
+
+
+def _read_meta_version(meta_path: Path) -> str | None:
+    if not meta_path.exists():
+        return None
+    for line in meta_path.read_text(encoding="utf-8").splitlines():
+        s = line.strip()
+        if s.startswith("prompt_template_version"):
+            _, _, val = s.partition(":")
+            return val.strip().strip('"').strip("'")
+    return None
 
 
 @dataclass
@@ -40,33 +39,77 @@ class OllamaLLMReviewer(ICascadeStage):
     prompt_template_version: str = "v1-scaffold"
     temperature: float = 0.0
     seed: int = 0
+    candidates: tuple[str, ...] = ()
+    _calls_made: int = field(default=0, init=False, repr=False, compare=False)
+    _verdict_cache: dict = field(default_factory=dict, init=False, repr=False, compare=False)
+    _template: str = field(default="", init=False, repr=False, compare=False)
 
-    def evaluate(
-        self, token: str, context: SentenceContext
+    def __post_init__(self) -> None:
+        p = Path(self.prompt_template_path)
+        self._template = p.read_text(encoding="utf-8")
+        version = _read_meta_version(p.parent / "_meta.yaml")
+        if version:
+            self.prompt_template_version = version
+
+    def evaluate(self, token: str, context: SentenceContext) -> CorrectionVerdict:
+        cache_key = (token, context.sentence_hash, self.model_id,
+                     self.prompt_template_version, tuple(sorted(self.candidates)))
+        if cache_key in self._verdict_cache:
+            return dataclasses.replace(self._verdict_cache[cache_key], cache_hit=True)
+        if not self.cap_policy.can_call(self._calls_made):
+            return self._cap_verdict(token)
+        verdict = self._call_llm(token, context)
+        self._verdict_cache[cache_key] = verdict
+        return verdict
+
+    def _call_llm(self, token: str, context: SentenceContext) -> CorrectionVerdict:
+        prompt = self._build_prompt(token, context)
+        self._calls_made += 1
+        raw = self.llm.generate(prompt, self.model_id, self.temperature, self.seed)
+        parsed = self._parse(raw)
+        if parsed is None:
+            raw = self.llm.generate(prompt, self.model_id, self.temperature, self.seed)
+            parsed = self._parse(raw)
+        if parsed is None:
+            return self._verdict(token, "keep_original", None, "llm_parse_failure")
+        return self._accept(token, parsed)
+
+    def _accept(self, token: str, parsed: dict) -> CorrectionVerdict:
+        chosen = parsed.get("chosen")
+        if not chosen:
+            return self._verdict(token, "keep_original", None, parsed.get("reason"))
+        try:
+            self.anti_hallucination.check(chosen, self.candidates)
+        except LLMWordListViolation:
+            return self._verdict(token, "keep_original", None, "anti_hallucination_reject")
+        return self._verdict(token, "apply", chosen, parsed.get("reason"))
+
+    def _parse(self, raw: str) -> dict | None:
+        try:
+            data = json.loads(raw)
+            if isinstance(data, dict) and "verdict" in data:
+                return data
+            return None
+        except json.JSONDecodeError:
+            return None
+
+    def _build_prompt(self, token: str, context: SentenceContext) -> str:
+        cands = ", ".join(sorted(self.candidates))
+        return (self._template
+                .replace("{original}", token)
+                .replace("{sentence}", context.sentence_text)
+                .replace("{candidates}", cands))
+
+    def _cap_verdict(self, token: str) -> CorrectionVerdict:
+        return self._verdict(token, "keep_original", None, "llm_call_cap_reached")
+
+    def _verdict(
+        self, token: str, name: str, chosen: str | None, reason: str | None
     ) -> CorrectionVerdict:
-        # TODO AC-F48-S03/AC-01 (T-04b): build prompt by substituting
-        #   {sentence}, {original}, sorted({candidates}) into v1.txt.
-        # TODO AC-F48-S03/AC-02 (T-04b): cache key per ADR-034:
-        #   sha256(model_id || prompt_template_version || sentence_hash
-        #          || sorted(candidates)).
-        # TODO AC-F48-S03/AC-02 (T-04b): if cache_hit return cached verdict.
-        # TODO BT-F-05 (T-04b): consult cap_policy / aggregate before call;
-        #   if cap reached return verdict="keep_original" with cache_hit=False
-        #   and reason="llm_call_cap_reached".
-        # TODO AC-F48-S03/AC-01 (T-04b): call self.llm.generate(prompt,
-        #   self.model_id, self.temperature, self.seed).
-        # TODO NT-02 (T-04b): parse {verdict, chosen, reason}; on parse
-        #   failure, retry with stricter prompt ONCE; on second failure
-        #   return verdict="keep_original" reason="llm_parse_failure".
-        # TODO INV-CCS-002 (T-04b): self.anti_hallucination.check(chosen,
-        #   candidates); on violation return verdict="keep_original"
-        #   reason="anti_hallucination_reject".
-        # TODO AC-F48-S03/AC-03 (T-04b): on success return verdict="apply"
-        #   with corrected_or_none=chosen and prompt_template_version
-        #   stamped.
-        raise NotImplementedError(
-            "AC-F48-S03/AC-01..AC-03 / FT-320..FT-322 / NT-02 / NT-03 / "
-            "INV-CCS-002 — TDD T-04b fills"
+        return CorrectionVerdict(
+            stage="llm_reviewer", verdict=name, original=token,
+            corrected_or_none=chosen, candidates=self.candidates,
+            reason=reason, prompt_template_version=self.prompt_template_version,
         )
 
 
