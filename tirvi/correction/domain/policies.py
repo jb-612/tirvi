@@ -104,9 +104,10 @@ class PerPageModeFixedPolicy:
     """
 
     def lock(self, current_mode_name: str | None, proposed_mode_name: str) -> str:
-        # TODO INV-CCS-005 (T-07): if current is None, accept; otherwise
-        # raise CascadeConfigInvalid("mid-page mode flip rejected").
-        raise NotImplementedError("AC-F48-S06/AC-01 / INV-CCS-005 — TDD T-07 fills")
+        from ..errors import CascadeConfigInvalid
+        if current_mode_name is not None and proposed_mode_name != current_mode_name:
+            raise CascadeConfigInvalid("mid-page mode flip rejected")
+        return proposed_mode_name
 
 
 __all__ = [
