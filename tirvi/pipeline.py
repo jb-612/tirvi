@@ -216,6 +216,18 @@ def make_poc_deps() -> PipelineDeps:
         return rasterize_pdf(pdf_bytes, dpi)
 
     from tirvi.adapters.dictabert.adapter import DictaBERTAdapter
+    from tirvi.adapters.dictabert.syntax_adapter import DictaBERTSyntaxAdapter
+    from tirvi.adapters.alephbert.adapter import AlephBertYapFallbackAdapter
+
+    ensemble: list[tuple[str, Any]] = []
+    try:
+        ensemble.append(("dictabert-syntax", DictaBERTSyntaxAdapter()))
+    except Exception:
+        pass
+    try:
+        ensemble.append(("alephbert+yap", AlephBertYapFallbackAdapter()))
+    except Exception:
+        pass
 
     return PipelineDeps(
         ocr=TesseractOCRAdapter(),
@@ -224,6 +236,7 @@ def make_poc_deps() -> PipelineDeps:
         g2p=PhonikudG2PAdapter(),
         tts=WavenetTTSAdapter(),
         rasterize=_rasterize,
+        nlp_ensemble=ensemble,
     )
 
 

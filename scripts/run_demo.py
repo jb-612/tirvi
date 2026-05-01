@@ -31,7 +31,31 @@ from pathlib import Path
 # Make `tirvi` importable when running the script directly (no editable install)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import subprocess as _sp
 from tirvi.pipeline import make_poc_deps, make_stub_deps, run_pipeline  # noqa: E402
+
+_YAP_BIN = Path("/tmp/yap_bin")
+_YAP_PORT = 8090
+_yap_proc = None
+
+
+def _start_yap_if_available() -> None:
+    global _yap_proc
+    if not _YAP_BIN.exists():
+        return
+    try:
+        import urllib.request
+        urllib.request.urlopen(f"http://localhost:{_YAP_PORT}/", timeout=1)
+        _LOG.info("YAP already running on :%d", _YAP_PORT)
+        return
+    except Exception:
+        pass
+    _yap_proc = _sp.Popen(
+        [str(_YAP_BIN), "api", "-listen", f":{_YAP_PORT}"],
+        stdout=_sp.DEVNULL, stderr=_sp.DEVNULL,
+    )
+    import time; time.sleep(2)
+    _LOG.info("YAP started on :%d (pid %d)", _YAP_PORT, _yap_proc.pid)
 
 _LOG = logging.getLogger("demo")
 _PDF = Path("docs/example/Economy.pdf")
@@ -127,6 +151,9 @@ def main() -> None:
     if not _PDF.exists():
         _LOG.error("PDF not found at %s — is the working directory the repo root?", _PDF)
         sys.exit(1)
+
+    if not args.stubs:
+        _start_yap_if_available()
 
     if args.stubs:
         deps = make_stub_deps()
