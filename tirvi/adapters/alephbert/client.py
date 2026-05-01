@@ -13,8 +13,8 @@ import os
 import urllib.request
 from typing import Any
 
-_DEFAULT_BASE_URL = "http://127.0.0.1:8000"
-_JOINT_PATH = "/api/v0/joint"
+_DEFAULT_BASE_URL = "http://127.0.0.1:8090"   # YAP runs on :8090 (not :8000 — conflicts with demo server)
+_JOINT_PATH = "/yap/heb/joint"               # actual YAP API endpoint
 _DEFAULT_TIMEOUT_S = 30.0
 
 
@@ -24,7 +24,8 @@ def _base_url() -> str:
 
 def yap_joint_via_api(text: str, timeout: float = _DEFAULT_TIMEOUT_S) -> dict[str, Any]:
     """POST ``text`` to YAP's joint morpho-syntactic endpoint."""
-    payload = json.dumps({"text": text}, ensure_ascii=False).encode("utf-8")
+    # YAP Request struct uses exported field name "Text" (JSON tag lacks quotes)
+    payload = json.dumps({"Text": text}, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
         _base_url() + _JOINT_PATH,
         data=payload,

@@ -36,25 +36,29 @@ from tirvi.pipeline import make_poc_deps, make_stub_deps, run_pipeline  # noqa: 
 
 _YAP_BIN = Path("/tmp/yap_bin")
 _YAP_PORT = 8090
+_YAP_DIR  = Path("/tmp/yap")   # binary must be at /tmp/yap/yap_bin; models at /tmp/yap/data/
 _yap_proc = None
 
 
 def _start_yap_if_available() -> None:
     global _yap_proc
-    if not _YAP_BIN.exists():
+    yap_bin = _YAP_DIR / "yap_bin"
+    if not yap_bin.exists():
+        _LOG.info("YAP binary not found at %s — alephbert+yap tab will be empty", yap_bin)
         return
     try:
         import urllib.request
-        urllib.request.urlopen(f"http://localhost:{_YAP_PORT}/", timeout=1)
+        urllib.request.urlopen(f"http://127.0.0.1:{_YAP_PORT}/yap/heb/ma", timeout=1)
         _LOG.info("YAP already running on :%d", _YAP_PORT)
         return
     except Exception:
         pass
     _yap_proc = _sp.Popen(
-        [str(_YAP_BIN), "api", "-listen", f":{_YAP_PORT}"],
+        [str(yap_bin), "api"],
+        cwd=str(_YAP_DIR),          # YAP resolves data/ relative to executable path
         stdout=_sp.DEVNULL, stderr=_sp.DEVNULL,
     )
-    import time; time.sleep(2)
+    import time; time.sleep(5)      # YAP loads ~350MB joint model
     _LOG.info("YAP started on :%d (pid %d)", _YAP_PORT, _yap_proc.pid)
 
 _LOG = logging.getLogger("demo")
