@@ -1,0 +1,115 @@
+# Ontology delta — N02/F19 Dicta-Nakdan REST Adapter
+# Owner: sw-design session (werbeH-design branch, 2026-05-01)
+# Target: ontology/technical-implementation.yaml (additive merge)
+# Note: MOD-N02-F19 and ADP-N02-F19-nakdan already exist in master.
+
+version: 1
+feature_id: N02/F19
+
+modules:
+  - id: MOD-N02-F19
+    name: tirvi.adapters.nakdan
+    description: Dicta-Nakdan REST adapter package — HTTP client, _pick priority chain, override hook, NFC→NFD. Per ADR-025.
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    source_path: tirvi/adapters/nakdan/
+    status: designed
+
+services: []
+ports: []
+
+adapters:
+  - id: ADP-N02-F19-nakdan
+    name: DictaNakdanAdapter
+    description: >
+      DiacritizerBackend implementation wrapping Dicta REST API. Selection
+      priority: sep > homograph-override > options-empty > fconfident-gate >
+      top option. NLP-context scoring (DE-02) gated on F17 morph output.
+      Per ADR-025 (REST for POC) and ADR-029 (vendor boundary).
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    port_ref: PORT-03
+    source_path: tirvi/adapters/nakdan/adapter.py
+    status: designed
+
+classes: []
+
+functions:
+  - id: FN-N02-F19-diacritize-via-api
+    name: diacritize_via_api
+    description: POSTs text to Dicta REST endpoint; stdlib urllib.request; 30s timeout; returns raw JSON list.
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    module_ref: MOD-N02-F19
+    source_path: tirvi/adapters/nakdan/client.py
+    status: designed
+  - id: FN-N02-F19-pick
+    name: _pick
+    description: >
+      Diacritization selection priority chain for one Dicta entry.
+      CC ≤ 3 after refactor (extract _passthrough, _override_hit, _confidence_gated helpers).
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    module_ref: MOD-N02-F19
+    source_path: tirvi/adapters/nakdan/inference.py
+    status: designed
+  - id: FN-N02-F19-to-nfd
+    name: to_nfd
+    description: NFC→NFD normalization of diacritized output; required by downstream Phonikud (F20).
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    module_ref: MOD-N02-F19
+    source_path: tirvi/adapters/nakdan/normalize.py
+    status: designed
+
+adr_decisions:
+  - id: adr:025
+    name: Dicta-Nakdan via REST API for POC; in-process model deferred
+    description: dicta-il/dicta-nakdan is private/gated on HuggingFace (HTTP 401). REST endpoint serves same engine without auth.
+    feature_refs: [N02/F19]
+    bounded_context: pronunciation
+    source_path: docs/ADR/ADR-025-nakdan-rest-api-poc.md
+    status: proposed
+
+tasks:
+  - id: task:N02/F19/T-01
+    name: dicta-rest-http-client
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-01]
+    test_path: tests/unit/test_nakdan_client.py
+    status: implemented
+  - id: task:N02/F19/T-02
+    name: nlp-context-option-scoring
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-02]
+    test_path: tests/unit/test_nakdan_context.py
+    status: designed
+  - id: task:N02/F19/T-03
+    name: selection-priority-chain
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-03]
+    test_path: tests/unit/test_nakdan_inference.py
+    status: implemented
+  - id: task:N02/F19/T-04
+    name: token-skip-filter
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-04]
+    test_path: tests/unit/test_nakdan_inference.py
+    status: implemented
+  - id: task:N02/F19/T-05
+    name: nfc-to-nfd-nikud
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-05]
+    test_path: tests/unit/test_nakdan_inference.py
+    status: implemented
+  - id: task:N02/F19/T-06
+    name: adapter-contract-conformance
+    feature_refs: [N02/F19]
+    spec_refs: [spec:N02/F19/DE-06]
+    test_path: tests/unit/test_nakdan_adapter.py
+    status: implemented
+
+# Notes:
+# - T-02 (NLP-context scoring) remains pending F17 morph output delivery to F19.
+# - _pick CC risk: tasks.md T-03 hints call for refactor before T-02 lands; CC gate will fire if not done.
+# - Privacy deferred: Hebrew exam text → Dicta servers; F19 design acknowledges; MVP concern.
