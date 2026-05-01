@@ -64,6 +64,7 @@ def run_pipeline(
     from tirvi.blocks.page_stats import compute_page_stats
     from tirvi.normalize.passthrough import normalize_text
     from tirvi.normalize.ocr_corrections import correct_final_letters
+    from tirvi.normalize.hebrew_text_rules import apply_hebrew_text_rules
     from tirvi.plan.aggregates import ReadingPlan
     from tirvi.ssml.builder import build_page_ssml
 
@@ -78,6 +79,9 @@ def run_pipeline(
     raw_tokens = normalized.text.split()
     corrected_tokens = correct_final_letters(raw_tokens)
     corrected_text = " ".join(corrected_tokens)
+
+    # Hebrew text rules: gender slash, geresh ordinals, etc.
+    corrected_text = apply_hebrew_text_rules(corrected_text)
 
     nlp_result = deps.nlp.analyze(corrected_text, lang="he")
     dia_result = deps.dia.diacritize(corrected_text)
