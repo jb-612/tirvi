@@ -5,8 +5,8 @@ Spec: N02/F17 DE-05. AC: US-01/AC-01.
 The DictaBERT model has a 512 sub-token context window. The adapter must
 chunk inputs that exceed a 448 sub-token safe limit (64-token headroom),
 with a 64 sub-token overlap between adjacent chunks. Per-word labels in
-the overlap region are reconciled by majority vote; original whitespace
-token order is preserved in the output.
+the overlap region use left-chunk-wins: the earlier chunk's prediction
+is always kept. Original whitespace token order is preserved.
 """
 
 from __future__ import annotations
@@ -160,19 +160,15 @@ class TestLongSentenceChunking:
         assert len(result.tokens) == len(words)
         assert [t.text for t in result.tokens] == words
 
-    def test_us_01_ac_01_overlap_majority_vote_breaks_disagreement(
-        self,
-    ) -> None:
-        """When chunks disagree on overlap labels, majority POS wins.
+    def test_us_01_ac_01_overlap_left_chunk_wins(self) -> None:
+        """Left-chunk-wins: earlier chunk's POS kept for overlap words.
 
-        With n=1100 single-sub-token words, MAX=448, OVERLAP=64 the
-        adapter forms exactly three chunks: c1=[0,448), c2=[384,832),
-        c3=[768,1100). With POS labels chunk1=NOUN, chunk2=NOUN,
-        chunk3=VERB the (c1,c2) overlap is unanimous NOUN; the (c2,c3)
-        overlap is a NOUN/VERB tie won by chunk 2's first-inserted vote
-        (Python Counter.most_common is insertion-ordered on ties). Every
-        word in chunks 1 and 2's combined span resolves to NOUN; only
-        the chunk-3-only tail is VERB.
+        n=1100, MAX=448, OVERLAP=64 → 3 chunks: c1=[0,448), c2=[384,832),
+        c3=[768,1100). With pos_per_chunk=[NOUN, VERB, VERB]:
+        - c1/c2 overlap [384,448): left=NOUN wins over VERB
+        - c2/c3 overlap [768,832): left=VERB wins over VERB (same)
+        So words 0..447 = NOUN; words 448..1099 = VERB.
+        This would differ from majority-vote (c1/c2 tie → arbitrary).
         """
         n = 1100
         words = [f"w{i}" for i in range(n)]
@@ -183,17 +179,16 @@ class TestLongSentenceChunking:
             fake_tokenizer,
             fake_model,
             sub_per_word=1,
-            pos_per_chunk=["NOUN", "NOUN", "VERB"],
+            pos_per_chunk=["NOUN", "VERB", "VERB"],
         )
         with _patched_loader(fake_model, fake_tokenizer):
             result = analyze(text, lang="he")
         assert fake_model.predict.call_count == 3
-        second_chunk_end = MAX_SUBTOKENS + (MAX_SUBTOKENS - OVERLAP_SUBTOKENS)
-        for i in range(second_chunk_end):
+        for i in range(MAX_SUBTOKENS):
             assert result.tokens[i].pos == "NOUN", (
-                f"word {i} expected NOUN, got {result.tokens[i].pos}"
+                f"word {i} expected NOUN (left-chunk c1), got {result.tokens[i].pos}"
             )
-        for i in range(second_chunk_end, n):
+        for i in range(MAX_SUBTOKENS, n):
             assert result.tokens[i].pos == "VERB"
 
     def test_us_01_ac_01_high_clitic_regression(self) -> None:

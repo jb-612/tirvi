@@ -64,7 +64,7 @@ total_estimate_hours: 5.5
 
 ## T-06: Truncation-aware graceful alignment (DE-05 graceful path)
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.75h

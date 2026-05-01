@@ -121,3 +121,32 @@ class TestTTSMarksAdapterGracefulPath:
         # Both empty — degenerate but legal
         out = TTSEmittedTimingAdapter(_tts(truncated=False)).get_timing(b"", "")
         assert out.timings == []
+
+
+class TestTTSMarksAdapterTruncationWarning:
+    """F30 T-06 (DE-05): truncated path logs a warning with counts."""
+
+    def test_us_01_ac_01_truncated_logs_warning_with_counts(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="tirvi.adapters.tts_marks"):
+            TTSEmittedTimingAdapter(
+                _tts(("a", 0), ("b", 500), truncated=True),
+            ).get_timing(b"", "w x y z")
+        warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+        assert warnings, "expected a WARNING log for truncated alignment"
+        msg = warnings[0].getMessage()
+        assert "2" in msg and "4" in msg
+
+    def test_us_01_ac_01_no_warning_when_counts_match(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="tirvi.adapters.tts_marks"):
+            TTSEmittedTimingAdapter(
+                _tts(("a", 0), ("b", 500), truncated=True),
+            ).get_timing(b"", "x y")
+        assert not [r for r in caplog.records if r.levelno == logging.WARNING]

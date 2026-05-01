@@ -1,20 +1,13 @@
-"""F21 (POC seed) — Hebrew homograph override lexicon.
+"""F19/F21 hook — re-export the homograph override lexicon.
 
-Spec: PRD §6.4 (homograph-overrides). Issue #20.
+The lexicon now lives at :mod:`tirvi.homograph`, loaded from
+``data/homograph-lexicon.yaml`` (F21 DE-03/DE-04). This module preserves
+the import path used by ``inference._override_hit`` so that F19's
+existing wiring continues to work unchanged.
 
-POC seed only. The full F21 design is pending; this 5–20 entry map
-captures the most-flagged modern-Hebrew picks where Nakdan's default
-diverges from current usage. Each entry maps the *undecorated* surface
-form to the preferred diacritized form.
-
-Adding entries: append (undecorated, preferred-with-nikud) pairs as
-they surface from human listening + the issue tracker. Don't try to
-seed a thousand at once — the override is a safety-net, not a
-replacement for context-aware disambiguation.
+Spec: N02/F21 DE-03. Issue #20.
 """
 
-HOMOGRAPH_OVERRIDES: dict[str, str] = {
-    # כל → kol (modern), not kal (biblical/construct)
-    # Issue #18 user feedback 2026-04-30
-    "כל": "כֹּל",
-}
+from tirvi.homograph import HOMOGRAPH_OVERRIDES
+
+__all__ = ["HOMOGRAPH_OVERRIDES"]

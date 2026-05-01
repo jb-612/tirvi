@@ -12,7 +12,7 @@ the no-op identity function. Full Chirp3 synthesis tasks are MVP scope.
 
 ## T-01: Implement synthesize_chirp3 feature-gated stub
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]

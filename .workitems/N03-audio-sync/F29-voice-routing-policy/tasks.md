@@ -12,7 +12,7 @@ stub task covers the constant-`"wavenet"` return. Full policy table is MVP scope
 
 ## T-01: Implement route_voice constant-wavenet POC stub
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]

@@ -1,0 +1,49 @@
+{
+  "lattice_md": {
+    "0": [
+      {
+        "surface": "שלום",
+        "lemma": "שלום",
+        "CPOSTag": "NN",
+        "FPOSTag": "NN",
+        "feats": "Gender=Masc|Number=Sing"
+      }
+    ],
+    "1": [
+      {
+        "surface": "עולם",
+        "lemma": "עולם",
+        "CPOSTag": "NN",
+        "FPOSTag": "NN",
+        "feats": "Gender=Masc|Number=Sing|Definite=Def"
+      }
+    ],
+    "2": [
+      {
+        "surface": "הוא",
+        "lemma": "הוא",
+        "CPOSTag": "PRP",
+        "FPOSTag": "PRP",
+        "feats": "Gender=Masc|Number=Sing|Person=3"
+      }
+    ],
+    "3": [
+      {
+        "surface": "טוב",
+        "lemma": "טוב",
+        "CPOSTag": "JJ",
+        "FPOSTag": "JJ",
+        "feats": "Gender=Masc|Number=Sing"
+      }
+    ],
+    "4": [
+      {
+        "surface": "מאוד",
+        "lemma": "מאוד",
+        "CPOSTag": "RB",
+        "FPOSTag": "RB",
+        "feats": ""
+      }
+    ]
+  }
+}

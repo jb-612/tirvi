@@ -12,7 +12,7 @@ covers the unconditional NotImplementedError. Full WhisperX integration is MVP s
 
 ## T-01: Implement align_with_whisperx deferred stub (always NotImplementedError)
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]

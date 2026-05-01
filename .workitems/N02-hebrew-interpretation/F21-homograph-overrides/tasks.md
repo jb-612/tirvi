@@ -8,7 +8,7 @@ total_estimate_hours: 3.0
 
 ## T-01: HomographEntry dataclass + YAML schema definition
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-158]
@@ -20,7 +20,7 @@ total_estimate_hours: 3.0
 
 ## T-02: YAML loader + validation
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-158, FT-159, FT-162]
@@ -34,7 +34,7 @@ total_estimate_hours: 3.0
 
 ## T-03: HOMOGRAPH_OVERRIDES singleton + F19 integration
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-158]
@@ -49,7 +49,7 @@ total_estimate_hours: 3.0
 
 ## T-04: POC seed data in data/homograph-lexicon.yaml
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-158, FT-159]
@@ -62,7 +62,7 @@ total_estimate_hours: 3.0
 
 ## T-05: Diagram docs/diagrams/N02/F21/homograph-lexicon.mmd
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.5h

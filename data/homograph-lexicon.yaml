@@ -1,0 +1,16 @@
+# F21 — Hebrew homograph override lexicon (POC seed).
+#
+# Schema:
+#   entries: list of
+#     - surface_form: str   # undecorated Hebrew word
+#       vocalized_form: str # preferred diacritized form
+#       pos_filter: str | null  # null = always apply (POC); else POS-gated (deferred)
+#
+# POC loader emits a flat dict[str, str] of pos_filter==null entries only.
+# Spec: PRD §6.4. N02/F21 DE-04. Issue #20.
+
+entries:
+  # כל → kol (modern), not kal (biblical/construct).
+  - {surface_form: "כל", vocalized_form: "כֹּל", pos_filter: null}
+  # POS-filtered exemplar — skipped by POC loader; full F21 design pending.
+  - {surface_form: "ספר", vocalized_form: "סָפַר", pos_filter: "VERB"}

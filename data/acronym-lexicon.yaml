@@ -1,0 +1,7 @@
+version: "2026-05-01"
+entries:
+  - {form: "ד״ר", expansion: "דוקטור", source: "manual"}
+  - {form: "פרופ׳", expansion: "פרופסור", source: "manual"}
+  - {form: "ת״א", expansion: "תל אביב", source: "manual", context_tags: ["geo"]}
+  - {form: "י-ם", expansion: "ירושלים", source: "manual", context_tags: ["geo"]}
+  - {form: "צה״ל", expansion: "צבא ההגנה לישראל", source: "manual"}

@@ -3,11 +3,15 @@
 Spec: N03/F30. AC: US-02/AC-01.
 """
 
+import logging
+
 from tirvi.errors import MarkCountMismatchError
 from tirvi.ports import WordTimingProvider
 from tirvi.results import TTSResult, WordMark, WordTiming, WordTimingResult
 
 from .invariants import BlockScopeError, assert_marks_monotonic
+
+_log = logging.getLogger(__name__)
 
 # Fallback span when audio_duration_s is None (post-review C8): the last
 # mark's end_s defaults to start_s + this many seconds.
@@ -112,6 +116,12 @@ def _reconcile_count(
     """
     if len(timings) == token_count:
         return timings
+    if truncated:
+        _log.warning(
+            "tts-marks truncated alignment: %d marks vs %d transcript tokens",
+            len(timings),
+            token_count,
+        )
     if not truncated:
         raise MarkCountMismatchError(
             f"INV-MARKS-006 (DE-05): {len(timings)} marks vs {token_count} "

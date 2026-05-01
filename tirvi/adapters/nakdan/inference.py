@@ -92,15 +92,16 @@ def _is_morph_option(option: Any) -> bool:
 
 
 def _score_option(option: dict[str, Any], token: NLPToken) -> int:
-    morph: dict[str, str] = option.get("morph", {}) or {}
-    score = 0
-    if token.pos and morph.get("pos") == token.pos:
-        score += 2
-    nlp_morph = token.morph_features or {}
-    for key, value in nlp_morph.items():
-        if morph.get(key) == value:
-            score += 1
-    return score
+    morph = option.get("morph") or {}
+    return _pos_score(morph, token.pos) + _morph_keys_score(morph, token.morph_features)
+
+
+def _pos_score(morph: dict[str, Any], pos: str | None) -> int:
+    return 2 if pos and morph.get("pos") == pos else 0
+
+
+def _morph_keys_score(morph: dict[str, Any], nlp_morph: dict[str, str] | None) -> int:
+    return sum(1 for k, v in (nlp_morph or {}).items() if morph.get(k) == v)
 
 
 def _pick(entry: dict[str, Any]) -> str:

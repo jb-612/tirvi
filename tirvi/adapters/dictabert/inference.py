@@ -5,12 +5,11 @@ Spec: N02/F17 DE-02, DE-05. AC: US-01/AC-01. FT-anchors: FT-124, FT-130.
 Uses the DictaBERT-large-joint custom predict() head when available
 (model.predict([text], tokenizer) returns ``[{"tokens": [{"token", "lex",
 "syntax": {"pos": ...}}, ...]}]``). Long inputs are split on sub-token
-count with overlap-merge majority voting (DE-05).
+count with overlap-merge left-chunk-wins strategy (DE-05).
 """
 
 from __future__ import annotations
 
-from collections import Counter
 from typing import Any
 
 from tirvi.results import NLPResult, NLPToken
@@ -128,20 +127,8 @@ def _collect_chunk_predictions(
 
 
 def _reconcile_overlap(candidates: list[list[NLPToken]]) -> list[NLPToken]:
-    """Pick one NLPToken per word; majority-vote on POS for overlap regions."""
-    return [_pick_winner(word_candidates) for word_candidates in candidates]
-
-
-def _pick_winner(tokens: list[NLPToken]) -> NLPToken:
-    """Return the candidate matching the most-common POS (insertion-ordered)."""
-    if len(tokens) == 1:
-        return tokens[0]
-    counts = Counter(t.pos for t in tokens)
-    winning_pos, _ = counts.most_common(1)[0]
-    for tok in tokens:
-        if tok.pos == winning_pos:
-            return tok
-    return tokens[0]
+    """Pick one NLPToken per word; left-chunk-wins for overlap regions."""
+    return [tokens[0] for tokens in candidates]
 
 
 def _decode_token(item: dict[str, Any]) -> NLPToken:

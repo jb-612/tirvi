@@ -1,6 +1,6 @@
 flowchart LR
   Maintainer["Maintainer<br/>(P11)"] --> YAML["data/homograph-lexicon.yaml<br/>(versioned YAML)"]
-  YAML --> Loader["load_overrides()<br/>tirvi/lexicon/homograph.py"]
+  YAML --> Loader["load_overrides()<br/>tirvi/homograph/loader.py"]
   Loader --> Singleton["HOMOGRAPH_OVERRIDES<br/>dict[str, str]"]
   Singleton --> Override["tirvi/adapters/nakdan/overrides.py<br/>import HOMOGRAPH_OVERRIDES"]
   Override --> Pick["F19 _pick()<br/>Override branch"]
