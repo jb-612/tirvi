@@ -8,6 +8,8 @@ import {
   scaleBbox,
   setMarkerPosition,
   startHighlightLoop,
+  lookupWord,
+  positionMarker,
 } from "../js/highlight.js";
 
 describe("F35 T-03 — findActiveMark (binary-search active by currentTime)", () => {
@@ -81,6 +83,147 @@ describe("F35 T-03 — setMarkerPosition (DOM side effect)", () => {
   it("us_01_ac_01 — sets visibility to visible", () => {
     setMarkerPosition(marker, [0, 0, 1, 1]);
     expect(marker.style.visibility).toBe("visible");
+  });
+});
+
+describe("F35 T-04 — lookupWord (binary-search, half-open intervals)", () => {
+  const timings = [
+    { mark_id: "a", start_s: 0.0, end_s: 0.5 },
+    { mark_id: "b", start_s: 0.5, end_s: 1.0 },
+    { mark_id: "c", start_s: 1.0, end_s: 1.5 },
+    { mark_id: "d", start_s: 1.5, end_s: null }, // truncation tail
+  ];
+
+  it("us_01_ac_01 — returns null before first start_s", () => {
+    expect(lookupWord(timings, -0.1)).toBeNull();
+  });
+
+  it("us_01_ac_01 — returns null for empty timings", () => {
+    expect(lookupWord([], 0.0)).toBeNull();
+  });
+
+  it("us_01_ac_01 — returns first mark at exact start_s", () => {
+    expect(lookupWord(timings, 0.0)).toBe("a");
+  });
+
+  it("us_01_ac_01 — returns mark whose half-open interval contains t", () => {
+    expect(lookupWord(timings, 0.25)).toBe("a");
+    expect(lookupWord(timings, 0.5)).toBe("b");
+    expect(lookupWord(timings, 0.999)).toBe("b");
+    expect(lookupWord(timings, 1.0)).toBe("c");
+    expect(lookupWord(timings, 1.4999)).toBe("c");
+  });
+
+  it("us_01_ac_01 — null end_s on tail keeps mark active forever", () => {
+    expect(lookupWord(timings, 1.5)).toBe("d");
+    expect(lookupWord(timings, 9999)).toBe("d");
+  });
+
+  it("us_01_ac_01 — finite end_s on last mark returns null past end", () => {
+    const finite = [{ mark_id: "x", start_s: 0.0, end_s: 1.0 }];
+    expect(lookupWord(finite, 0.0)).toBe("x");
+    expect(lookupWord(finite, 0.999)).toBe("x");
+    expect(lookupWord(finite, 1.0)).toBeNull();
+    expect(lookupWord(finite, 5.0)).toBeNull();
+  });
+
+  it("us_01_ac_01 — handles 1000 marks correctly (binary-search smoke)", () => {
+    const big = Array.from({ length: 1000 }, (_, i) => ({
+      mark_id: `m-${i}`,
+      start_s: i,
+      end_s: i + 1,
+    }));
+    expect(lookupWord(big, 0)).toBe("m-0");
+    expect(lookupWord(big, 500.5)).toBe("m-500");
+    expect(lookupWord(big, 999.999)).toBe("m-999");
+    expect(lookupWord(big, 1000)).toBeNull();
+  });
+});
+
+describe("F35 T-05 — positionMarker (CSS top/left/width/height with retina scaling)", () => {
+  it("us_01_ac_01 — 1:1 produces unchanged px values", () => {
+    const out = positionMarker([10, 20, 30, 40], { w: 1000, h: 1500 }, { w: 1000, h: 1500 });
+    expect(out).toEqual({ left: "10px", top: "20px", width: "30px", height: "40px" });
+  });
+
+  it("us_01_ac_01 — non-retina downscale (1000 natural -> 500 rendered)", () => {
+    const out = positionMarker([100, 200, 50, 50], { w: 1000, h: 2000 }, { w: 500, h: 1000 });
+    expect(out).toEqual({ left: "50px", top: "100px", width: "25px", height: "25px" });
+  });
+
+  it("us_01_ac_01 — retina-style upscale (500 natural -> 1000 CSS px)", () => {
+    // CSS pixels are physical px / DPR — we still scale based on the IMG attrs the
+    // browser exposes (naturalWidth vs clientWidth), which is independent of DPR.
+    const out = positionMarker([10, 10, 20, 20], { w: 500, h: 500 }, { w: 1000, h: 1000 });
+    expect(out).toEqual({ left: "20px", top: "20px", width: "40px", height: "40px" });
+  });
+
+  it("us_01_ac_01 — anisotropic scaling (different sx/sy)", () => {
+    const out = positionMarker([100, 100, 100, 100], { w: 1000, h: 500 }, { w: 500, h: 500 });
+    // sx = 0.5, sy = 1.0
+    expect(out).toEqual({ left: "50px", top: "100px", width: "50px", height: "100px" });
+  });
+
+  it("us_01_ac_01 — naturalWidth==0 falls back to 1:1 scale (defensive)", () => {
+    const out = positionMarker([5, 6, 7, 8], { w: 0, h: 0 }, { w: 100, h: 100 });
+    expect(out).toEqual({ left: "5px", top: "6px", width: "7px", height: "8px" });
+  });
+
+  it("us_01_ac_01 — rounds to integer px (no sub-pixel jitter)", () => {
+    const out = positionMarker([10, 10, 10, 10], { w: 3, h: 3 }, { w: 1, h: 1 });
+    // 10/3 = 3.333...; rounds to 3
+    expect(out).toEqual({ left: "3px", top: "3px", width: "3px", height: "3px" });
+  });
+});
+
+describe("F35 T-06 — prefers-reduced-motion + WCAG contrast", () => {
+  // Helper — relative luminance per WCAG 2.x
+  function luminance([r, g, b]) {
+    const channel = (c) => {
+      const v = c / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  }
+  function contrastRatio(a, b) {
+    const la = luminance(a);
+    const lb = luminance(b);
+    const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  it("us_02_ac_01 — highlight palette meets WCAG AA contrast >= 4.5:1", () => {
+    // tokens documented in player.css :root
+    const bg = [0xff, 0xe0, 0x66]; // --highlight-bg: #ffe066
+    const fg = [0x1a, 0x1a, 0x1a]; // --highlight-fg: #1a1a1a
+    expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("us_02_ac_01 — .marker.no-animation class disables transition", async () => {
+    // Stub matchMedia for prefers-reduced-motion: reduce
+    document.body.innerHTML = '<div class="marker no-animation" id="m"></div>';
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    // jsdom doesn't load CSS; verify the class+rule contract via stylesheet text.
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "../player.css"),
+      "utf8",
+    );
+    expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
+    expect(css).toMatch(/\.marker\.no-animation\s*\{\s*transition:\s*none/);
+  });
+
+  it("us_02_ac_01 — :focus-visible style is defined for buttons", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "../player.css"),
+      "utf8",
+    );
+    expect(css).toMatch(/#controls button:focus-visible/);
+    expect(css).toMatch(/outline:/);
   });
 });
 

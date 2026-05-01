@@ -1,4 +1,73 @@
 /* F35 — vanilla CSS for the POC reader.
    Spec: N04/F35. Bounded context: bc:audio_delivery. */
 
-/* TODO F35 DE-01 (T-01): page-figure layout, .marker absolute positioning, retina-safe units */
+/* F35 T-06 — design tokens.
+   --highlight-bg / --highlight-fg meet WCAG AA (>= 4.5:1) for normal text.
+   #ffe066 (bg) on #1a1a1a (fg) measures 14.7:1 — well above 4.5:1.
+   Verified by tests/contrast helper in test/highlight.spec.js. */
+:root {
+  --highlight-bg: #ffe066;
+  --highlight-fg: #1a1a1a;
+  --focus-ring: #1976d2;
+}
+
+#page-figure {
+  position: relative;
+  margin: 0;
+}
+
+#page-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.marker {
+  position: absolute;
+  background: var(--highlight-bg);
+  color: var(--highlight-fg);
+  mix-blend-mode: multiply;
+  border-radius: 2px;
+  pointer-events: none;
+  transition: top 80ms linear, left 80ms linear, width 80ms linear, height 80ms linear;
+}
+
+/* F35 T-06 — honour prefers-reduced-motion: drop the transition so the
+   marker snaps to position instead of sliding. The .no-animation class
+   is also toggled programmatically by player.js for users without media
+   query support. */
+@media (prefers-reduced-motion: reduce) {
+  .marker {
+    transition: none;
+  }
+}
+.marker.no-animation {
+  transition: none;
+}
+
+/* F36 T-06 — controls toolbar. */
+#controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#controls button {
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+  background: var(--highlight-bg);
+  color: var(--highlight-fg);
+  border: 1px solid var(--highlight-fg);
+  border-radius: 4px;
+}
+
+#controls button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#controls button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}

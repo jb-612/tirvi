@@ -29,6 +29,41 @@ export function findActiveMark(timings, currentTime) {
 }
 
 /**
+ * F35 T-04 — strict-interval word lookup via binary search.
+ *
+ * Returns the mark_id of the timing whose half-open interval
+ * [start_s, end_s) contains `tSeconds`. Unlike findActiveMark (which
+ * "sticks" to the last mark forever), lookupWord returns null once
+ * tSeconds has passed the last interval's end_s, and null when
+ * tSeconds is before the first interval's start_s.
+ *
+ * end_s may be null (F30 DE-05 truncation tail); for that final
+ * entry, any tSeconds >= start_s matches.
+ *
+ * @param {Array<{mark_id: string, start_s: number, end_s?: number|null}>} timings
+ *        Must be sorted ascending by start_s (parseAudioTimings guarantees this).
+ * @param {number} tSeconds
+ * @returns {string|null}
+ */
+export function lookupWord(timings, tSeconds) {
+  const n = timings.length;
+  if (n === 0 || !Number.isFinite(tSeconds) || tSeconds < 0) return null;
+  if (tSeconds < timings[0].start_s) return null;
+
+  let lo = 0;
+  let hi = n - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >>> 1;
+    if (timings[mid].start_s <= tSeconds) lo = mid;
+    else hi = mid - 1;
+  }
+  const cand = timings[lo];
+  const end = cand.end_s;
+  if (end === null || end === undefined) return cand.mark_id;
+  return tSeconds < end ? cand.mark_id : null;
+}
+
+/**
  * Scale a bbox from natural-image coords to rendered-image coords.
  * Defensive: when naturalWidth is 0 or unset, returns the bbox unchanged.
  *
@@ -54,6 +89,38 @@ export function setMarkerPosition(marker, bbox) {
   marker.style.width = `${bbox[2]}px`;
   marker.style.height = `${bbox[3]}px`;
   marker.style.visibility = "visible";
+}
+
+/**
+ * F35 T-05 — scale a bbox in natural-image coords to CSS pixels in
+ * rendered-image coords, returning a `{top, left, width, height}`
+ * object suitable for direct assignment to element.style.
+ *
+ * `imageNatural` and `imageRendered` are `{w, h}` pairs, e.g.
+ * `{w: image.naturalWidth, h: image.naturalHeight}` for natural and
+ * `{w: image.clientWidth, h: image.clientHeight}` for rendered.
+ *
+ * Retina-safe: scaling uses the image-rendered ratio, not
+ * window.devicePixelRatio — the browser already maps CSS pixels
+ * to physical pixels.
+ *
+ * Returns rounded integer pixel values to avoid sub-pixel jitter.
+ *
+ * @param {[number, number, number, number]} bbox - [x, y, w, h]
+ * @param {{w: number, h: number}} imageNatural
+ * @param {{w: number, h: number}} imageRendered
+ * @returns {{top: string, left: string, width: string, height: string}}
+ */
+export function positionMarker(bbox, imageNatural, imageRendered) {
+  const [x, y, w, h] = bbox;
+  const sx = imageNatural.w ? imageRendered.w / imageNatural.w : 1;
+  const sy = imageNatural.h ? imageRendered.h / imageNatural.h : 1;
+  return {
+    left: `${Math.round(x * sx)}px`,
+    top: `${Math.round(y * sy)}px`,
+    width: `${Math.round(w * sx)}px`,
+    height: `${Math.round(h * sy)}px`,
+  };
 }
 
 /**
