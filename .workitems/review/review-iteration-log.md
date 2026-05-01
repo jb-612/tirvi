@@ -167,3 +167,39 @@ Stage 12 (final synthesis) proceeds.
 
 ### F48 Loop Exit
 0 unresolved Critical, 0 unresolved High. 1 Critical + 0 High + 2 Medium + 1 Low deferred with explicit triggers (D-RECALL-BENCH, D-FAST-TIER-AB, D-AUTO-PROMOTE-POLICY, D-LOG-INTEGRITY). Loop exits. Stage 12 + Stage 14 (deferred-finding stubs) complete. Stage 15 reached: do NOT write design.md / tasks.md / traceability.yaml — owned by `@sw-designpipeline`.
+
+---
+
+## Append: N01/F49 CLI pipeline progress reporting — autoresearch loop
+
+### Iteration 1 (post-stage-8 panel + adversarial)
+- Read: pipeline.py, run_demo.py, correction/service.py (EventListener protocol),
+  user_stories.md, user_stories.part-2.md, functional-test-plan.md, behavioural-test-plan.md.
+- Key findings reviewed:
+  - F49-DDD-01 (High): Resolved — ProgressReporter attaches as EventListener to
+    CorrectionCascadeService; no change to domain service needed.
+  - F49-ARCH-01 (High): Resolved — same resolution as DDD-01 (Option B).
+  - F49-PR-01 (Medium): Resolved — scope guard added to US-F49-01.
+  - F49-ADV-01 (Medium): Resolved — plain-log fallback is always correct.
+  - F49-ADV-02 (Medium): Deferred — thread-safety doc note to sw-designpipeline.
+  - F49-ARCH-02 (Medium): Deferred — import guard to TDD phase.
+- No story or test plan changes required by the review — all Highs resolved
+  through architectural decision (EventListener hook) not story change.
+- Protected paths: ontology/*.yaml writes attempted but blocked (protected
+  path policy). Ontology additions staged in design-review.md §Stage 4 notes
+  and the F49 deferred finding D-F49-ONTOLOGY-WRITE; apply when user
+  authorizes ontology updates.
+
+### Iteration 2 (verification)
+- Verified 0 unresolved Critical, 0 unresolved High.
+- Confirmed all stories trace to PRD §7.2 / ASM-F49-01..04.
+- FT-316..FT-328 and BT-209..BT-218 ID ranges are continuous after existing
+  FT-315 / BT-208 (F48 last entry).
+
+### F49 Loop Exit
+0 unresolved Critical, 0 unresolved High.
+3 Medium items deferred (F49-ARCH-02 import guard, F49-ADV-02 thread-safety
+doc, ontology protected-path write).
+5 Low items deferred to TDD phase.
+1 blocked finding: D-F49-ONTOLOGY-WRITE (ontology/*.yaml write requires HITL).
+Loop exits. Stage 12 + 14 proceed.

@@ -13,6 +13,7 @@ import io
 import json
 import re
 import struct
+import time as _time_module
 import wave
 import zlib
 import dataclasses
@@ -21,6 +22,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from tirvi.ports import DiacritizerBackend, G2PBackend, NLPBackend, OCRBackend, TTSBackend
+from tirvi.progress import NoOpProgressReporter, PipelineReport, ProgressReporter, StageTiming
 from tirvi.results import (
     DiacritizationResult,
     G2PResult,
@@ -65,11 +67,14 @@ def run_pipeline(
     deps: PipelineDeps | None = None,
     *,
     voice: str = _POC_VOICE,
+    reporter: ProgressReporter | None = None,
 ) -> dict[str, Any]:
     """Run the full POC pipeline and write artefacts to ``output_base/<sha>/``.
 
-    Returns ``{"sha": str, "drafts_dir": Path}``.
+    Returns ``{"sha": str, "drafts_dir": Path, "report": PipelineReport}``.
     """
+    if reporter is None:
+        reporter = NoOpProgressReporter()
     if deps is None:
         deps = _make_deps()
 
@@ -81,8 +86,14 @@ def run_pipeline(
     from tirvi.plan.aggregates import ReadingPlan
     from tirvi.ssml.builder import build_page_ssml
 
+    reporter.stage_started("OCR")
+    _t0_ocr = _time_module.monotonic()
     ocr_result = deps.ocr.ocr_pdf(pdf_bytes)
     words = ocr_result.pages[0].words
+    _elapsed_ocr = _time_module.monotonic() - _t0_ocr
+    _word_count = len(words)
+    reporter.stage_completed("OCR", _elapsed_ocr, f"{_word_count} words")
+    _stage_ocr = StageTiming(name="OCR", elapsed_s=_elapsed_ocr, metric_label=f"{_word_count} words")
 
     stats = compute_page_stats(words)
     blocks = build_blocks(words, stats)
@@ -115,6 +126,7 @@ def run_pipeline(
             corrected_tokens,
             page_index=0,
             sha="pending",
+            reporter=reporter,
         )
     corrected_text = " ".join(corrected_tokens)
 
@@ -139,10 +151,16 @@ def run_pipeline(
     # Use NLP-context diacritization when the adapter supports it (DictaNakdan
     # has diacritize_in_context which scores morph against POS+features to pick
     # the right candidate). Stub adapters fall back to plain diacritize().
+    reporter.stage_started("Nakdan")
+    _t0_nakdan = _time_module.monotonic()
     if hasattr(deps.dia, "diacritize_in_context") and nlp_result and nlp_result.tokens:
         dia_result = deps.dia.diacritize_in_context(corrected_text, nlp_result)
     else:
         dia_result = deps.dia.diacritize(corrected_text)
+    _elapsed_nakdan = _time_module.monotonic() - _t0_nakdan
+    _token_count = len(corrected_tokens)
+    reporter.stage_completed("Nakdan", _elapsed_nakdan, f"{_token_count} tokens")
+    _stage_nakdan = StageTiming(name="Nakdan", elapsed_s=_elapsed_nakdan, metric_label=f"{_token_count} tokens")
 
     # Post-Nakdan kamatz-katan fix: replace kamatz with cholam in known
     # kamatz-katan words so Phonikud emits /o/ instead of /a/.
@@ -171,10 +189,21 @@ def run_pipeline(
     drafts_dir = output_base / sha
     drafts_dir.mkdir(parents=True, exist_ok=True)
 
+    reporter.stage_started("Rasterize")
+    _t0_rasterize = _time_module.monotonic()
     images = deps.rasterize(pdf_bytes, 300)
+    _elapsed_rasterize = _time_module.monotonic() - _t0_rasterize
+    reporter.stage_completed("Rasterize", _elapsed_rasterize, "—")
+    _stage_rasterize = StageTiming(name="Rasterize", elapsed_s=_elapsed_rasterize, metric_label="—")
     images[0].save(str(drafts_dir / "page-1.png"))
 
+    reporter.stage_started("TTS")
+    _t0_tts = _time_module.monotonic()
     tts_result = deps.tts.synthesize(build_page_ssml(plan), voice=voice)
+    _elapsed_tts = _time_module.monotonic() - _t0_tts
+    _audio_kb = len(tts_result.audio_bytes) / 1024
+    reporter.stage_completed("TTS", _elapsed_tts, f"{_audio_kb:.0f} KB")
+    _stage_tts = StageTiming(name="TTS", elapsed_s=_elapsed_tts, metric_label=f"{_audio_kb:.0f} KB")
 
     (drafts_dir / "audio.mp3").write_bytes(tts_result.audio_bytes)
     (drafts_dir / "audio.json").write_text(
@@ -190,7 +219,8 @@ def run_pipeline(
         encoding="utf-8",
     )
 
-    return {"sha": sha, "drafts_dir": drafts_dir}
+    pipeline_report = PipelineReport(stages=(_stage_ocr, _stage_nakdan, _stage_tts, _stage_rasterize))
+    return {"sha": sha, "drafts_dir": drafts_dir, "report": pipeline_report}
 
 
 def _run_cascade_for_page(
@@ -199,6 +229,7 @@ def _run_cascade_for_page(
     *,
     page_index: int,
     sha: str,
+    reporter: Any = None,
 ) -> list[str]:
     """Bridge from pipeline tokens to ``CorrectionCascadeService.run_page``.
 
@@ -210,6 +241,10 @@ def _run_cascade_for_page(
         ``page_corrections.corrected_tokens`` as a list[str] preserving
         the token-in/token-out invariant (INV-CCS-001).
     """
+    if reporter is not None and dataclasses.is_dataclass(service):
+        from tirvi.progress import ProgressReporterEventBridge
+        bridge = ProgressReporterEventBridge(reporter)
+        service = dataclasses.replace(service, listeners=(bridge, *service.listeners))
     from tirvi.correction.value_objects import CascadeMode
     mode = CascadeMode(name="full")
     result = service.run_page(tokens, page_index=page_index, sha=sha, mode=mode)

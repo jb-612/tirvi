@@ -662,3 +662,37 @@ dependencies:
     risk_if_broken: biz CO is not implemented.
     related_files:
       - path: .workitems/N02-hebrew-interpretation/F48-correction-cascade/ontology-delta.yaml
+
+  # --- N01/F49 pipeline-progress edges (appended by sw-designpipeline 2026-05-01) ---
+  - id: DEP-110
+    source: { type: protocol, id: PROTO-N01-F49-ProgressReporter, name: ProgressReporter }
+    target: { type: bounded_context, id: bc:observability, name: PipelineObservability }
+    relationship: realizes
+    rationale: ProgressReporter protocol is the in-process realisation of the pipeline observability concern.
+    strength: strong
+    direction: one_way
+    risk_if_broken: operators have no visibility into stage timing or bottlenecks.
+    related_files:
+      - path: tirvi/progress.py
+
+  - id: DEP-111
+    source: { type: class, id: CLS-N01-F49-RichProgressReporter, name: RichProgressReporter }
+    target: { type: protocol, id: PROTO-N01-F49-ProgressReporter, name: ProgressReporter }
+    relationship: implements
+    rationale: RichProgressReporter is the concrete TTY+non-TTY impl of ProgressReporter.
+    strength: strong
+    direction: one_way
+    risk_if_broken: no concrete progress display; operators see nothing.
+    related_files:
+      - path: tirvi/progress.py
+
+  - id: DEP-112
+    source: { type: module, id: MOD-N01-F49, name: tirvi.progress }
+    target: { type: feature_test, id: test:FT-316, name: FT-316-stage-rows-render-order }
+    relationship: tested_by
+    rationale: FT-316 verifies ProgressReporter rows appear in correct order before any stage starts.
+    strength: medium
+    direction: one_way
+    risk_if_broken: stage ordering contract untested; regression risk.
+    related_files:
+      - path: .workitems/N01-ingest-ocr/F49-pipeline-progress/functional-test-plan.md

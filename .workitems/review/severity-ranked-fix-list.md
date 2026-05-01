@@ -27,6 +27,18 @@ contract. Source of truth is the synthesis; if these diverge, synthesis wins.
 | R-11 | Medium | Product | PRD §10 language soften | Deferred (PRD edit out of scope) | — | D-PRD-MOS-LANGUAGE-REWRITE |
 | R-12 | Medium | Adversarial | Latin-transliteration FP rate quantified | Deferred | — | D-TRANSLIT-BENCH |
 | Coref-MVP | Medium | Delivery | E04-F04 MVP vs v1.1 decision | Deferred | — | D-COREF-MVP-SCOPE |
+| F49-DDD-01 | High | DDD | EventListener hook vs service intrusion | Resolved — EventListener pattern | design-review.md | — |
+| F49-ARCH-01 | High | Architecture | Callback hook in service.py vs EventListener | Resolved — Option B (EventListener) | design-review.md | — |
+| F49-PR-01 | Medium | Product | Scope guard for dev-tooling only | Resolved — note in US-F49-01 | user_stories.md | — |
+| F49-ADV-01 | Medium | Adversarial | TTY detection edge case in cloud SSH | Resolved — plain-log always correct | user_stories.part-2.md ASM-F49-04 | — |
+| D-F49-ONTOLOGY-WRITE | Medium | Ontology | Protected path; HITL required to write ontology/*.yaml | Deferred | — | deferred-findings.md |
+| D-F49-ARCH-02 | Medium | Architecture | `rich` ImportError guard | Deferred to TDD | — | deferred-findings.md |
+| D-F49-ADV-02 | Medium | Architecture | Thread-safety doc note | Deferred to sw-design | — | deferred-findings.md |
+| F49-ARCH-03 | Low | Architecture | TTY detection at construction, not render | Deferred to TDD | — | — |
+| F49-TEST-01 | Low | Testing | Integration test: run_pipeline → ProgressReporter wiring | Deferred to Track C | — | — |
+| F49-TEST-02 | Low | Testing | BT-215 perf threshold may be flaky in cloud CI | Deferred to TDD | — | — |
+| F49-TEST-03 | Low | Testing | ImportError guard unit test | Deferred to TDD | — | — |
+| F49-ADV-04 | Low | Adversarial | atexit/finally flush on Ctrl-C | Deferred to TDD | — | — |
 
 **Tally**:
 - Critical: 5 (2 fixed / 3 deferred — all 3 deferreds tracked with explicit re-evaluation triggers)

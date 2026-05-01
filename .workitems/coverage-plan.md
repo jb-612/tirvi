@@ -31,6 +31,23 @@ serially within each epic.
 
 **Total:** 12 epics, 58 features, 12 bounded contexts.
 
+### F49 Addendum (2026-05-01)
+
+F49 is a developer-tooling cross-cut feature added after the original biz design
+phase. It does not belong to any of E0–E11 but is placed under N01 (Ingest & OCR)
+because it directly instruments the `scripts/run_demo.py` POC pipeline.
+
+| Feature | Name | Bounded Contexts | Phase | Priority |
+|---------|------|-----------------|-------|---------|
+| F49 | CLI pipeline progress reporting | `bc:observability` (new, supporting); `bc:pipeline_orchestration` (cross-cut) | N01 | Medium |
+
+New bounded context `bc:observability` is a supporting subdomain of `D01-SD06
+Platform & Quality`. It introduces no new aggregates or repositories; value
+objects `StageTiming` and `PipelineReport` are dev-tooling only. Domain events
+`StageStarted`, `StageCompleted`, `TokenProcessed`, `PipelineCompleted` are
+emitted in-process via the F48 `EventListener` pattern (ADR-033). Ontology YAML
+updates are deferred pending HITL (D-F49-ONTOLOGY-WRITE in deferred-findings.md).
+
 ## Bounded Contexts (DDD)
 
 Anchored to the "reading plan is the product" principle (src-008 §7).

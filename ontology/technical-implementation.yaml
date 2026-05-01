@@ -1753,3 +1753,133 @@ tasks:
     spec_refs: [spec:N02/F48/DE-04]
     test_path: tests/unit/test_privacy_invariant.py
     status: designed
+  # --- N01/F49 Pipeline progress reporting ---
+  - id: task:N01/F49/T-01
+    name: progress-reporter-protocol-and-value-objects
+    feature_refs: [N01/F49-pipeline-progress]
+    spec_refs: [spec:N01/F49/DE-01, spec:N01/F49/DE-05]
+    test_path: tests/unit/test_progress_reporter.py
+    status: designed
+  - id: task:N01/F49/T-02
+    name: noop-progress-reporter
+    feature_refs: [N01/F49-pipeline-progress]
+    spec_refs: [spec:N01/F49/DE-01]
+    test_path: tests/unit/test_progress_reporter.py
+    status: designed
+  - id: task:N01/F49/T-03
+    name: wire-reporter-into-run-pipeline
+    feature_refs: [N01/F49-pipeline-progress]
+    spec_refs: [spec:N01/F49/DE-03, spec:N01/F49/DE-05]
+    test_path: tests/unit/test_pipeline_progress.py
+    status: designed
+  - id: task:N01/F49/T-04
+    name: wire-reporter-as-event-listener-cascade
+    feature_refs: [N01/F49-pipeline-progress]
+    spec_refs: [spec:N01/F49/DE-03]
+    test_path: tests/unit/test_pipeline_progress.py
+    status: designed
+  - id: task:N01/F49/T-05
+    name: rich-progress-reporter-tty-and-summary
+    feature_refs: [N01/F49-pipeline-progress]
+    spec_refs: [spec:N01/F49/DE-02, spec:N01/F49/DE-04]
+    test_path: tests/unit/test_rich_progress_reporter.py
+    status: designed
+  - id: task:N01/F49/T-06
+    name: wire-reporter-into-run-demo-cli
+    feature_refs: [N01/F49-pipeline-progress]
+    spec_refs: [spec:N01/F49/DE-02]
+    test_path: tests/unit/test_pipeline_progress.py
+    status: designed
+
+# --- N01/F49 ontology nodes (appended by sw-designpipeline 2026-05-01) ---
+# Append-only extension blocks for F49. Consumers traversing the full file
+# will find these nodes; ACM ingest merges by id.
+
+f49_modules:
+  - id: MOD-N01-F49
+    name: tirvi.progress
+    description: >
+      Pipeline progress reporting module — ProgressReporter Protocol,
+      NoOpProgressReporter, RichProgressReporter, StageTiming, PipelineReport.
+      Dev-only; no production API dependency. Per ADR-036.
+    feature_refs: [N01/F49-pipeline-progress]
+    bounded_context: platform
+    source_path: tirvi/progress.py
+    status: designed
+
+  - id: MOD-N01-F49-cli
+    name: scripts.run_demo
+    description: >
+      CLI entry point for the POC demo. F49 wires RichProgressReporter here;
+      passes reporter= to run_pipeline(); calls summarize() after completion.
+    feature_refs: [N01/F49-pipeline-progress]
+    bounded_context: platform
+    source_path: scripts/run_demo.py
+    status: designed
+
+f49_protocols:
+  - id: PROTO-N01-F49-ProgressReporter
+    name: ProgressReporter
+    description: >
+      Thin callback Protocol. Methods: stage_started(name, total_tokens?),
+      stage_completed(name, elapsed_s, metric_label), stage_error(name, error_label),
+      token_tick(), summarize(). Injected into run_pipeline() as optional kwarg.
+    feature_refs: [N01/F49-pipeline-progress]
+    bounded_context: platform
+    source_path: tirvi/progress.py
+    status: designed
+
+f49_classes:
+  - id: CLS-N01-F49-NoOpProgressReporter
+    name: NoOpProgressReporter
+    description: >
+      Silent no-op implementation of ProgressReporter. Default when reporter=
+      is omitted from run_pipeline(). Does not import rich.
+    feature_refs: [N01/F49-pipeline-progress]
+    module_ref: MOD-N01-F49
+    source_path: tirvi/progress.py
+    status: designed
+
+  - id: CLS-N01-F49-RichProgressReporter
+    name: RichProgressReporter
+    description: >
+      Concrete ProgressReporter: TTY path uses rich.live.Live + rich.progress.Progress;
+      non-TTY path uses plain logging.INFO lines. TTY detected at construction.
+      rich import guarded with try/except ImportError.
+      Also implements EventListener for cascade token counting.
+    feature_refs: [N01/F49-pipeline-progress]
+    module_ref: MOD-N01-F49
+    source_path: tirvi/progress.py
+    status: designed
+
+  - id: CLS-N01-F49-StageTiming
+    name: StageTiming
+    description: >
+      frozen dataclass — name: str, elapsed_s: float | None, metric_label: str,
+      errored: bool. Carries per-stage outcome for PipelineReport and summary table.
+    feature_refs: [N01/F49-pipeline-progress]
+    module_ref: MOD-N01-F49
+    source_path: tirvi/progress.py
+    status: designed
+
+  - id: CLS-N01-F49-PipelineReport
+    name: PipelineReport
+    description: >
+      frozen dataclass — stages: tuple[StageTiming, ...]. Returned from
+      run_pipeline() under key "report". Enables callers to log / inspect timing
+      without re-running.
+    feature_refs: [N01/F49-pipeline-progress]
+    module_ref: MOD-N01-F49
+    source_path: tirvi/progress.py
+    status: designed
+
+f49_adr_decisions:
+  - id: adr:036
+    name: Pipeline observability — injectable ProgressReporter protocol
+    description: >
+      Injectable Protocol over print statements; TTY detection at construction;
+      rich import guarded; cascade progress via existing EventListener pattern.
+    feature_refs: [N01/F49-pipeline-progress]
+    bounded_context: ingest
+    source_path: docs/ADR/ADR-036-pipeline-observability-progress-reporter.md
+    status: proposed

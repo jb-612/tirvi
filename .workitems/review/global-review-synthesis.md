@@ -215,3 +215,70 @@ Every story traces to ADR-033 §Decision row + UAT root cause. Every FT/BT refer
 
 **F48 business and functional design phase status:** Complete with deferred issues (4 deferred; all carry re-evaluation triggers; none block sw-design start).
 | Coref-MVP | Medium | Delivery | E04-F04 MVP-vs-v1.1 | Deferred | (none) | D-COREF-MVP-SCOPE |
+
+---
+
+## Append: N01/F49 CLI pipeline progress reporting
+
+### F49 Executive Summary
+
+F49 adds a `rich`-powered live terminal progress display to `scripts/run_demo.py`,
+wrapping every stage in the POC pipeline (Rasterize, OCR, Nakdan, Correction
+Cascade, TTS) with a spinner/timer/metric row and a post-run summary table
+ranked by duration. The Correction Cascade stage shows real per-token percentage
+progress and live LLM-call counters by attaching a `ProgressReporter` as an
+`EventListener` to `CorrectionCascadeService` (the F48 in-process pub-sub
+pattern — no change to the domain service). A non-TTY plain-log fallback
+activates automatically when `sys.stdout.isatty()` returns False. After
+2-reviewer plus adversarial review, 0 Critical / 0 High findings remain;
+3 Medium deferred (import guard, thread-safety doc, protected-path ontology
+write); 5 Low deferred to TDD.
+
+### F49 Coverage Summary
+
+| Phase | Feature | Stories | FTs | BTs | Status |
+|-------|---------|---------|-----|-----|--------|
+| N01 | F49 — pipeline progress | 6 (US-F49-01..06) | 13 (FT-316..FT-328) | 10 (BT-209..BT-218) | Complete |
+
+### F49 Major Findings (severity-ranked)
+
+- **High (both resolved in review):**
+  F49-DDD-01 — EventListener hook chosen over service intrusion.
+  F49-ARCH-01 — Same resolution; no service.py change needed.
+- **Medium (partially resolved):**
+  F49-PR-01 — Scope guard added to stories. Resolved.
+  F49-ADV-01 — Plain-log fallback is always correct. Resolved.
+  F49-ARCH-02 — `rich` ImportError guard. Deferred to TDD.
+  F49-ADV-02 — Thread-safety doc note. Deferred to sw-design.
+- **Low (all deferred to TDD):**
+  F49-ARCH-03, F49-TEST-01, F49-TEST-02, F49-TEST-03, F49-ADV-04.
+
+### F49 Deferred Findings
+
+| Finding ID | Severity | Reason | Trigger |
+|-----------|---------|--------|---------|
+| D-F49-ONTOLOGY-WRITE | Medium | ontology/*.yaml is a protected path; HITL required | User authorizes ontology YAML update |
+| D-F49-ARCH-02 | Medium | `rich` ImportError guard — implement in TDD Green phase | TDD T-xx for ProgressReporter |
+| D-F49-ADV-02 | Medium | Thread-safety doc note — add to sw-designpipeline design notes | sw-designpipeline run |
+| D-F49-ARCH-03 | Low | TTY check at construction | TDD |
+| D-F49-TEST-01 | Low | Integration test: run_pipeline wiring to ProgressReporter | @integration-test Track C |
+| D-F49-TEST-02 | Low | BT-215 performance threshold tuning | TDD |
+| D-F49-TEST-03 | Low | ImportError guard unit test | TDD |
+| D-F49-ADV-04 | Low | atexit/finally flush of summary table on Ctrl-C | TDD |
+
+### F49 Ontology Status
+
+Intended adds (blocked by protected-path policy; tracked as D-F49-ONTOLOGY-WRITE):
+- `business-domains.yaml`: add bc:observability supporting subdomain; BOs BO49-BO51
+  (StageTiming, PipelineReport, ProgressEvent); ASM-F49-01..04; plan_md_cross_walk F49 entry.
+- `dependencies.yaml`: add DEP-F49-01 (F48 EventListener → F49 ProgressReporter uses),
+  DEP-F49-02 (F49 ProgressReporter → scripts/run_demo.py wraps).
+- `testing.yaml`: add test_range entry {feature_id: F49-pipeline-progress,
+  ft: [FT-316, FT-328], bt: [BT-209, BT-218]}.
+
+### F49 Final Conclusion
+
+**F49 business and functional design phase status:** Complete with deferred
+issues. Ontology YAML writes require user authorization (protected-path HITL).
+All stories trace to PRD §7.2 / ASM-F49-01..04. Design approved for
+`@sw-designpipeline`.

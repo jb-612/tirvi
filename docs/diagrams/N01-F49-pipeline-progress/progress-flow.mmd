@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant CLI as run_demo.py
+    participant RP as RichProgressReporter
+    participant PP as run_pipeline()
+    participant CS as CorrectionCascadeService
+
+    CLI->>RP: create(tty=sys.stdout.isatty())
+    CLI->>PP: run_pipeline(pdf_bytes, deps, reporter=RP)
+
+    PP->>RP: stage_started("Rasterize")
+    PP->>RP: stage_completed("Rasterize", 0.3s, "—")
+
+    PP->>RP: stage_started("OCR")
+    PP->>RP: stage_completed("OCR", 4.1s, "213 words")
+
+    PP->>RP: stage_started("Nakdan", total_tokens=213)
+    PP->>RP: stage_completed("Nakdan", 3.2s, "213 tokens")
+
+    PP->>RP: stage_started("Cascade", total_tokens=213)
+    PP->>PP: register RP as EventListener on CorrectionCascadeService
+    PP->>CS: run_page(tokens, mode=full)
+    CS-->>RP: on_correction_applied(event) ×N → token_tick()
+    CS-->>RP: on_correction_rejected(event) ×M → token_tick()
+    CS-->>RP: on_correction_applied(stage="llm_reviewer") → llm_call++
+    PP->>RP: stage_completed("Cascade", 8.3s, "3 LLM calls")
+
+    PP->>RP: stage_started("TTS")
+    PP->>RP: stage_completed("TTS", 6.2s, "813 KB")
+
+    PP->>CLI: returns {"sha": ..., "drafts_dir": ..., "report": PipelineReport}
+    CLI->>RP: summarize()
+    Note over RP: Prints summary table sorted slowest→fastest

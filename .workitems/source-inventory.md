@@ -19,6 +19,14 @@ without a source become assumptions logged in `business-taxonomy.yaml`.
 | src-011 | ADR backlog | research | embedded in src-003 §12 | E2, E4, E5, E7, E11 | high | 10 ADR slots. ADRs themselves are not authored in this phase; design tasks reference ADR slots by ID. |
 | src-012 | Repo CLAUDE.md (project instructions) | other | `CLAUDE.md` | E0 | high | DDD-aware SDLC harness expectations; CC ≤ 5 rule; protected paths; mailbox semantics. |
 
+## F49-specific sources (added 2026-05-01)
+
+| ID | Name | Type | Path | Relevant Features | Confidence | Notes |
+|----|------|------|------|-------------------|-----------|-------|
+| src-013 | tirvi pipeline.py (POC orchestrator) | implementation | `tirvi/pipeline.py` | F49 | high | Defines 5 pipeline stages: rasterize, OCR, normalize/cascade, Nakdan, TTS. `PipelineDeps` dataclass. F48 cascade wiring. |
+| src-014 | scripts/run_demo.py (CLI entrypoint) | implementation | `scripts/run_demo.py` | F49 | high | `main()` runs pipeline synchronously; no progress display; uses stdlib logging only. Target file for F49 integration. |
+| src-015 | tirvi/correction/service.py (cascade service) | implementation | `tirvi/correction/service.py` | F49 | high | `EventListener` Protocol with `on_correction_applied` / `on_correction_rejected` / `on_cascade_mode_degraded` / `on_llm_call_cap_reached`. Token-counting hook point for cascade progress. |
+
 ## Gaps
 
 - No `.workitems/PLAN.md` exists yet; src-003 §10 is treated as the

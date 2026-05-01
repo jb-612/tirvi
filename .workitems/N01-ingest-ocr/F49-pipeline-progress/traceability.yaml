@@ -1,0 +1,177 @@
+feature_id: N01/F49-pipeline-progress
+status: designed
+feature_type: integration
+hld_refs:
+  - HLD-§3.3-worker-pipeline-stages
+  - HLD-§5.2-processing
+  - HLD-§8-dev-environment
+adr_refs:
+  - ADR-036
+
+biz_source:
+  functional_test_plan_path: .workitems/N01-ingest-ocr/F49-pipeline-progress/functional-test-plan.md
+  behavioural_test_plan_path: .workitems/N01-ingest-ocr/F49-pipeline-progress/behavioural-test-plan.md
+  corpus_e_id: E02  # N01/ingest-ocr phase
+  imported_at: "2026-05-01"
+  source_sha: ""  # filled at design commit
+
+ontology_refs:
+  - mod:pipeline-progress
+  - mod:run-demo-cli
+  - proto:ProgressReporter
+  - cls:NoOpProgressReporter
+  - cls:RichProgressReporter
+  - cls:StageTiming
+  - cls:PipelineReport
+  - adr:ADR-036
+
+acm_nodes:
+  specs:
+    - id: spec:N01/F49/DE-01
+      name: ProgressReporter protocol
+      description: >
+        Thin callback Protocol injected into run_pipeline().
+        Methods: stage_started, stage_completed, stage_error, token_tick, summarize.
+      feature_refs: [N01/F49-pipeline-progress]
+      status: designed
+
+    - id: spec:N01/F49/DE-02
+      name: RichProgressReporter
+      description: >
+        rich-based concrete implementation with TTY detection at construction.
+        Falls back to plain logging.INFO on non-TTY or ImportError.
+      feature_refs: [N01/F49-pipeline-progress]
+      status: designed
+
+    - id: spec:N01/F49/DE-03
+      name: Pipeline stage instrumentation
+      description: >
+        run_pipeline() wraps each stage with stage_started/stage_completed.
+        Cascade progress via EventListener on CorrectionCascadeService.
+      feature_refs: [N01/F49-pipeline-progress]
+      status: designed
+
+    - id: spec:N01/F49/DE-04
+      name: Summary table
+      description: >
+        summarize() renders a table sorted descending by elapsed_s.
+        TTY: rich.table.Table. Non-TTY: TSV with Total footer.
+      feature_refs: [N01/F49-pipeline-progress]
+      status: designed
+
+    - id: spec:N01/F49/DE-05
+      name: PipelineReport value object
+      description: >
+        frozen dataclass PipelineReport(stages: tuple[StageTiming, ...]).
+        StageTiming(name, elapsed_s, metric_label, errored). Returned from run_pipeline().
+      feature_refs: [N01/F49-pipeline-progress]
+      status: designed
+
+  tasks:
+    - id: task:N01/F49/T-01
+      name: progress-reporter-protocol-and-value-objects
+      feature_refs: [N01/F49-pipeline-progress]
+      spec_refs: [spec:N01/F49/DE-01, spec:N01/F49/DE-05]
+      test_path: tests/unit/test_progress_reporter.py
+      status: pending
+
+    - id: task:N01/F49/T-02
+      name: noop-progress-reporter
+      feature_refs: [N01/F49-pipeline-progress]
+      spec_refs: [spec:N01/F49/DE-01]
+      test_path: tests/unit/test_progress_reporter.py
+      status: pending
+
+    - id: task:N01/F49/T-03
+      name: wire-reporter-into-run-pipeline
+      feature_refs: [N01/F49-pipeline-progress]
+      spec_refs: [spec:N01/F49/DE-03, spec:N01/F49/DE-05]
+      test_path: tests/unit/test_pipeline_progress.py
+      status: pending
+
+    - id: task:N01/F49/T-04
+      name: wire-reporter-as-event-listener-cascade
+      feature_refs: [N01/F49-pipeline-progress]
+      spec_refs: [spec:N01/F49/DE-03]
+      test_path: tests/unit/test_pipeline_progress.py
+      status: pending
+
+    - id: task:N01/F49/T-05
+      name: rich-progress-reporter-tty-and-summary
+      feature_refs: [N01/F49-pipeline-progress]
+      spec_refs: [spec:N01/F49/DE-02, spec:N01/F49/DE-04]
+      test_path: tests/unit/test_rich_progress_reporter.py
+      status: pending
+
+    - id: task:N01/F49/T-06
+      name: wire-reporter-into-run-demo-cli
+      feature_refs: [N01/F49-pipeline-progress]
+      spec_refs: [spec:N01/F49/DE-02]
+      test_path: tests/unit/test_pipeline_progress.py
+      status: pending
+
+acm_edges:
+  - source: spec:N01/F49/DE-01
+    target: spec:N01/F49/DE-02
+    rel: IMPLEMENTED_BY
+    note: RichProgressReporter implements ProgressReporter protocol
+
+  - source: spec:N01/F49/DE-01
+    target: task:N01/F49/T-01
+    rel: TRACED_TO
+
+  - source: spec:N01/F49/DE-02
+    target: task:N01/F49/T-05
+    rel: TRACED_TO
+
+  - source: spec:N01/F49/DE-03
+    target: task:N01/F49/T-03
+    rel: TRACED_TO
+
+  - source: spec:N01/F49/DE-03
+    target: task:N01/F49/T-04
+    rel: TRACED_TO
+
+  - source: spec:N01/F49/DE-04
+    target: task:N01/F49/T-05
+    rel: TRACED_TO
+
+  - source: spec:N01/F49/DE-05
+    target: task:N01/F49/T-01
+    rel: TRACED_TO
+
+  - source: spec:N01/F49/DE-05
+    target: task:N01/F49/T-03
+    rel: TRACED_TO
+
+  - source: adr:ADR-036
+    target: spec:N01/F49/DE-01
+    rel: GOVERNS
+
+task_to_de:
+  T-01: [DE-01, DE-05]
+  T-02: [DE-01]
+  T-03: [DE-03, DE-05]
+  T-04: [DE-03]
+  T-05: [DE-02, DE-04]
+  T-06: [DE-02]
+
+tests:
+  - test_path: tests/unit/test_progress_reporter.py
+    ontology_id: task:N01/F49/T-01
+    status: pending
+  - test_path: tests/unit/test_progress_reporter.py
+    ontology_id: task:N01/F49/T-02
+    status: pending
+  - test_path: tests/unit/test_pipeline_progress.py
+    ontology_id: task:N01/F49/T-03
+    status: pending
+  - test_path: tests/unit/test_pipeline_progress.py
+    ontology_id: task:N01/F49/T-04
+    status: pending
+  - test_path: tests/unit/test_rich_progress_reporter.py
+    ontology_id: task:N01/F49/T-05
+    status: pending
+  - test_path: tests/unit/test_pipeline_progress.py
+    ontology_id: task:N01/F49/T-06
+    status: pending

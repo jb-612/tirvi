@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import subprocess as _sp
 from tirvi.pipeline import make_poc_deps, make_stub_deps, run_pipeline  # noqa: E402
+from tirvi.progress import RichProgressReporter  # noqa: E402
 
 _YAP_BIN = Path("/tmp/yap_bin")
 _YAP_PORT = 8090
@@ -172,7 +173,11 @@ def main() -> None:
         _LOG.info("Running pipeline in POC mode (Tesseract OCR + Wavenet TTS)")
     _LOG.info("Running pipeline on %s …", _PDF)
     pdf_bytes = _PDF.read_bytes()
-    result = run_pipeline(pdf_bytes, _DRAFTS, deps)
+    reporter = RichProgressReporter()
+    try:
+        result = run_pipeline(pdf_bytes, _DRAFTS, deps, reporter=reporter)
+    finally:
+        reporter.summarize()
     drafts_dir: Path = result["drafts_dir"]
     _LOG.info("Artefacts written to %s (sha=%s)", drafts_dir, result["sha"])
 

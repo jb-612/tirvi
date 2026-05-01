@@ -68,3 +68,22 @@ and Feature).
 | F48-4 | D-LOG-INTEGRITY | Low | Compliance | Signature on `corrections.json` not in MVP scope; on-device only mitigates | `behavioural-test-plan.md` Misuse Behaviour | Forged audit trail in adversarial setting | Trust regression for QA flow | When MVP+1 introduces multi-user trust boundary | SRE + product | v1.1 | N02/F48 | (stub) |
 
 **F48 deferred tally**: 1 Critical · 0 High · 2 Medium · 1 Low — all carry explicit re-evaluation triggers.
+
+---
+
+## Append: N01/F49 CLI pipeline progress reporting — deferred findings
+
+> **Issue stubs only — `gh issue create` not called for this batch** (same
+> pattern as F48: portable to GitHub issues via the deferred-finding-issue
+> template once approved by the user).
+
+| # | ID | Severity | Area | Reason for Deferral | Affected Files | Business Risk | Technical Risk | Re-Evaluation Trigger | Recommended Owner | Due Condition | Related Feature | Issue URL |
+|---|-----|---------|------|--------------------|----------------|---------------|----------------|----------------------|-------------------|---------------|-----------------|-----------|
+| F49-1 | D-F49-ONTOLOGY-WRITE | Medium | Ontology | `ontology/*.yaml` is a protected path (orchestrator.md); HITL required to write business_domains/dependencies/testing YAML additions for F49 | `ontology/business-domains.yaml`, `ontology/dependencies.yaml`, `ontology/testing.yaml` | Ontology cross-walk incomplete until F49 biz objects registered; traceability queries miss F49 | No implementation risk; design artefacts are complete in workitem folder | When user explicitly authorizes ontology YAML update via HITL gate | Repository owner | Before sw-designpipeline run for F49 | N01/F49 | (stub) |
+| F49-2 | D-F49-ARCH-02 | Medium | Architecture | `rich` ImportError guard — production image may not have `rich`; guard needed in ProgressReporter constructor | `tirvi/pipeline.py` (future), `scripts/run_demo.py` (future) | Pipeline crashes if `rich` absent; plain-log fallback not activated | Minor; guard is a 3-line try/except | Implement during TDD Green phase for ProgressReporter | TDD code-writer | TDD T-xx green | N01/F49 | (stub) |
+| F49-3 | D-F49-ADV-02 | Medium | Architecture | Thread-safety: if `run_page` is ever parallelized, shared ProgressReporter counter would be racy; must document non-thread-safe assumption | `tirvi/correction/service.py` design notes | Future parallelization silently corrupts progress counters | Low risk today (sequential); risk increases with future refactors | When sw-designpipeline adds design notes for ProgressReporter; note non-thread-safe contract explicitly | sw-designpipeline | Before sw-design closes | N01/F49 | (stub) |
+| F49-4 | D-F49-ADV-04 | Low | Robustness | atexit/finally flush — if Ctrl-C is pressed during pipeline execution, summary table not printed | `scripts/run_demo.py` main() | Minor UX annoyance; operator loses timing data on abort | Trivial fix (try/finally around run_pipeline call) | TDD task for ProgressReporter cleanup path | TDD code-writer | TDD implementation | N01/F49 | (stub) |
+
+**F49 deferred tally**: 0 Critical · 0 High · 3 Medium · 1 Low — all carry explicit re-evaluation triggers.
+Low items (F49-ARCH-03, F49-TEST-01, F49-TEST-02, F49-TEST-03) are tracked in
+design-review.md and will be picked up by TDD; not elevated to this file.
