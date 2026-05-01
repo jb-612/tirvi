@@ -340,3 +340,80 @@ function _buildExportBtn() {
   btn.hidden = true;
   return btn;
 }
+
+// ---------------------------------------------------------------------------
+// Review list helpers (exported for testability)
+// ---------------------------------------------------------------------------
+
+/**
+ * Mount a scrollable review list of all submitted annotations for a run.
+ * @param {HTMLElement} container
+ * @param {string} run
+ * @param {{ keys: function(): string[], getItem: function(string): string|null, removeItem: function(string): void }} ls
+ */
+export function mountReviewList(container, run, ls) {
+  container.innerHTML = "";
+  const entries = _collectEntries(run, ls);
+
+  if (entries.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "review-list-empty";
+    empty.textContent = "No words flagged yet";
+    container.appendChild(empty);
+    return;
+  }
+
+  const list = document.createElement("ul");
+  list.className = "review-list";
+
+  entries.forEach((entry) => _appendReviewRow(list, entry, run, ls, container));
+
+  container.appendChild(list);
+}
+
+function _appendReviewRow(list, entry, run, ls, container) {
+  const li = document.createElement("li");
+  li.className = "review-row";
+
+  const wordSpan = document.createElement("span");
+  wordSpan.className = "review-mark-id";
+  wordSpan.textContent = entry.markId;
+
+  const catSpan = document.createElement("span");
+  catSpan.className = "review-category";
+  catSpan.textContent = entry.category;
+
+  const noteSpan = document.createElement("span");
+  noteSpan.className = "review-note";
+  noteSpan.textContent = (entry.note ?? "").slice(0, 100);
+
+  const delBtn = document.createElement("button");
+  delBtn.className = "review-delete-btn";
+  delBtn.textContent = "Delete";
+  delBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    ls.removeItem(`feedback-entry:${run}:${entry.markId}`);
+    refreshReviewList(container, run, ls);
+  });
+
+  li.appendChild(wordSpan);
+  li.appendChild(catSpan);
+  li.appendChild(noteSpan);
+  li.appendChild(delBtn);
+
+  li.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("feedback-navigate", { detail: { markId: entry.markId } }));
+  });
+
+  list.appendChild(li);
+}
+
+/**
+ * Clear and re-render the review list.
+ * @param {HTMLElement} container
+ * @param {string} run
+ * @param {Object} ls
+ */
+export function refreshReviewList(container, run, ls) {
+  mountReviewList(container, run, ls);
+}

@@ -47,7 +47,7 @@ T-10..T-13 + Dependency DAG here. T-01..T-09 in `tasks.md`.
 
 ## T-13: Annotation review list and deletion
 
-- [ ] **T-13 done**
+- [x] **T-13 done**
 - design_element: DE-06
 - acceptance_criteria: [US-07/AC-29, US-07/AC-30, US-07/AC-31, US-07/AC-32, US-07/AC-33]
 - ft_anchors: [FT-330]

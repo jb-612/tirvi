@@ -3,7 +3,7 @@
 // Spec: N04/F33 DE-06  FT: FT-317, FT-318, FT-323, FT-327  BT: BT-210, BT-212
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mountFeedbackPanel, _collectEntries, _exportFeedback } from "../js/feedback.js";
+import { mountFeedbackPanel, _collectEntries, _exportFeedback, mountReviewList, refreshReviewList } from "../js/feedback.js";
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -656,5 +656,160 @@ describe("T-12: feedback export", () => {
     const entries = _collectEntries("001", lsMock);
     expect(entries.length).toBe(2);
     expect(entries.every((e) => e.schema_version === "1")).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-13: annotation review list
+// ---------------------------------------------------------------------------
+
+describe("T-13: annotation review list", () => {
+  function _makeReviewLsMock(entries = {}) {
+    const store = new Map(Object.entries(entries));
+    return {
+      getItem: vi.fn((key) => store.get(key) ?? null),
+      setItem: vi.fn((key, value) => store.set(key, value)),
+      removeItem: vi.fn((key) => { store.delete(key); }),
+      keys: () => Array.from(store.keys()),
+      _store: store,
+    };
+  }
+
+  function _reviewEntry(run, markId, category = "wrong_pronunciation", note = "test note") {
+    return JSON.stringify({
+      markId,
+      run,
+      category,
+      note,
+      ocr_text: "שלום",
+      diacritized_text: "שָׁלוֹם",
+      stages_visible_at_capture: ["01-ocr"],
+      schema_version: "1",
+    });
+  }
+
+  let container;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    Object.defineProperty(window, "location", {
+      value: { ...window.location, search: "" },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    container.remove();
+    vi.unstubAllGlobals();
+  });
+
+  it("mountReviewList renders empty state when no annotations exist", () => {
+    const ls = _makeReviewLsMock();
+    mountReviewList(container, "001", ls);
+    const empty = container.querySelector(".review-list-empty");
+    expect(empty).not.toBeNull();
+    expect(empty.textContent).toBe("No words flagged yet");
+  });
+
+  it("mountReviewList renders one row per annotation", () => {
+    const ls = _makeReviewLsMock({
+      "feedback-entry:001:word-1": _reviewEntry("001", "word-1"),
+      "feedback-entry:001:word-2": _reviewEntry("001", "word-2"),
+    });
+    mountReviewList(container, "001", ls);
+    const rows = container.querySelectorAll(".review-row");
+    expect(rows.length).toBe(2);
+  });
+
+  it("each row shows markId, category, and note", () => {
+    const ls = _makeReviewLsMock({
+      "feedback-entry:001:word-5": _reviewEntry("001", "word-5", "wrong_stress", "my note text"),
+    });
+    mountReviewList(container, "001", ls);
+    const row = container.querySelector(".review-row");
+    expect(row).not.toBeNull();
+    expect(row.textContent).toContain("word-5");
+    expect(row.textContent).toContain("wrong_stress");
+    expect(row.textContent).toContain("my note text");
+  });
+
+  it("clicking a row dispatches feedback-navigate event with markId", () => {
+    const ls = _makeReviewLsMock({
+      "feedback-entry:001:word-7": _reviewEntry("001", "word-7"),
+    });
+    mountReviewList(container, "001", ls);
+
+    const dispatchSpy = vi.spyOn(document, "dispatchEvent");
+    const row = container.querySelector(".review-row");
+    row.click();
+
+    expect(dispatchSpy).toHaveBeenCalled();
+    const evt = dispatchSpy.mock.calls[0][0];
+    expect(evt.type).toBe("feedback-navigate");
+    expect(evt.detail.markId).toBe("word-7");
+
+    dispatchSpy.mockRestore();
+  });
+
+  it("delete button removes entry from localStorage", () => {
+    const ls = _makeReviewLsMock({
+      "feedback-entry:001:word-1": _reviewEntry("001", "word-1"),
+      "feedback-entry:001:word-2": _reviewEntry("001", "word-2"),
+    });
+    mountReviewList(container, "001", ls);
+
+    const deleteBtn = container.querySelector(".review-delete-btn");
+    deleteBtn.click();
+
+    expect(ls.removeItem).toHaveBeenCalledWith(expect.stringMatching(/^feedback-entry:001:/));
+  });
+
+  it("delete button re-renders list (entry gone)", () => {
+    const ls = _makeReviewLsMock({
+      "feedback-entry:001:word-1": _reviewEntry("001", "word-1"),
+      "feedback-entry:001:word-2": _reviewEntry("001", "word-2"),
+    });
+    mountReviewList(container, "001", ls);
+    expect(container.querySelectorAll(".review-row").length).toBe(2);
+
+    const deleteBtn = container.querySelector(".review-delete-btn");
+    deleteBtn.click();
+
+    expect(container.querySelectorAll(".review-row").length).toBe(1);
+  });
+
+  it("list updates in real-time after new submission via refreshReviewList", () => {
+    const ls = _makeReviewLsMock({
+      "feedback-entry:001:word-1": _reviewEntry("001", "word-1"),
+    });
+    mountReviewList(container, "001", ls);
+    expect(container.querySelectorAll(".review-row").length).toBe(1);
+
+    // Simulate new entry stored (as would happen after successful POST)
+    ls._store.set("feedback-entry:001:word-2", _reviewEntry("001", "word-2"));
+
+    refreshReviewList(container, "001", ls);
+    expect(container.querySelectorAll(".review-row").length).toBe(2);
+  });
+
+  it("renders 200 entries without error", () => {
+    const entries = {};
+    for (let i = 0; i < 200; i++) {
+      const markId = `word-${i}`;
+      entries[`feedback-entry:001:${markId}`] = _reviewEntry("001", markId);
+    }
+    const ls = _makeReviewLsMock(entries);
+
+    let error = null;
+    try {
+      mountReviewList(container, "001", ls);
+    } catch (e) {
+      error = e;
+    }
+
+    expect(error).toBeNull();
+    expect(container.querySelectorAll(".review-row").length).toBe(200);
   });
 });
