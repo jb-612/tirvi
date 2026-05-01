@@ -1,40 +1,53 @@
 ---
-feature_id: TBD
-feature_type: TBD  # scaffolding | domain | ui | integration
-status: scaffolded  # scaffolded | drafting | review | approved | implementing | done
-hld_refs: []
+feature_id: N05/F45
+feature_type: domain
+status: designed
+hld_refs: ["HLD-§3.4"]
 prd_refs: []
 adr_refs: []
+deferred: true
+deferred_reason: "Post-POC — upload attestation excluded from POC scope per PLAN-POC.md §Deferred"
 ---
 
-# Feature: TBD
+# Feature: F45 — Upload Attestation (No-PII Verification Gate)
 
 ## Overview
 
-TBD — fill via `@design-pipeline`. State the bounded behavior in 2-3 sentences.
+Adds a verification gate at the upload endpoint that requires the uploader to
+attest that the document contains no personal identifying information beyond
+what is necessary for exam accommodation. The attestation is logged and stored
+alongside the upload metadata. Deferred to post-POC.
+
+## biz_corpus
+
+corpus_e_id: E11-F03
+biz_status: deferred
+biz_notes: "User stories TBD — biz-functional-design not yet run for N05."
 
 ## Dependencies
 
-- Upstream features: []
-- Adapter ports consumed: []
-- External services: []
-
-## Interfaces
-
-TBD — public contracts (port signatures, REST routes, JSON shapes) this feature
-exposes or consumes.
-
-## Approach
-
-TBD — sequence of design elements, each with HLD ref.
+- Upstream features: [N01 upload pipeline]
+- Adapter ports consumed: [StoragePort]
+- External services: [Cloud Storage (HLD-§3.4), FastAPI upload handler]
 
 ## Design Elements
 
-- DE-01: TBD (ref: HLD-X.Y/Element)
+- DE-01: Upload API request body extended with `attested_no_pii: bool` field;
+  FastAPI handler rejects uploads where field is false or absent (ref: HLD-§3.4)
+- DE-02: Attestation record written to `manifests/{doc_id}/attestation.json`
+  in GCS at upload time (ref: HLD-§3.4/StorageLayout)
+
+## Approach
+
+1. DE-01: Extend `POST /documents` request schema with required boolean field;
+   HTTP 422 if missing or false.
+2. DE-02: On accepted upload, write attestation record with timestamp, uploader
+   ID (session token hash), and attestation flag to GCS.
 
 ## Decisions
 
-TBD — material choices that resolve options. Link ADRs.
+- Client-side attestation only for v0; automated PII scan (e.g., DLP API) is future scope.
+- Attestation record is subject to the same TTL as the document (F43).
 
 ## HLD Deviations
 
@@ -44,12 +57,14 @@ TBD — material choices that resolve options. Link ADRs.
 
 ## HLD Open Questions
 
-TBD — list relevant HLD §12 OQs and the assumption this design adopts.
+- HLD §12: whether to integrate Cloud DLP for automated scan — deferred to post-MVP.
 
 ## Risks
 
-TBD — top 3 risks + mitigation.
+1. False attestations — mitigated by audit trail in GCS + DPIA process (F44).
+2. Friction reducing adoption — mitigated by clear UI copy explaining why attestation is needed.
+3. Attestation record subject to TTL deletion — note: attestation may need longer retention than document.
 
 ## Out of Scope
 
-TBD — explicit non-goals to keep the boundary tight.
+- Automated PII scanning, DLP integration, DPIA process (F44), no-PII logging (F46).

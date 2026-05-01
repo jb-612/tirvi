@@ -1,36 +1,29 @@
 ---
-feature_id: TBD
-status: scaffolded
-total_estimate_hours: 0
+feature_id: N05/F40
+status: ready
+total_estimate_hours: 2
+deferred: true
 ---
 
-# Tasks: TBD
+# Tasks: F40 — CI Quality Gate Runner (pytest-based bench gates)
 
-Atomic tasks (≤ 2h each), dependency-ordered, every task traced to a Design
-Element + Acceptance Criterion.
+Stub task list. Feature is deferred post-POC. Tasks will be expanded when
+biz-functional-design runs for N05.
 
-## T-01: TBD
+## T-01: Implement pytest bench gates and threshold configuration
 
 - [ ] **T-01 done**
-- design_element: DE-01
+
+- design_element: DE-01, DE-02
 - acceptance_criteria: [AC-01]
-- estimate: 0h
-- test_file: TBD
-- dependencies: []
-- hints: TBD
-
-## T-02: TBD
-
-- [ ] **T-02 done**
-- design_element: DE-01
-- acceptance_criteria: [AC-02]
-- estimate: 0h
-- test_file: TBD
-- dependencies: [T-01]
-- hints: TBD
+- estimate: 2h
+- test_file: tests/bench/test_quality_gates.py
+- dependencies: [F39/T-01]
+- hints: conftest.py fixture fetches bench/latest/results.json from GCS;
+  thresholds.yaml configures max_wer and min_mos_proxy; CI runs pytest tests/bench/.
 
 ## Dependency DAG
 
 ```
-T-01 → T-02
+T-01
 ```

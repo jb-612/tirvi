@@ -1,0 +1,17 @@
+version: "1.0"
+feature_id: N05/F43
+description: "Ontology delta for F43 — Draft TTL Automation (Expiry + Cleanup)"
+deferred: true
+
+modules:
+  - id: "mod:ttl-automation"
+    label: "GCS TTL Lifecycle Automation"
+    layer: integration
+    hld_ref: "HLD-§3.4"
+    notes: "GCS lifecycle rules auto-delete pdfs/pages/plans/manifests after 7 days; audio/ excluded."
+
+tasks:
+  - id: "task:N05/F43/T-01"
+    label: "Configure GCS lifecycle rules and implement cleanup verification script"
+    module: "mod:ttl-automation"
+    status: pending

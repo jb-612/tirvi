@@ -1,0 +1,17 @@
+version: "1.0"
+feature_id: N05/F45
+description: "Ontology delta for F45 — Upload Attestation (No-PII Verification Gate)"
+deferred: true
+
+modules:
+  - id: "mod:upload-attestation"
+    label: "Upload Attestation Gate"
+    layer: domain
+    hld_ref: "HLD-§3.4"
+    notes: "Extends POST /documents with attested_no_pii field; writes attestation record to GCS."
+
+tasks:
+  - id: "task:N05/F45/T-01"
+    label: "Extend upload API with attestation field and write attestation record"
+    module: "mod:upload-attestation"
+    status: pending

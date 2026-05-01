@@ -1,0 +1,17 @@
+version: "1.0"
+feature_id: N05/F39
+description: "Ontology delta for F39 — Baseline Quality Benchmark Harness v0"
+deferred: true
+
+modules:
+  - id: "mod:bench-runner"
+    label: "Benchmark Runner"
+    layer: integration
+    hld_ref: "HLD-§5.4"
+    notes: "Drives full pipeline against held-out pages; records WER + MOS proxy."
+
+tasks:
+  - id: "task:N05/F39/T-01"
+    label: "Implement benchmark runner and GCS results store"
+    module: "mod:bench-runner"
+    status: pending

@@ -1,0 +1,17 @@
+version: "1.0"
+feature_id: N05/F42
+description: "Ontology delta for F42 — Latency and Cost Profiling per Page"
+deferred: true
+
+modules:
+  - id: "mod:latency-cost-profiler"
+    label: "Latency and Cost Profiler"
+    layer: integration
+    hld_ref: "HLD-§5.4"
+    notes: "Timer context manager + cost estimator; writes per-page profiling JSON to GCS."
+
+tasks:
+  - id: "task:N05/F42/T-01"
+    label: "Implement pipeline timing decorator and cost estimator module"
+    module: "mod:latency-cost-profiler"
+    status: pending
