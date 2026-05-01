@@ -152,8 +152,15 @@ export function startHighlightLoop(state) {
   };
 }
 
+// Wavenet timestamps lead perceived audio by ~300ms due to buffering.
+// Subtract this offset so the highlight matches what the listener hears.
+const HIGHLIGHT_OFFSET_S = parseFloat(
+  document.documentElement.dataset.highlightOffset ?? "0.3"
+);
+
 function _renderActiveWord(state) {
-  const markId = findActiveMark(state.timings, state.audio.currentTime);
+  const t = Math.max(0, state.audio.currentTime - HIGHLIGHT_OFFSET_S);
+  const markId = findActiveMark(state.timings, t);
   // Notify inspector regardless of whether we can resolve a bbox.
   if (typeof state.onActiveMark === "function") state.onActiveMark(markId);
   if (!markId) return;
