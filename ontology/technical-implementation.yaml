@@ -150,6 +150,49 @@ modules:
     bounded_context: audio_delivery
     source_path: tirvi/player/
     status: designed
+  # --- N04/F33 Exam Review Portal ---
+  - id: MOD-N04-F33-audit-sink
+    name: tirvi.debug.sink
+    description: AuditSink — per-stage pipeline artifact writer; opt-in via --review flag; takes domain result types only (ADR-029)
+    feature_refs: [N04/F33]
+    bounded_context: exam_review
+    source_path: tirvi/debug/sink.py
+    status: designed
+  - id: MOD-N04-F33-manifest
+    name: tirvi.debug.manifest
+    description: build_manifest — enumerates run dir artifacts, emits manifest.json consumed by sidebar.js
+    feature_refs: [N04/F33]
+    bounded_context: exam_review
+    source_path: tirvi/debug/manifest.py
+    status: designed
+  - id: MOD-N04-F33-sidebar
+    name: player.js.sidebar
+    description: mountArtifactTree — fetches manifest.json, renders collapsible artifact tree grouped by pipeline stage with human-readable labels
+    feature_refs: [N04/F33]
+    bounded_context: exam_review
+    source_path: player/js/sidebar.js
+    status: designed
+  - id: MOD-N04-F33-preview
+    name: player.js.preview
+    description: renderArtifact — dispatches artifact rendering by file extension (JSON syntax-highlighted, txt plain, png img, mp3 audio)
+    feature_refs: [N04/F33]
+    bounded_context: exam_review
+    source_path: player/js/preview.js
+    status: designed
+  - id: MOD-N04-F33-feedback
+    name: player.js.feedback
+    description: mountFeedbackPanel — word annotation panel; 5-category issue picker; localStorage draft persistence; POST /feedback; export; review list
+    feature_refs: [N04/F33]
+    bounded_context: exam_review
+    source_path: player/js/feedback.js
+    status: designed
+  - id: MOD-N04-F33-runner
+    name: player.js.runner
+    description: currentRunNumber / listAvailableRuns — reads run from URL ?run=NN or manifest index; handles invalid run with user-readable error
+    feature_refs: [N04/F33]
+    bounded_context: exam_review
+    source_path: player/js/runner.js
+    status: designed
 
 # Services — runtime processes (none introduced by F03).
   - id: MOD-N02-F15
@@ -1015,6 +1058,13 @@ adr_decisions:
     bounded_context: hebrew_text
     source_path: docs/ADR/ADR-035-hebrew-interpretation-corrections-log-schema.md
     status: proposed
+  - id: adr:036
+    name: Exam Review Portal — auth deferred as NFR (localhost-only until auth infra exists)
+    description: Portal ships with no auth/authz layer; localhost-only during POC; AUTH_GATE TODO comment mandatory in run_demo.py; separate auth NFR gates any network deployment.
+    feature_refs: [N04/F33]
+    bounded_context: exam_review
+    source_path: docs/ADR/ADR-036-exam-review-portal-auth-deferred-nfr.md
+    status: accepted
 tasks:
   - id: task:N00/F03/T-01
     name: scaffold-tirvi-package
@@ -1752,4 +1802,83 @@ tasks:
     feature_refs: [N02/F48]
     spec_refs: [spec:N02/F48/DE-04]
     test_path: tests/unit/test_privacy_invariant.py
+    status: designed
+  # --- N04/F33 Exam Review Portal ---
+  - id: task:N04/F33/T-01
+    name: reframe-player-layout-review-portal
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-01]
+    test_path: player/test/review-portal.spec.js
+    status: designed
+  - id: task:N04/F33/T-02
+    name: implement-audit-sink
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-04]
+    test_path: tests/unit/test_audit_sink.py
+    status: designed
+  - id: task:N04/F33/T-03
+    name: implement-build-manifest
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-04, spec:N04/F33/DE-05]
+    test_path: tests/unit/test_manifest.py
+    status: designed
+  - id: task:N04/F33/T-04
+    name: wire-audit-sink-into-pipeline
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-04, spec:N04/F33/DE-05]
+    test_path: tests/unit/test_pipeline.py
+    status: designed
+  - id: task:N04/F33/T-05
+    name: add-review-endpoint-and-feedback-post
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-06]
+    test_path: tests/unit/test_run_demo.py
+    status: designed
+  - id: task:N04/F33/T-06
+    name: implement-sidebar-js-artifact-tree
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-03]
+    test_path: player/test/sidebar.spec.js
+    status: designed
+  - id: task:N04/F33/T-07
+    name: implement-preview-js-artifact-renderer
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-03]
+    test_path: player/test/preview.spec.js
+    status: designed
+  - id: task:N04/F33/T-08
+    name: implement-feedback-js-annotation-panel
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-06]
+    test_path: player/test/feedback.spec.js
+    status: designed
+  - id: task:N04/F33/T-09
+    name: implement-runner-js-run-management
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-05]
+    test_path: player/test/runner.spec.js
+    status: designed
+  - id: task:N04/F33/T-10
+    name: draft-annotation-localstorage-persistence
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-06]
+    test_path: player/test/feedback.spec.js
+    status: designed
+  - id: task:N04/F33/T-11
+    name: run-switching-version-navigator
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-05]
+    test_path: player/test/sidebar.spec.js
+    status: designed
+  - id: task:N04/F33/T-12
+    name: feedback-export-download-json
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-06]
+    test_path: player/test/feedback.spec.js
+    status: designed
+  - id: task:N04/F33/T-13
+    name: annotation-review-list-and-deletion
+    feature_refs: [N04/F33]
+    spec_refs: [spec:N04/F33/DE-06]
+    test_path: player/test/feedback.spec.js
     status: designed
