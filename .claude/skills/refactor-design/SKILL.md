@@ -44,7 +44,7 @@ Do NOT copy `user-stories-template.md` — refactoring has no new user stories.
 
 Read existing research to inform the design. Check these sources in order:
 
-1. **Migration plan**: `docs/research/re-architect/axon-migration-plan.md`
+1. **Migration plan**: `docs/research/re-architect/migration-plan.md`
 2. **Conclusion**: `docs/research/re-architect/04-conclusion.md`
 3. **Component profiles**: `docs/research/component-profiles.md`
 4. **Behavioral spec**: `docs/research/behavioral-spec.md`

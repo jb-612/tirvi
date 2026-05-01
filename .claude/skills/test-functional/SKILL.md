@@ -167,8 +167,8 @@ import (
     "context"
     "testing"
 
-    "github.com/jb-612/axon-neo/internal/core/service"
-    "github.com/jb-612/axon-neo/pkg/testutil"
+    "github.com/<org>/<project>/internal/core/service"
+    "github.com/<org>/<project>/pkg/testutil"
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
 )
@@ -241,8 +241,8 @@ func TestFUNC_N01_F01_DBPortCRUD(t *testing.T) {
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:axon_neo/features/board/board_provider.dart';
-import 'package:axon_neo/core/models/board_item.dart';
+import 'package:<your_app>/features/board/board_provider.dart';
+import 'package:<your_app>/core/models/board_item.dart';
 
 // Import from shared fakes directory (or use mockito @GenerateMocks)
 import '../../fakes/fake_grpc_client.dart';
@@ -345,7 +345,7 @@ func TestSMOKE_N00_F01_001_GoBuildSucceeds(t *testing.T) {
 // File: flutter_app/test/smoke_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:axon_neo/main.dart';
+import 'package:<your_app>/main.dart';
 
 void main() {
   // SMOKE-N00-F03-001: flutter_test_passes

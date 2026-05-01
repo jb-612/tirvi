@@ -47,13 +47,14 @@ if [ -z "$REFS" ]; then
   exit 0
 fi
 
-# Heading conventions accepted in hld.md:
-#   * axon-neo style: `# HLD N. Title`              (matches `HLD §N`)
-#   * tirvi style:    `## N. Title`                 (matches `HLD §N`)
+# Heading conventions accepted in HLD.md:
+#   * Legacy harness style: `# HLD N. Title`          (matches `HLD §N`)
+#   * Project style:        `## N. Title`             (matches `HLD §N`)
 #   * Sub-section (level-2 OR level-3):  `## N.M — Title` / `### N.M Title`  (matches `HLD §N.M`)
-#   * Deep nest:      `### N.M.K — Title`           (matches `HLD §N.M.K`)
-# tirvi's HLD.md uses level-3 (`###`) for sub-sections like §3.1, §3.3, §5.1–5.4;
-# the regex below accepts both level-2 and level-3 to remain portable.
+#   * Deep nest:            `### N.M.K — Title`       (matches `HLD §N.M.K`)
+# This project's HLD.md uses level-3 (`###`) for sub-sections like §3.1,
+# §3.3, §5.1–5.4; the regex below accepts both level-2 and level-3 to
+# remain portable.
 FAIL_COUNT=0
 while IFS= read -r REF; do
   SECTION=$(printf '%s\n' "$REF" | sed -E 's/^HLD §//')

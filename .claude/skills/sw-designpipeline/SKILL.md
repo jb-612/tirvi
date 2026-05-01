@@ -222,7 +222,11 @@ Pipeline decomposes directly — does NOT invoke `@task-breakdown`.
    - Map relevant FTs to task (so TDD knows which tests to write)
    - Define test file path and dependencies
 5. Build dependency DAG
-6. Write `tasks.md`
+6. Write `tasks.md` — each task is a `## T-NN: <imperative verb> <what>`
+   header followed **immediately** by the standard done marker on its own
+   line: `- [ ] **T-NN done**`. The marker is the producer/consumer
+   contract surface per `.claude/rules/task-format.md`; TDD flips it to
+   `[x]` when tests pass. Numbering uses `T-NN` (with dash, two digits).
 7. Update `traceability.yaml`:
    - `acm_nodes.tasks` (one per T-NN)
    - `acm_edges` (TRACED_TO, IMPLEMENTED_BY, VERIFIED_BY)

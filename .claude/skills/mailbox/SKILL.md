@@ -81,10 +81,10 @@ Auto-provisions mailbox on session start. Reports pending actions if exists.
 
 ```bash
 # Output on first run:
-=== Mailbox [axon-neo]: created (incoming + internal + pub/sub) ===
+=== Mailbox [tirvi]: created (incoming + internal + pub/sub) ===
 
 # Output on subsequent runs:
-=== Mailbox [axon-neo]: incoming=4 internal=3 | actions pending: incoming:1 ===
+=== Mailbox [tirvi]: incoming=4 internal=3 | actions pending: incoming:1 ===
 ```
 
 ### mailbox-send.sh
@@ -165,7 +165,7 @@ mailbox-complete.sh --folder incoming <message-id> "Deployed, health check green
 # Table format
 mailbox-list.sh
 # PROJECT                        PENDING
-# axon-neo                       2
+# tirvi                       2
 # other-project                  0
 
 # JSON format
@@ -178,19 +178,19 @@ From any Claude Code session, use the Redis MCP tools directly:
 
 ```
 # Read messages
-mcp__redis__xrange  key=mailbox:axon-neo:internal  count=10
+mcp__redis__xrange  key=mailbox:tirvi:internal  count=10
 
 # Send a message
-mcp__redis__xadd  key=mailbox:axon-neo:internal  fields={kind:action, from:session-1, body:"review this"}
+mcp__redis__xadd  key=mailbox:tirvi:internal  fields={kind:action, from:session-1, body:"review this"}
 
 # Check pending actions
-mcp__redis__hgetall  name=mailbox:axon-neo:internal:status
+mcp__redis__hgetall  name=mailbox:tirvi:internal:status
 
 # List all projects
 mcp__redis__smembers  name=mailbox:projects
 
 # Complete an action
-mcp__redis__hset  name=mailbox:axon-neo:internal:status  key=<msg-id>  value=complete
+mcp__redis__hset  name=mailbox:tirvi:internal:status  key=<msg-id>  value=complete
 ```
 
 ## Configuration

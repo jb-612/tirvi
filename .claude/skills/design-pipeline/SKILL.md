@@ -44,9 +44,9 @@ NOT skippable — they're how decisions and shapes survive into the graph.
 
 | Document | Path | Role |
 |----------|------|------|
-| HLD | `docs/design/go-backend-hld.md` | Design + task origin |
+| HLD | `docs/HLD.md` (or project equivalent) | Design + task origin |
 | HLD Index | `docs/design/hld-index.md` | Compact section map — read FIRST |
-| PRD | `docs/design/axon-neo-prd.md` | User story origin |
+| PRD | `docs/PRD.md` (or project equivalent) | User story origin |
 | Reverse-PRD | `docs/research/pre-refactor/reverse-prd.md` | Legacy baseline |
 | Plan | `.workitems/PLAN.md` | Phase/feature index |
 
@@ -357,11 +357,15 @@ Pipeline decomposes directly — does NOT invoke @task-breakdown.
    - Map relevant acceptance criteria to task
    - Define test file path and dependencies
 4. Build dependency DAG across all tasks
-5. Write tasks.md
+5. Write tasks.md — each task is a `## T-NN: <imperative verb> <what>`
+   header followed **immediately** by the standard done marker on its
+   own line: `- [ ] **T-NN done**`. The marker is the producer/consumer
+   contract surface per `.claude/rules/task-format.md`; TDD flips it to
+   `[x]` when tests pass. Numbering uses `T-NN` (with dash, two digits).
 6. Update traceability.yaml: task → DE → HLD chain + ACM edges
 
-Each task includes: design_element, estimate, test file, dependencies,
-hints, acceptance criteria.
+Each task includes: the standard done marker (above), design_element,
+estimate, test file, dependencies, hints, acceptance criteria.
 
 ## Stage 9: Task Review
 

@@ -39,31 +39,56 @@ Extract from `$ARGUMENTS`:
 
 Read in parallel:
 1. `.workitems/{feature}/design.md` — must exist
-2. `.workitems/{feature}/tasks.md` — must have unchecked tasks (`- [ ]`)
+2. `.workitems/{feature}/tasks.md` — must have at least one unchecked
+   task per the standard done-marker convention (see below)
 3. `.workitems/{feature}/user_stories.md` — must exist
 
-If any fails, STOP and report:
+### Task-format contract
+
+Per `.claude/rules/task-format.md`, each task in `tasks.md` is a
+`## T-NN: <title>` header followed immediately by a single done-marker
+line:
+
+```markdown
+## T-NN: <title>
+
+- [ ] **T-NN done**          ← unchecked
+- [x] **T-NN done**          ← checked
+```
+
+**Producers may vary**: `@design-pipeline` and `@sw-designpipeline`
+emit rich per-task metadata (design_element, acceptance_criteria,
+ft_anchors, etc.); `@task-breakdown` emits the leaner form. **The
+done marker is the same in both.** Read the marker — not any other
+status signal — to determine completion state.
+
+For prerequisite validation, the file is acceptable if at least one
+`- [ ] **T-NN done**` line exists (i.e. at least one task is
+unchecked). If every task is `[x]`, the feature is complete; STOP and
+report that no work remains rather than dispatching to TDD.
+
+If any prerequisite fails, STOP and report:
 
 ```
 TDD Prerequisites FAILED for {feature}:
  - design.md: {present/missing}
- - tasks.md: {has unchecked tasks / empty / missing}
+ - tasks.md: {has unchecked tasks / all checked / empty / missing}
  - user_stories.md: {present/missing}
 
-Run @design-pipeline first to complete planning.
+Run @design-pipeline (or @sw-designpipeline) first to complete planning.
 ```
 
 ## Step 3: Detect Language
 
-Read the target task from `tasks.md`. Identify the language from file paths
-in the task's `test file` or `source file` fields, or from the feature's
-location in the project structure:
+Read the target task from `tasks.md`. Identify the language from file
+paths in the task's `test file` or `source file` fields, or from the
+feature's location in the project structure:
 
 | Signal | Language | Delegate To |
 |--------|----------|-------------|
 | `*_test.go`, `cmd/`, `internal/`, `pkg/` | Go | `@tdd-go` |
 | `flutter_app/test/`, `flutter_app/lib/`, `*.dart` | Flutter/Dart | `@tdd-flutter` |
-| `tests/*.py`, `scripts/*.py` | Python | Handle inline (see below) |
+| `tests/*.py`, `scripts/*.py`, `tirvi/` | Python | Handle inline (see below) |
 
 If ambiguous (task touches both Go and Dart), report to user and ask which
 skill to use.
@@ -80,15 +105,19 @@ The delegated skill handles everything from here: mode selection (bundled vs
 strict with its own language-specific decision table), RED/GREEN/REFACTOR
 phases, task completion, traceability updates.
 
-## Python Inline (Rare)
+## Python Inline
 
-Python is dev-time tooling only. For the rare case of TDD on Python scripts:
+Python may be either dev-time tooling (`scripts/`) or production
+application code (`tirvi/`). For Python tasks:
 
-1. Mode is always **bundled** (Python tooling tasks are specification work)
-2. Test files go in `tests/` mirroring `scripts/` structure
+1. Mode default is **bundled** — language skill prompts; user can choose
+2. Test files go under `tests/` (mirror the source layout)
 3. Run: `pytest tests/ -v -k "test_name"`
-4. No separate agent separation — Python is not in the production app path
-5. Mark task complete in tasks.md when tests pass
+4. Three-agent role separation (test-writer / code-writer / refactorer)
+   per `.claude/rules/tdd-rules.md` Python table — same as Go/Flutter
+5. When tests pass, flip the standard done marker
+   `- [ ] **T-NN done**` → `- [x] **T-NN done**` in `tasks.md` (per
+   `.claude/rules/task-format.md`)
 
 ## What This Skill Does NOT Do
 

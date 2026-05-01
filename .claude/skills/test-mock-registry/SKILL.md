@@ -111,8 +111,8 @@ package fakes
 import (
     "sync"
 
-    "github.com/jb-612/axon-neo/internal/core/domain"
-    "github.com/jb-612/axon-neo/internal/core/port"
+    "github.com/<org>/<project>/internal/core/domain"
+    "github.com/<org>/<project>/internal/core/port"
 )
 
 // Compile-time interface check.
@@ -251,8 +251,8 @@ import (
     "context"
     "sync"
 
-    "github.com/jb-612/axon-neo/internal/core/domain"
-    "github.com/jb-612/axon-neo/internal/core/port"
+    "github.com/<org>/<project>/internal/core/domain"
+    "github.com/<org>/<project>/internal/core/port"
 )
 
 var _ port.EventBus = (*FakeEventBus)(nil)
@@ -377,8 +377,8 @@ import (
     "context"
     "sync"
 
-    "github.com/jb-612/axon-neo/internal/core/domain"
-    "github.com/jb-612/axon-neo/internal/core/port"
+    "github.com/<org>/<project>/internal/core/domain"
+    "github.com/<org>/<project>/internal/core/port"
 )
 
 var _ port.Dispatcher = (*FakeDispatcher)(nil)
@@ -469,7 +469,7 @@ package fakes
 import (
     "sync"
 
-    "github.com/jb-612/axon-neo/internal/core/port"
+    "github.com/<org>/<project>/internal/core/port"
 )
 
 var _ port.ConfigProvider = (*FakeConfigProvider)(nil)
@@ -629,7 +629,7 @@ Details:
   fake_config_provider.go  CURRENT 2 methods   port.ConfigProvider
 
 Consumers can import:
-  import "github.com/jb-612/axon-neo/pkg/testutil/fakes"
+  import "github.com/<org>/<project>/pkg/testutil/fakes"
 ```
 
 # Update Protocol

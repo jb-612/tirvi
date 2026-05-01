@@ -10,7 +10,10 @@ Use `--accept-all` to skip mode selection prompt.
 ## Prerequisites
 
 1. Read `.workitems/{feature}/design.md` — confirm design elements exist
-2. Read `.workitems/{feature}/tasks.md` — find target task, confirm unchecked
+2. Read `.workitems/{feature}/tasks.md` — find target task; confirm
+   unchecked by checking that the line `- [ ] **T-NN done**`
+   immediately under the `## T-NN: <title>` header is `[ ]`, not `[x]`
+   (per `.claude/rules/task-format.md`)
 3. Read `.workitems/{feature}/traceability.yaml` — will update after tests pass
 4. Verify tooling: `command -v golangci-lint` (includes gocyclo)
 
@@ -151,7 +154,9 @@ func TestSharedStore_GetHeartbeats(t *testing.T) {
 
 ## Task Completion
 
-1. Mark task `[x]` in tasks.md
+1. Flip the standard done marker `- [ ] **T-NN done**` →
+   `- [x] **T-NN done**` in `tasks.md` (per
+   `.claude/rules/task-format.md`)
 2. Update traceability.yaml: add `VERIFIED_BY` edge (task → test)
 3. Run coverage: `go test -coverprofile=coverage.out ./...`
 4. Check threshold: fail if package coverage < 80%

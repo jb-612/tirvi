@@ -22,13 +22,15 @@ on-disk state.
 Before a second session starts work on the same repo:
 
 ```bash
-git worktree add ~/VSProjects/axon-neo-<scope> <branch>
+git worktree add ~/VSProjects/<project>-<scope> <branch>
 # Then in the second session:
-cd ~/VSProjects/axon-neo-<scope>
+cd ~/VSProjects/<project>-<scope>
 ```
 
 The `<scope>` suffix names the feature or phase the second session owns
-(e.g., `axon-neo-adr15`, `axon-neo-n08`). Never reuse `axon-neo` itself.
+(e.g., `tirvi-adr15`, `tirvi-n08`). Never reuse the bare project name
+(e.g., `tirvi`) for a worktree path — that's reserved for the primary
+working directory.
 
 **Marker hash check:** the TDD role enforcement marker at
 `/tmp/ba-tdd-markers/<hash>` is keyed by `shasum` of the working
@@ -55,8 +57,8 @@ branch at a new path.
 
 ## Mailbox coordination
 
-The `mailbox:axon-neo:internal` Redis stream is the inter-session
-communication channel. Use it **before** any branch operation that
+The `mailbox:<project>:internal` Redis stream (for tirvi:
+`mailbox:tirvi:internal`) is the inter-session communication channel. Use it **before** any branch operation that
 could affect a shared worktree, and **whenever** one session needs a
 commitment from the other.
 

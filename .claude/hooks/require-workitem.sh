@@ -1,18 +1,20 @@
 #!/bin/bash
-# Block writes to axon-neo production source unless the NEXT unchecked feature
+# Block writes to production source unless the NEXT unchecked feature
 # in .workitems/PLAN.md has its workitem folder scaffolded (design.md +
 # tasks.md + user_stories.md).
 #
-# Why: F02 and F03 both shipped without workitem artifacts because the
-# previous ACM-inherited path check targeted */src/* — a directory that
-# doesn't exist in axon-neo — so the hook silently exited 0 on every write.
-# See docs/research/sdlc-guardrail-failures-f02-f03.md §G2.
+# Why: features have shipped without workitem artifacts in past projects
+# because an ACM-inherited path check targeted */src/* — a directory that
+# does not exist in many projects — and the hook silently exited 0 on
+# every write. See docs/research/sdlc-guardrail-failures-f02-f03.md §G2.
 #
-# Heuristic: block only on writes inside axon-neo production source paths
-# (cmd, pkg, internal, flutter_app/lib, scripts) when the first unchecked
-# feature in PLAN.md has no matching folder under .workitems/N*/F*-*/.
-# Edits inside .workitems/ itself are always allowed so scaffolding can
-# proceed.
+# Heuristic: block only on writes inside production source paths (cmd,
+# pkg, internal, flutter_app/lib, scripts, tirvi) when the first
+# unchecked feature in PLAN.md has no matching folder under
+# .workitems/N*/F*-*/. Edits inside .workitems/ itself are always
+# allowed so scaffolding can proceed. The production-path list is
+# multi-language: Go (cmd, pkg, internal), Dart (flutter_app/lib),
+# Python tooling (scripts), and Python application (tirvi).
 set -euo pipefail
 
 INPUT=$(cat)
@@ -32,9 +34,9 @@ case "$BASE" in
   test_*.py|*_test.py|*_test.go|*.test.ts|*.test.tsx|*.spec.ts|*_test.dart|__init__.py) exit 0 ;;
 esac
 
-# Only check writes to axon-neo production source paths.
+# Only check writes to production source paths (multi-language).
 IS_PRODUCTION=false
-for prod in /cmd/ /pkg/ /internal/ /flutter_app/lib/ /scripts/; do
+for prod in /cmd/ /pkg/ /internal/ /flutter_app/lib/ /scripts/ /tirvi/; do
   if [[ "$FILE_PATH" == *"$prod"* ]]; then
     IS_PRODUCTION=true
     break

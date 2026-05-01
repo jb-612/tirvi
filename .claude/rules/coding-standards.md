@@ -8,7 +8,7 @@ paths:
   - "proto/**/*.proto"
 ---
 
-# Coding Standards for Axon Neo
+# Coding Standards
 
 ## Go Standards
 
@@ -55,7 +55,7 @@ paths:
 28. Use `AsyncValue` (Riverpod) or state classes (Bloc) for loading/error/data
 
 ### Architecture
-29. Feature-first folder structure: `lib/features/<name>/` *(N05 exemption: the imported Axon-workspace Flutter app retains its source flat `lib/{pages,data,shell,components,theme}` layout pending post-N08 consolidation — see ADR-014. The pre-existing axon-neo F03 scaffold contained only `.gitkeep` placeholders, so the exemption clobbers nothing real.)*
+29. Feature-first folder structure: `lib/features/<name>/` *(N05 exemption: an imported upstream Flutter app retains its source flat `lib/{pages,data,shell,components,theme}` layout pending post-N08 consolidation — see ADR-014. The pre-existing F03 scaffold contained only `.gitkeep` placeholders, so the exemption clobbers nothing real.)*
 30. Each feature: `data/` (repositories, models), `domain/` (entities, use cases), `presentation/` (widgets, providers) *(N05 exemption applies)*
 31. gRPC client code is generated — never hand-write protobuf serialization
 32. Local cache via Drift (SQLite) for offline support

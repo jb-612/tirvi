@@ -50,17 +50,30 @@ Each task must be:
 
 ### Task Format
 
+Per `.claude/rules/task-format.md`, every task is a `## T-NN:`
+header (two hashes, dash in the ID, two-digit number) followed
+**immediately** by the standard done marker on its own line. Numbering
+uses `T-NN` (with dash, two digits) — not `TNN` (no dash) which is a
+legacy form.
+
 ```markdown
-### TNN: [imperative verb] [what]
+## T-NN: [imperative verb] [what]
+
+- [ ] **T-NN done**
 
 - **Estimate**: [0.5h | 1h | 1.5h | 2h]
 - **Test file**: `tests/unit/path/test_module.py::test_function`
-- **Dependencies**: [TNN, TNN] or none
+- **Dependencies**: [T-NN, T-NN] or none
 - **Hints**: [implementation guidance]
 
 **Acceptance criteria**:
 - [ ] [specific testable outcome]
 ```
+
+The `- [ ] **T-NN done**` line is the producer/consumer contract
+surface — TDD flips it to `- [x] **T-NN done**` when tests pass. The
+nested per-task acceptance-criteria checkboxes are independent of the
+done marker; they exist for human review of completeness.
 
 ## Step 3: Build Dependency Graph
 
