@@ -1,7 +1,7 @@
 ---
 feature_type: integration
 hld_refs: [HLD-§3.3-worker-pipeline-stages, HLD-§5.2-processing, HLD-§8-dev-environment]
-adr_refs: [ADR-036]
+adr_refs: [ADR-037]
 biz_corpus: true
 ---
 
@@ -31,7 +31,7 @@ with spinners, elapsed timers, and a progress bar for the cascade stage.
 Non-TTY path: plain `logging.INFO` lines with ISO 8601 timestamps (no ANSI).
 
 **Design notes from review:**
-- ADR-036 decision: constructor checks `sys.stdout.isatty()` BEFORE creating
+- ADR-037 decision: constructor checks `sys.stdout.isatty()` BEFORE creating
   any `rich` objects (F49-ARCH-03).
 - `rich` import is guarded with `try/except ImportError`; falls back to
   plain-log path automatically (F49-ARCH-02).
@@ -73,7 +73,7 @@ Printed once after the `Live` display closes.
 ## Decisions
 
 - **D-01**: `ProgressReporter` as injected protocol (not global state, not
-  subclassing) — see ADR-036.
+  subclassing) — see ADR-037.
 
 ## Deferred / Out of Scope
 

@@ -49,4 +49,5 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-033 | Hebrew OCR correction cascade — Nakdan + DictaBERT-MLM + Gemma | Proposed | hebrew-interpretation | F48 |
 | ADR-034 | LLM reviewer prompt template + cache-key strategy | Proposed | hebrew-interpretation | F48 |
 | ADR-035 | `corrections.json` schema and chunking policy | Proposed | hebrew-interpretation | F48 |
-| ADR-036 | Pipeline observability — injectable ProgressReporter protocol | Proposed | ingest / platform | N01/F49 |
+| ADR-036 | Exam Review Portal — auth deferred NFR | Proposed | player | N04/F33 |
+| ADR-037 | Pipeline observability — injectable ProgressReporter protocol | Proposed | ingest / platform | N01/F49 |

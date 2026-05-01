@@ -1801,7 +1801,7 @@ f49_modules:
     description: >
       Pipeline progress reporting module — ProgressReporter Protocol,
       NoOpProgressReporter, RichProgressReporter, StageTiming, PipelineReport.
-      Dev-only; no production API dependency. Per ADR-036.
+      Dev-only; no production API dependency. Per ADR-037.
     feature_refs: [N01/F49-pipeline-progress]
     bounded_context: platform
     source_path: tirvi/progress.py
@@ -1881,5 +1881,5 @@ f49_adr_decisions:
       rich import guarded; cascade progress via existing EventListener pattern.
     feature_refs: [N01/F49-pipeline-progress]
     bounded_context: ingest
-    source_path: docs/ADR/ADR-036-pipeline-observability-progress-reporter.md
+    source_path: docs/ADR/ADR-037-pipeline-observability-progress-reporter.md
     status: proposed

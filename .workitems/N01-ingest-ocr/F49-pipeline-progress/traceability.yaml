@@ -6,7 +6,7 @@ hld_refs:
   - HLD-§5.2-processing
   - HLD-§8-dev-environment
 adr_refs:
-  - ADR-036
+  - ADR-037
 
 biz_source:
   functional_test_plan_path: .workitems/N01-ingest-ocr/F49-pipeline-progress/functional-test-plan.md
@@ -23,7 +23,7 @@ ontology_refs:
   - cls:RichProgressReporter
   - cls:StageTiming
   - cls:PipelineReport
-  - adr:ADR-036
+  - adr:ADR-037
 
 acm_nodes:
   specs:
@@ -144,7 +144,7 @@ acm_edges:
     target: task:N01/F49/T-03
     rel: TRACED_TO
 
-  - source: adr:ADR-036
+  - source: adr:ADR-037
     target: spec:N01/F49/DE-01
     rel: GOVERNS
 
