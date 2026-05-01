@@ -132,13 +132,17 @@ def _reconcile_overlap(candidates: list[list[NLPToken]]) -> list[NLPToken]:
 
 
 def _decode_token(item: dict[str, Any]) -> NLPToken:
-    syntax = item.get("syntax") or {}
-    prefix_raw = item.get("prefix_segments")
+    # dictabert-joint: morph.pos + morph.feats + morph.prefixes
+    morph = item.get("morph") or {}
+    pos = morph.get("pos") or (item.get("syntax") or {}).get("pos")
+    feats = morph.get("feats") or None
+    prefix_raw = morph.get("prefixes") or item.get("prefix_segments")
     prefix = tuple(prefix_raw) if prefix_raw else None
     return NLPToken(
         text=item["token"],
-        pos=syntax.get("pos"),
+        pos=pos,
         lemma=item.get("lex"),
         prefix_segments=prefix,
+        morph_features=feats,
         confidence=item.get("confidence"),
     )

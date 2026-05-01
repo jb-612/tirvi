@@ -147,10 +147,11 @@ class TestMakePocDeps:
         deps = make_poc_deps()
         assert isinstance(deps, PipelineDeps)
 
-    def test_nlp_is_stub(self) -> None:
-        from tirvi.pipeline import _StubNLP, make_poc_deps
+    def test_nlp_is_dictabert(self) -> None:
+        from tirvi.adapters.dictabert.adapter import DictaBERTAdapter
+        from tirvi.pipeline import make_poc_deps
         deps = make_poc_deps()
-        assert isinstance(deps.nlp, _StubNLP)
+        assert isinstance(deps.nlp, DictaBERTAdapter)
 
     def test_dia_is_real_nakdan_rest(self) -> None:
         # Per ADR-025 Nakdan now runs against the Dicta REST API.

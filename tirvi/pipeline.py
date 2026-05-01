@@ -170,9 +170,11 @@ def make_poc_deps() -> PipelineDeps:
         from tirvi.adapters.tesseract.rasterizer import rasterize_pdf
         return rasterize_pdf(pdf_bytes, dpi)
 
+    from tirvi.adapters.dictabert.adapter import DictaBERTAdapter
+
     return PipelineDeps(
         ocr=TesseractOCRAdapter(),
-        nlp=_StubNLP(),
+        nlp=DictaBERTAdapter(),
         dia=DictaNakdanAdapter(),
         g2p=PhonikudG2PAdapter(),
         tts=WavenetTTSAdapter(),

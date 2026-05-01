@@ -8,6 +8,7 @@ dependencies = [
     "opencv-python-headless>=4.13.0.92",
     "phonikud==0.4.1",
     "pytesseract>=0.3.13",
+    "transformers>=4.40.0,<5.0.0",
 ]
 
 [build-system]
