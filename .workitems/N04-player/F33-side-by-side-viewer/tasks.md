@@ -87,7 +87,7 @@ Element + Acceptance Criterion.
 
 ## T-07: Implement preview.js — artifact content renderer
 
-- [ ] **T-07 done**
+- [x] **T-07 done**
 - design_element: DE-03
 - acceptance_criteria: [US-03/AC-12, US-05/AC-23]
 - ft_anchors: [FT-319, FT-322]
@@ -111,7 +111,7 @@ Element + Acceptance Criterion.
 
 ## T-09: Implement runner.js — run number management
 
-- [ ] **T-09 done**
+- [x] **T-09 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01, US-01/AC-03, US-01/AC-04]
 - ft_anchors: [FT-316, FT-317]
