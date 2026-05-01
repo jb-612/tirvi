@@ -244,7 +244,20 @@ def main() -> None:
         def log_message(self, fmt: str, *args: object) -> None:  # silence request log
             pass
 
-    with http.server.HTTPServer(("", args.port), _NoCacheHandler) as srv:
+    try:
+        srv = http.server.HTTPServer(("", args.port), _NoCacheHandler)
+    except OSError as exc:
+        if exc.errno == 48:  # Address already in use
+            _LOG.error(
+                "Port %d is already in use. Kill the existing server first:\n"
+                "  lsof -ti :%d | xargs kill\n"
+                "Or serve on a different port: --port <n>\n"
+                "Artefacts are in %s — you can reload the existing player to see them.",
+                args.port, args.port, drafts_dir,
+            )
+            sys.exit(1)
+        raise
+    with srv:
         try:
             srv.serve_forever()
         except KeyboardInterrupt:

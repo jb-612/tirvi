@@ -165,7 +165,9 @@ def run_pipeline(
         g2p_result=g2p_result,
     )
 
-    sha = hashlib.sha256(plan.to_json().encode()).hexdigest()[:16]
+    import time as _time
+    _ts = int(_time.time()).to_bytes(4, "big").hex()  # 8-char epoch hex prefix
+    sha = (_ts + hashlib.sha256(plan.to_json().encode()).hexdigest())[:16]
     drafts_dir = output_base / sha
     drafts_dir.mkdir(parents=True, exist_ok=True)
 
