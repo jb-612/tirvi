@@ -23,6 +23,7 @@ import http.server
 import json
 import logging
 import os
+import re
 import shutil
 import sys
 import webbrowser
@@ -148,6 +149,93 @@ def _build_versions_response(drafts_root: Path) -> bytes:
     return json.dumps(versions).encode("utf-8")
 
 
+# ---------------------------------------------------------------------------
+# Extracted helpers for /review and /feedback (DE-06, T-05)
+# These are module-level so they are directly unit-testable.
+# ---------------------------------------------------------------------------
+
+_MARK_ID_RE = re.compile(r"[a-zA-Z0-9-]+")
+_RUN_RE = re.compile(r"\d{1,3}")
+
+
+def _send_json_response(handler: object, status: int, payload: dict) -> None:
+    """Write a JSON response to handler (status + body)."""
+    body = json.dumps(payload).encode("utf-8")
+    handler.send_response(status)
+    handler.send_header("Content-Type", "application/json; charset=utf-8")
+    handler.send_header("Content-Length", str(len(body)))
+    handler.end_headers()
+    handler.wfile.write(body)
+
+
+def _serve_review(handler: object) -> None:
+    """Serve player/index.html for GET /review (path traversal safe).
+
+    Reads the file from handler._player_dir / index.html.
+    Returns 404 if the file does not exist.
+    """
+    player_dir: Path = handler._player_dir
+    index_path = player_dir / "index.html"
+    if not index_path.exists():
+        handler.send_error(404)
+        return
+    body = index_path.read_bytes()
+    handler.send_response(200)
+    handler.send_header("Content-Type", "text/html; charset=utf-8")
+    handler.send_header("Content-Length", str(len(body)))
+    handler.end_headers()
+    handler.wfile.write(body)
+
+
+def _handle_feedback_post(handler: object, output_base: Path) -> None:
+    """Handle POST /feedback — validate, write feedback JSON atomically.
+
+    Expects handler to have .path, .headers (dict-like), .rfile, .wfile,
+    .send_response, .send_header, .end_headers, .send_error attributes.
+
+    Validation:
+      - path must be /feedback (exact); else 404
+      - body must be valid JSON; else 400
+      - markId required, must match [a-zA-Z0-9-]+; else 400
+      - run required, must match \\d{1,3}; else 400
+
+    On success, writes body atomically to
+    output_base/<run>/feedback/<markId>-<ts>.json and returns 201.
+    """
+    if handler.path != "/feedback":
+        handler.send_error(404)
+        return
+
+    content_length = int(handler.headers.get("Content-Length", 0))
+    raw = handler.rfile.read(content_length)
+
+    try:
+        payload = json.loads(raw)
+    except (json.JSONDecodeError, ValueError):
+        _send_json_response(handler, 400, {"error": "invalid JSON"})
+        return
+
+    mark_id = payload.get("markId")
+    if mark_id is None or not re.fullmatch(_MARK_ID_RE, str(mark_id)):
+        _send_json_response(handler, 400, {"error": "invalid markId"})
+        return
+
+    run = payload.get("run")
+    if run is None or not re.fullmatch(_RUN_RE, str(run)):
+        _send_json_response(handler, 400, {"error": "invalid run"})
+        return
+
+    ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S%f")
+    out_path = output_base / str(run) / "feedback" / f"{mark_id}-{ts}.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    tmp_path = out_path.with_suffix(".tmp")
+    tmp_path.write_bytes(raw)
+    os.replace(tmp_path, out_path)
+
+    _send_json_response(handler, 201, {"ok": True})
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     args = _parse_args()
@@ -191,6 +279,9 @@ def main() -> None:
 
     # AUTH_GATE TODO: add auth check before serving output/ over network
     class _NoCacheHandler(http.server.BaseHTTPRequestHandler):
+        # AUTH_GATE TODO: class-level auth hook point for review portal (DE-06)
+        _player_dir = _player_dir  # referenced by module-level _serve_review
+
         def end_headers(self) -> None:
             self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
             self.send_header("Pragma", "no-cache")
@@ -209,6 +300,8 @@ def main() -> None:
                 self._serve_json(_build_versions_response(_repo_drafts))
             elif path == "/api/current":
                 self._serve_json(json.dumps({"sha": _current_sha}).encode())
+            elif path == "/review":
+                _serve_review(self)
             else:
                 # /<sha>/<file> → drafts/<sha>/<file>
                 parts = path.lstrip("/").split("/", 1)
@@ -218,6 +311,9 @@ def main() -> None:
                     self._serve_file(fpath, _mime(fname))
                 else:
                     self.send_error(404)
+
+        def do_POST(self) -> None:
+            _handle_feedback_post(self, _repo_root / "output")
 
         def _serve_file(self, fpath: Path, ctype: str) -> None:
             if not fpath.exists():

@@ -63,7 +63,7 @@ Element + Acceptance Criterion.
 
 ## T-05: Add /review endpoint and POST /feedback to run_demo.py
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-09]
 - ft_anchors: [FT-317, FT-318]
