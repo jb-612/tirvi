@@ -28,7 +28,7 @@ export async function init() {
     _current.pageJson = state.pageProjection;
     _current.audioJson = _extractAudioJson(state);
 
-    _mountPageImage(state);
+    _mountPageImage(state, _current.sha);
     const { marker, img } = _getPageElements();
     _mountControls(state);
 
@@ -49,11 +49,12 @@ export async function init() {
 // Page image setup
 // ---------------------------------------------------------------------------
 
-function _mountPageImage(state) {
+function _mountPageImage(state, sha) {
   const fig = document.getElementById("page-figure");
   const img = document.createElement("img");
   img.id = "page-image";
-  img.src = state.pageProjection.page_image_url;
+  const imgFile = state.pageProjection.page_image_url;
+  img.src = sha ? `/${sha}/${imgFile}` : imgFile;
   img.alt = "";
   fig.appendChild(img);
 
