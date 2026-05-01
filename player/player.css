@@ -1,5 +1,5 @@
-/* F35/F36/F50 — vanilla CSS for the POC reader + Review UI.
-   Spec: N04/F35, N04/F36, F50. Bounded context: bc:audio_delivery. */
+/* F35/F36/F50/F33 — vanilla CSS for the POC reader, Review UI, and Exam Review Portal.
+   Spec: N04/F35, N04/F36, F50, N04/F33. Bounded context: bc:audio_delivery, bc:exam_review. */
 
 /* ===========================================================================
    F35 T-06 — Design tokens.
@@ -14,6 +14,8 @@
   --sidebar-border: #ddd;
   --inspector-width: 360px;
   --version-nav-width: 220px;
+  --artifact-tree-width: 280px;
+  --annotation-panel-width: 320px;
   --active-row-bg: #fff3cd;
   --active-version-bg: #1976d2;
   --active-version-fg: #fff;
@@ -34,11 +36,12 @@ body {
 }
 
 /* ===========================================================================
-   F50 — 3-column CSS grid layout
+   F50/F33 — 3-column CSS grid layout
+   F33 DE-01: [artifact-tree 280px | center 1fr | annotation-panel 320px]
    =========================================================================== */
 #app-layout {
   display: grid;
-  grid-template-columns: var(--version-nav-width) 1fr var(--inspector-width);
+  grid-template-columns: var(--artifact-tree-width) 1fr var(--annotation-panel-width);
   grid-template-rows: 100vh;
   height: 100vh;
   gap: 0;
@@ -59,7 +62,7 @@ body {
 #page-figure {
   position: relative;
   margin: 0 auto;
-  max-width: 900px;
+  max-width: 800px;
   width: 100%;
 }
 

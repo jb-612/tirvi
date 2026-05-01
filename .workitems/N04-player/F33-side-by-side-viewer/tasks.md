@@ -15,7 +15,7 @@ Element + Acceptance Criterion.
 
 ## T-01: Reframe player layout to review portal
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01, US-01/AC-03]
 - ft_anchors: [FT-316]
