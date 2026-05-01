@@ -75,7 +75,7 @@ Element + Acceptance Criterion.
 
 ## T-06: Implement sidebar.js — artifact tree
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-03
 - acceptance_criteria: [US-03/AC-11, US-03/AC-13, US-03/AC-14]
 - ft_anchors: [FT-320, FT-321, FT-325, FT-329]
