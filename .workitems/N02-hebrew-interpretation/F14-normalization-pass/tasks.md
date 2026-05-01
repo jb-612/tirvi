@@ -39,7 +39,7 @@ total_estimate_hours: 7.5
 
 ## T-03: Line-break rejoin rule
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-094, FT-095]
@@ -51,7 +51,7 @@ total_estimate_hours: 7.5
 
 ## T-04: Stray-punctuation drop rule
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-096]
@@ -74,7 +74,7 @@ total_estimate_hours: 7.5
 
 ## T-06: Repair-log emitter
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-06
 - acceptance_criteria: [US-02/AC-01]
 - ft_anchors: [FT-098]

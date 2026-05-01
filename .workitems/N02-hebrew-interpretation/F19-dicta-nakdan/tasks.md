@@ -22,7 +22,7 @@ POC scope: T-01..T-04 + T-06 are GREEN (code lives in `tirvi/adapters/nakdan/`);
 
 ## T-02: NLP-context option scoring (gated on F17 reroute)
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-146, FT-147]

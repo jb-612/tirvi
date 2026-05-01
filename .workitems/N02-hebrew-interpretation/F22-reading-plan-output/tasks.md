@@ -8,7 +8,7 @@ total_estimate_hours: 8.5
 
 ## T-01: Plan value types (ReadingPlan / PlanBlock / PlanToken)
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-168]
@@ -30,7 +30,7 @@ total_estimate_hours: 8.5
 
 ## T-03: Per-token provenance dict
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-171]

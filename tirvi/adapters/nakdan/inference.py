@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from tirvi.results import DiacritizationResult
+from tirvi.results import DiacritizationResult, NLPResult, NLPToken
 
 from .client import diacritize_via_api
 from .normalize import to_nfd
@@ -37,10 +37,70 @@ def diacritize(text: str, revision: str = "default") -> DiacritizationResult:
     )
 
 
+def diacritize_in_context(text: str, nlp: NLPResult) -> DiacritizationResult:
+    """T-02: NLP-context-aware diacritization.
+
+    For each Dicta entry whose options carry a morphology signal, pick
+    the option whose morph best matches the aligned NLP token. Falls
+    through to :func:`_pick` when no signal is available.
+    """
+    if not text.strip():
+        return DiacritizationResult(provider=PROVIDER, diacritized_text="", confidence=None)
+    raw = diacritize_via_api(text)
+    projected = _project_with_context(raw, nlp.tokens)
+    return DiacritizationResult(
+        provider=PROVIDER,
+        diacritized_text=to_nfd(projected),
+        confidence=None,
+    )
+
+
 def _project_response(entries: list[dict[str, Any]]) -> str:
     """Concatenate top-pick diacritized strings, stripping prefix markers."""
     parts: list[str] = [_pick(entry) for entry in entries]
     return "".join(parts)
+
+
+def _project_with_context(
+    entries: list[dict[str, Any]], tokens: list[NLPToken]
+) -> str:
+    parts: list[str] = []
+    cursor = 0
+    for entry in entries:
+        if entry.get("sep"):
+            parts.append(_pick(entry))
+            continue
+        token = tokens[cursor] if cursor < len(tokens) else None
+        parts.append(_pick_in_context(entry, token))
+        cursor += 1
+    return "".join(parts)
+
+
+def _pick_in_context(entry: dict[str, Any], token: NLPToken | None) -> str:
+    """Score morph-bearing options against ``token``; else fall through."""
+    if token is None:
+        return _pick(entry)
+    morph_options = [opt for opt in entry.get("options") or [] if _is_morph_option(opt)]
+    if not morph_options:
+        return _pick(entry)
+    best = max(morph_options, key=lambda opt: _score_option(opt, token))
+    return str(best["w"]).replace(_PREFIX_MARKER, "")
+
+
+def _is_morph_option(option: Any) -> bool:
+    return isinstance(option, dict) and "w" in option and "morph" in option
+
+
+def _score_option(option: dict[str, Any], token: NLPToken) -> int:
+    morph: dict[str, str] = option.get("morph", {}) or {}
+    score = 0
+    if token.pos and morph.get("pos") == token.pos:
+        score += 2
+    nlp_morph = token.morph_features or {}
+    for key, value in nlp_morph.items():
+        if morph.get(key) == value:
+            score += 1
+    return score
 
 
 def _pick(entry: dict[str, Any]) -> str:

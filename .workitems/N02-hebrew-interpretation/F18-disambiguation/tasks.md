@@ -9,7 +9,7 @@ wave: 2
 
 ## T-00: Wave-1 → Wave-2 migration (NEW — must run first)
 
-- [ ] **T-00 done**
+- [x] **T-00 done**
 - design_element: (cross-cutting; resolves R2 C-4 + C-5 + R-2)
 - acceptance_criteria: [AC-N02/F18/US-01/AC-04, AC-N02/F18/US-01/AC-05, AC-N02/F18/US-01/AC-06]
 - ft_anchors: []
@@ -135,7 +135,7 @@ wave: 2
 
 ## T-05: v1 invariant assertion + provider whitelist (PROMOTED)
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-05, DE-06
 - acceptance_criteria: [US-01/AC-01, AC-N02/F18/US-01/AC-04, AC-N02/F18/US-01/AC-05, AC-N02/F18/US-01/AC-06]
 - ft_anchors: [FT-139, FT-140]

@@ -85,6 +85,24 @@ class TestWordTimingFakeRoutesPerSource:
         pass
 
 
+class TestG2PFakeWholeTextEmission:
+    """T-08 (ADR-028 §Migration step 4): G2PBackendFake emits whole-text IPA
+    as a single ``["fake-ipa"]`` element, mirroring the production Phonikud
+    adapter's whole-text contract instead of per-token entries.
+    """
+
+    def test_us_01_ac_01_g2p_fake_emits_single_element_phonemes_list(self) -> None:
+        from tirvi.fakes import G2PBackendFake
+        from tirvi.results import G2PResult
+
+        fake = G2PBackendFake()
+        result = fake.grapheme_to_phoneme("שָׁלוֹם", lang="he")
+
+        assert isinstance(result, G2PResult)
+        assert len(result.phonemes) == 1
+        assert result.phonemes == ["fake-ipa"]
+
+
 @pytest.mark.skip(reason="scaffold — TDD fills (filled by @test-mock-registry)")
 class TestFailureModeFixtures:
     """T-06/T-07: BT-010 — every fake covers ≥ 1 documented failure mode."""

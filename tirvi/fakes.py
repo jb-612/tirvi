@@ -75,15 +75,18 @@ class DiacritizerBackendFake(DiacritizerBackend):
 class G2PBackendFake(G2PBackend):
     """Deterministic in-memory G2P fake.
 
+    Per ADR-028 (F20 T-08), the fake emits whole-text IPA as a single
+    ``["fake-ipa"]`` element — mirroring the production Phonikud
+    adapter's whole-text shape rather than per-token entries.
+
     Spec: F03 DE-04. AC: US-01/AC-01. BT-anchor: BT-010.
     """
 
     def __init__(self, fixture_path: str | None = None) -> None:
-        # TODO US-01/AC-01: load IPA/SAMPA fixture per F20
         self._fixture_path = fixture_path
 
     def grapheme_to_phoneme(self, text: str, lang: str) -> G2PResult:
-        raise NotImplementedError
+        return G2PResult(provider="g2p-fake", phonemes=["fake-ipa"], confidence=None)
 
 
 class TTSBackendFake(TTSBackend):

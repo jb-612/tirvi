@@ -33,7 +33,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-03: Vocal-shva via predict_vocal_shva parameter
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-154]
@@ -45,7 +45,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-04: Empty-input short-circuit + skip-filter cleanup
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [US-01/AC-01]
 - ft_anchors: [FT-157]
@@ -79,7 +79,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-07: Pipeline rewire — switch `_StubG2P()` → `PhonikudG2PAdapter()`
 
-- [ ] **T-07 done**
+- [x] **T-07 done**
 - design_element: DE-04 (cross-reference)
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.25h
@@ -89,6 +89,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-07b: F22 short-circuit `PlanToken.ipa = None` (cross-feature touch)
 
+- [x] **T-07b done**
 - design_element: DE-05 (cross-reference; F22 owns the file)
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.25h
@@ -98,7 +99,7 @@ POC scope: T-01 + T-04 already implemented; T-02 needs API pivot from `translite
 
 ## T-08: Update F03 G2P fake to emit 1-element string list
 
-- [ ] **T-08 done**
+- [x] **T-08 done**
 - design_element: DE-05 (cross-reference)
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 0.25h

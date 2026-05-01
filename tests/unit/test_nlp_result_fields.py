@@ -34,7 +34,7 @@ class TestNLPResultFields:
         assert token.confidence is None
 
     def test_token_carries_morph_and_ambiguous(self) -> None:
-        morph = {"gender": "Masc", "number": "Sing"}
+        morph = {"Gender": "Masc", "Number": "Sing"}
         token = NLPToken(
             text="ספר",
             pos="NOUN",

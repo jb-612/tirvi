@@ -17,7 +17,7 @@ from tirvi.results import (
     OCRWord,
 )
 
-from .value_objects import PlanBlock, PlanToken
+from .value_objects import PROVENANCE_MISSING, PlanBlock, PlanToken
 
 
 @dataclass(frozen=True)
@@ -175,14 +175,38 @@ def _build_plan_token(
     diacritized = (
         diacritized_words[global_idx] if global_idx < len(diacritized_words) else None
     )
-    ipa = g2p_result.phonemes[global_idx] if global_idx < len(g2p_result.phonemes) else None
+    # T-07b (F20 ADR-028): whole-text IPA lives on G2PResult.phonemes[0] for
+    # F33; per-token PlanToken.ipa is unconditionally None for POC. The
+    # ``g2p_result`` argument stays in the signature so F22's call sites
+    # remain stable when per-token IPA returns post-POC.
+    del g2p_result
+    pos = nlp_token.pos if nlp_token is not None else None
+    lemma = nlp_token.lemma if nlp_token is not None else None
     return PlanToken(
         id=f"{block_id}-{position}",
         text=span.text,
         src_word_indices=span.src_word_indices,
-        pos=nlp_token.pos if nlp_token is not None else None,
-        lemma=nlp_token.lemma if nlp_token is not None else None,
+        pos=pos,
+        lemma=lemma,
         diacritized_text=diacritized,
-        ipa=ipa,
+        ipa=None,
         stress=None,
+        provenance=_build_provenance(pos=pos, lemma=lemma, vocalized=diacritized),
     )
+
+
+def _build_provenance(
+    *,
+    pos: str | None,
+    lemma: str | None,
+    vocalized: str | None,
+) -> dict[str, str]:
+    """Build the DE-03 provenance dict; absent inputs become ``"missing"``."""
+    return {
+        "pos": pos if pos is not None else PROVENANCE_MISSING,
+        "lemma": lemma if lemma is not None else PROVENANCE_MISSING,
+        "morph": PROVENANCE_MISSING,
+        "ipa": PROVENANCE_MISSING,
+        "stress": PROVENANCE_MISSING,
+        "vocalized": vocalized if vocalized is not None else PROVENANCE_MISSING,
+    }

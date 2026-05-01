@@ -122,7 +122,10 @@ class TestBuildPlan:
         assert t0.pos == "NOUN"
         assert t0.lemma == "שלום"
         assert t0.diacritized_text == "שָׁלוֹם"
-        assert t0.ipa == "ʃaˈlom"
+        # T-07b (cross-feature, F20 → F22): per ADR-028 + F20 design.md HLD
+        # Deviations, the per-token PlanToken.ipa is unconditionally None for
+        # POC. Whole-text IPA stays on G2PResult.phonemes[0] for F33.
+        assert t0.ipa is None
         assert t1.id == "b1-1"
         assert t1.text == "עולם"
         assert t1.diacritized_text == "עוֹלָם"
@@ -134,6 +137,23 @@ class TestBuildPlan:
         assert b2.tokens[0].pos == "NOUN"
         assert b2.tokens[1].id == "b2-1"
         assert b2.tokens[1].pos == "NUM"
+
+    def test_us_01_ac_01_t_07b_plan_token_ipa_is_none(self) -> None:
+        # T-07b (F20 → F22 cross-feature): ADR-028 routes whole-text IPA
+        # through G2PResult.phonemes[0]. Per-token PlanToken.ipa is None
+        # for POC across every block, regardless of g2p_result content.
+        i = _make_inputs()
+        plan = ReadingPlan.from_inputs(
+            page_id="page-1",
+            blocks=i["blocks"],
+            normalized=i["normalized"],
+            nlp_result=i["nlp"],
+            diacritization=i["dia"],
+            g2p_result=i["g2p"],
+        )
+        every_token = [t for b in plan.blocks for t in b.tokens]
+        assert every_token  # sanity: non-empty
+        assert all(t.ipa is None for t in every_token)
 
     def test_us_01_ac_01_ft_173_block_order_preserves_rtl(self) -> None:
         # Given: F11 blocks come in RTL reading order (b1 before b2)

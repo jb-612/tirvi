@@ -56,7 +56,7 @@ total_estimate_hours: 8.5
 
 ## T-05: Long-sentence chunking with overlap merge
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [US-01/AC-01]
 - estimate: 2h

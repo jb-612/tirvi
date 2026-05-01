@@ -1,11 +1,9 @@
-"""F18 T-02 — morph_features whitelist (POC numbering).
+"""F18 T-02 — morph_features whitelist (Wave-2: UD v2 TitleCase).
 
 Spec: N02/F18 DE-02. AC: US-01/AC-01. FT-anchors: FT-136.
 
-POC scope intentionally narrow: only the six UD-Hebrew morphology
-attributes the demo PDF exercises are accepted. Anything outside the
-whitelist raises :class:`MorphKeyOutOfScope` so the v0.1 work can lift
-the constraint deliberately.
+Wave-2 fixes R-3 (Critical): keys must use UD v2 canonical TitleCase
+per https://universaldependencies.org/u/feat/index.html.
 """
 
 from __future__ import annotations
@@ -13,7 +11,7 @@ from __future__ import annotations
 from .errors import MorphKeyOutOfScope
 
 MORPH_KEYS_WHITELIST: frozenset[str] = frozenset(
-    {"gender", "number", "person", "tense", "def", "case"}
+    {"Gender", "Number", "Person", "Tense", "Definite", "Case", "VerbForm"}
 )
 
 

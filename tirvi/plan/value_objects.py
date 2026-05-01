@@ -3,7 +3,31 @@
 Spec: N02/F22 DE-02. AC: US-01/AC-01.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Mapping
+
+# DE-03 (T-03, FT-171): canonical provenance keys ordered for deterministic
+# JSON serialisation. Keys without upstream input get the ``"missing"``
+# sentinel so the audit trail is total — every key is always present.
+PROVENANCE_KEYS: tuple[str, ...] = (
+    "pos",
+    "lemma",
+    "morph",
+    "ipa",
+    "stress",
+    "vocalized",
+)
+PROVENANCE_MISSING = "missing"
+
+_EMPTY_PROVENANCE: Mapping[str, str] = MappingProxyType(
+    {key: PROVENANCE_MISSING for key in PROVENANCE_KEYS}
+)
+
+
+def _default_provenance() -> dict[str, str]:
+    """Fresh provenance dict with every canonical key set to ``missing``."""
+    return dict(_EMPTY_PROVENANCE)
 
 
 @dataclass(frozen=True)
@@ -16,6 +40,9 @@ class PlanToken:
       - INV-PLAN-T-003 (DE-06): id is byte-identical across runs (basis for content hash)
       - INV-PLAN-T-004 (F23 wire): ``id`` matches SSML ``<mark name="…"/>`` pin
       - INV-PLAN-T-005 (F30 wire): ``id`` matches WordTimingResult.timings[].mark_id
+      - INV-PLAN-T-006 (DE-03, FT-171): ``provenance`` keys =
+        ``{pos, lemma, morph, ipa, stress, vocalized}``; values are upstream
+        provider strings; absent inputs use the literal sentinel ``"missing"``
     """
 
     id: str
@@ -26,6 +53,7 @@ class PlanToken:
     diacritized_text: str | None = None
     ipa: str | None = None
     stress: int | None = None
+    provenance: dict[str, str] = field(default_factory=_default_provenance)
 
 
 @dataclass(frozen=True)
