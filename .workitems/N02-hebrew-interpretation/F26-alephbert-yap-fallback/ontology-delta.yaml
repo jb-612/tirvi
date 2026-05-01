@@ -1,0 +1,96 @@
+# Ontology delta — N02/F26 AlephBERT + YAP Fallback NLP Path
+# Owner: sw-design session (werbeH-design branch, 2026-05-01)
+# Note: MOD-N02-F26 and ADP-N02-F26-alephbert already in master from Wave 1 run.
+
+version: 1
+feature_id: N02/F26
+
+modules:
+  - id: MOD-N02-F26
+    name: tirvi.adapters.alephbert
+    description: AlephBERT+YAP fallback NLP adapter — YAP HTTP client, lattice parser, UD-Hebrew mapper, contract conformance.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/adapters/alephbert/
+    status: designed
+
+services:
+  - id: SVC-N02-F26-yap
+    name: YAP HTTP Server
+    description: Bar-Ilan ONLP Lab YAP morphological parser running in HTTP-server mode (yap api); local process on 127.0.0.1:8000; user-started out-of-band.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    status: designed
+
+ports: []
+
+adapters:
+  - id: ADP-N02-F26-alephbert
+    name: AlephBertYapFallbackAdapter
+    description: Second NLPBackend implementor. Invoked from F17 on ImportError/OSError. YAP HTTP path; AlephBERT embeddings deferred MVP per ADR-027.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    port_ref: PORT-02
+    source_path: tirvi/adapters/alephbert/__init__.py
+    status: designed
+
+classes: []
+
+functions:
+  - id: FN-N02-F26-analyze-via-yap
+    name: analyze_via_yap
+    description: POSTs Hebrew text to YAP /api/v0/joint; returns parsed JSON with lattice_md and lattice_ma.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F26
+    source_path: tirvi/adapters/alephbert/client.py
+    status: designed
+  - id: FN-N02-F26-yap-to-nlpresult
+    name: yap_to_nlpresult
+    description: Walks lattice_md; maps CPOSTag to UD-Hebrew; produces NLPResult with locked NLPToken schema.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F26
+    source_path: tirvi/adapters/alephbert/mapper.py
+    status: designed
+
+adr_decisions:
+  - id: adr:027
+    name: F26 fallback uses YAP HTTP-server mode; AlephBERT deferred to MVP
+    description: YAP runs locally (PRD §9 local-first); AlephBERT Gimmel embeddings for ambiguity deferred MVP per ADR-027.
+    feature_refs: [N02/F26]
+    bounded_context: hebrew_nlp
+    source_path: docs/ADR/ADR-027-hebrew-nlp-yap-http-server-fallback.md
+    status: proposed
+
+tasks:
+  - id: task:N02/F26/T-01
+    name: yap-http-client
+    feature_refs: [N02/F26]
+    spec_refs: [spec:N02/F26/DE-01]
+    test_path: tests/unit/test_yap_client.py
+    status: designed
+  - id: task:N02/F26/T-02
+    name: yap-response-parser
+    feature_refs: [N02/F26]
+    spec_refs: [spec:N02/F26/DE-02]
+    test_path: tests/unit/test_yap_response_parser.py
+    status: designed
+  - id: task:N02/F26/T-03
+    name: ud-hebrew-schema-mapper
+    feature_refs: [N02/F26]
+    spec_refs: [spec:N02/F26/DE-03]
+    test_path: tests/unit/test_yap_ud_mapper.py
+    status: designed
+  - id: task:N02/F26/T-04
+    name: alephbert-yap-fallback-adapter
+    feature_refs: [N02/F26]
+    spec_refs: [spec:N02/F26/DE-04]
+    test_path: tests/unit/test_alephbert_yap_adapter.py
+    status: designed
+  - id: task:N02/F26/T-05
+    name: degraded-result-on-unreachable
+    feature_refs: [N02/F26]
+    spec_refs: [spec:N02/F26/DE-05]
+    test_path: tests/unit/test_alephbert_yap_adapter.py
+    status: designed
