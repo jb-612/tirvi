@@ -3,7 +3,8 @@
 POC demo: Economy.pdf page 1 → Hebrew TTS → word-synced player.
 
 Usage:
-    uv run scripts/run_demo.py [--port 8000] [--stubs]
+    uv run scripts/run_demo.py            # real pipeline → :8000
+    uv run scripts/run_demo.py --stubs   # stub mode     → :8765
 
 The pipeline runs synchronously (~30–60 s with real models). Once done,
 opens http://localhost:<port> in the browser and serves the player from
@@ -69,13 +70,17 @@ _DRAFTS = Path("drafts")
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--port", type=int, default=8000, help="HTTP server port (default: 8000)")
     p.add_argument(
         "--stubs",
         action="store_true",
         help="Use in-memory stubs instead of real ML adapters (no Docker needed)",
     )
-    return p.parse_args()
+    # Real demo owns :8000; stub runs default to :8765 so they never collide.
+    p.add_argument("--port", type=int, default=None, help="HTTP server port (default: 8000 real, 8765 stubs)")
+    args = p.parse_args()
+    if args.port is None:
+        args.port = 8765 if args.stubs else 8000
+    return args
 
 
 def _copy_player_assets(drafts_dir: Path) -> None:
@@ -102,7 +107,7 @@ def build_versions_list(drafts_dir: Path) -> list[dict]:
 
     entries = []
     for child in drafts_dir.iterdir():
-        if not child.is_dir():
+        if not child.is_dir() or child.name == "cascade_cache":
             continue
         mtime = child.stat().st_mtime
         label = _format_label(mtime)

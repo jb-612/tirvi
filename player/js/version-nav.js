@@ -53,8 +53,9 @@ function _makeVersionItem(version, activeSha, onSwitch) {
   const li = document.createElement("li");
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.setAttribute("aria-label", `Switch to run ${version.sha} (${version.label})`);
-  btn.textContent = `${version.sha.slice(0, 8)} — ${version.label}`;
+  const label = version.label || version.ts || version.sha.slice(0, 8);
+  btn.setAttribute("aria-label", `Switch to run ${version.sha} (${label})`);
+  btn.textContent = `${version.sha.slice(0, 8)} — ${label}`;
 
   if (version.sha === activeSha) {
     btn.classList.add("version-active");
