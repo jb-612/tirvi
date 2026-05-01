@@ -1,0 +1,33 @@
+# F48 confusion_pairs.yaml — Hebrew OCR ם/ס and ו/ן confusion pairs (seed v1)
+# Format: ocr_misread:\n  - correct_form
+# Source: _KNOWN_OCR_FIXES in tirvi/normalize/ocr_corrections.py
+גורס:
+  - גורם
+תגרוס:
+  - תגרום
+אינס:
+  - אינם
+סיוס:
+  - סיום
+מקוס:
+  - מקום
+אדס:
+  - אדם
+יוס:
+  - יום
+עולס:
+  - עולם
+שלוס:
+  - שלום
+שס:
+  - שם
+פעמיס:
+  - פעמים
+אנשיס:
+  - אנשים
+דבריס:
+  - דברים
+אומריס:
+  - אומרים
+מאו:
+  - מאן

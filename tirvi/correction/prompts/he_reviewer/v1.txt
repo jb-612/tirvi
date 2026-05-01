@@ -5,8 +5,8 @@
 תיקונים מוצעים: {candidates}
 
 ענה בפורמט JSON בלבד, ללא טקסט נוסף:
-{{"verdict": "OK", "chosen": null, "reason": "..."}}
+{"verdict": "OK", "chosen": null, "reason": "..."}
 אם המילה נכונה כפי שהיא.
 
-{{"verdict": "REPLACE", "chosen": "מילה", "reason": "..."}}
+{"verdict": "REPLACE", "chosen": "מילה", "reason": "..."}
 אם יש לתקן — "chosen" חייב להיות אחד מהתיקונים המוצעים בלבד.

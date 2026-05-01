@@ -32,7 +32,7 @@ def _scorer(tmp_path, monkeypatch, mock_scores, known=frozenset(), token_map=Non
     token_map = token_map or {"שלום": ["שָׁלוֹם", "שַׁלוֹם"]}
     monkeypatch.setattr(
         "tirvi.correction.mlm_scorer.score_token_in_context",
-        lambda token, ctx, model_id: mock_scores,
+        lambda token, ctx, model_id, candidates=(): mock_scores,
     )
     return DictaBertMLMScorer(
         confusion_table_path=_write_table(tmp_path, token_map),
@@ -46,7 +46,7 @@ class TestConfusionTableLoad:
     def test_confusion_table_loaded_at_init(self, tmp_path, monkeypatch, sample_sentence_context):
         monkeypatch.setattr(
             "tirvi.correction.mlm_scorer.score_token_in_context",
-            lambda token, ctx, model_id: {"original": 0.0},
+            lambda token, ctx, model_id, candidates=(): {"original": 0.0},
         )
         table = _write_table(tmp_path, {"שלום": ["שָׁלוֹם"]})
         scorer = DictaBertMLMScorer(
@@ -69,7 +69,7 @@ class TestSingleSiteCandidateGeneration:
     def test_candidates_built_from_confusion_pairs(self, tmp_path, monkeypatch, sample_sentence_context):
         monkeypatch.setattr(
             "tirvi.correction.mlm_scorer.score_token_in_context",
-            lambda token, ctx, model_id: {"original": 0.0, "סיום": 0.5},
+            lambda token, ctx, model_id, candidates=(): {"original": 0.0, "סיום": 0.5},
         )
         scorer = DictaBertMLMScorer(
             confusion_table_path=_write_table(tmp_path, {"סיוס": ["סיום"]}),
@@ -81,7 +81,7 @@ class TestSingleSiteCandidateGeneration:
     def test_no_candidates_when_token_not_in_table(self, tmp_path, monkeypatch, sample_sentence_context):
         monkeypatch.setattr(
             "tirvi.correction.mlm_scorer.score_token_in_context",
-            lambda token, ctx, model_id: {"original": 0.0},
+            lambda token, ctx, model_id, candidates=(): {"original": 0.0},
         )
         scorer = DictaBertMLMScorer(
             confusion_table_path=_write_table(tmp_path, {"אחר": ["אחרת"]}),

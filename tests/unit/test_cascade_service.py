@@ -270,3 +270,40 @@ class TestCascadeConfigInvalid:
         agg.lock_mode(CascadeMode(name="full"))
         with pytest.raises(CascadeConfigInvalid):
             agg.lock_mode(CascadeMode(name="no_llm"))  # different mode → conflict
+
+
+class TestMLMCandidatesThreadedToLLM:
+    """INV-CCS-002: LLM reviewer must receive candidates from MLM verdict."""
+
+    def test_mlm_candidates_set_on_reviewer_before_evaluate(self):
+        """When MLM returns ambiguous with candidates, service threads them
+        to llm_reviewer.candidates so the prompt and anti-hallucination
+        guard both see the correct options."""
+        from tests.unit.conftest import FakeLLMClient, FakeNakdanWordList
+        from tirvi.correction.domain.policies import AntiHallucinationPolicy
+        from tirvi.correction.llm_reviewer import OllamaLLMReviewer
+
+        word_list = FakeNakdanWordList(known={"תיקון"})
+        llm_client = FakeLLMClient(
+            canned_response='{"verdict":"REPLACE","chosen":"תיקון","reason":"fix"}'
+        )
+        reviewer = OllamaLLMReviewer(
+            llm=llm_client,
+            anti_hallucination=AntiHallucinationPolicy(word_list=word_list),
+        )
+        mlm_v = CorrectionVerdict(
+            stage="mlm_scorer", verdict="ambiguous",
+            original="שגויה", candidates=("תיקון",),
+        )
+        svc = CorrectionCascadeService(
+            nakdan_gate=FakeCascadeStage(canned=SUSPECT_V),
+            mlm_scorer=FakeCascadeStage(canned=mlm_v),
+            llm_reviewer=reviewer,
+            feedback=FakeFeedbackReader(),
+        )
+        result = svc.run_page(["שגויה"], mode=FULL)
+        # Candidates must have been threaded: LLM was called and prompt contains the candidate
+        assert len(llm_client.calls) == 1
+        assert "תיקון" in llm_client.calls[0]["prompt"]
+        # And the correction was applied
+        assert result.corrected_tokens == ("תיקון",)

@@ -309,13 +309,8 @@ def make_poc_deps() -> PipelineDeps:
     except Exception:
         pass
 
-    # F48 — Hebrew correction cascade (DE-05 / T-09).
-    # Adapters are wired here so make_poc_deps stays the canonical POC
-    # entry point. Until TDD fills the cascade adapter constructors,
-    # ``correction_cascade`` is left None and ``enable_correction_cascade``
-    # gates the call site in ``run_pipeline``. This keeps the POC pipeline
-    # runnable end-to-end while T-02..T-08 land.
-    correction_cascade = _build_poc_correction_cascade()  # noqa: F841 — TDD T-09 wires
+    # F48 — Hebrew correction cascade (DE-05 / T-09): now live.
+    correction_cascade, _cascade_mode = _build_poc_correction_cascade()
 
     return PipelineDeps(
         ocr=TesseractOCRAdapter(),
@@ -326,30 +321,111 @@ def make_poc_deps() -> PipelineDeps:
         rasterize=_rasterize,
         nlp_ensemble=ensemble,
         correction_cascade=correction_cascade,
-        enable_correction_cascade=False,  # default off until TDD greenlights
+        enable_correction_cascade=True,
     )
 
 
 def _build_poc_correction_cascade() -> Any:
-    """Construct the wired ``CorrectionCascadeService`` for POC deps.
+    """Wire CorrectionCascadeService for POC UAT (F48 DE-05 / T-09).
 
-    Spec: F48 DE-05 / T-09.
-    Wires:
-      - NakdanGate over Nakdan word-list adapter (CO13).
-      - DictaBertMLMScorer over reused F17 DictaBERT loader.
-      - OllamaLLMReviewer over OllamaLLMClient adapter (DE-04).
-      - SqliteFeedbackReader (CO16) for user-rejection reads.
-      - HealthProbe selects the per-page CascadeMode at run time.
-
-    TODO T-09: import the four adapters once they exist; wire them with
-        the policies in ``tirvi.correction.domain.policies``; return the
-        ``CorrectionCascadeService`` instance.
+    POC decisions (see sw-dispute.md):
+    - MLM scorer uses fixed delta=1.5 (ambiguous) — real DictaBERT scoring deferred.
+    - NakdanWordList: Nakdan REST API per-token (accurate; ~100ms/token, cached).
+    - LLM: llama3.1:8b (fast tier) via Ollama on localhost:11434.
+    - FeedbackReader: empty (no rejections on first run).
+    - HealthProbe selects cascade mode at init; degrades gracefully.
     """
-    # Until TDD lands T-04a / T-04b / T-07 / T-08 the cascade is left
-    # unwired. Returning ``None`` is intentional — the call site in
-    # ``run_pipeline`` short-circuits the cascade and falls through to
-    # legacy normalize output so the POC pipeline remains runnable.
-    return None
+    import urllib.request as _urllib
+    from pathlib import Path as _Path
+
+    from tirvi.correction.adapters.ollama import OllamaClient
+    from tirvi.correction.domain.policies import AntiHallucinationPolicy
+    from tirvi.correction.health import HealthCheckResult, HealthProbe, StageHealthProbe
+    from tirvi.correction.llm_reviewer import OllamaLLMReviewer
+    from tirvi.correction.mlm_scorer import DictaBertMLMScorer
+    from tirvi.correction.nakdan_gate import NakdanGate
+    from tirvi.correction.ports import FeedbackReadPort, NakdanWordListPort
+    from tirvi.correction.service import CorrectionCascadeService
+    from tirvi.correction.value_objects import UserRejection
+
+    # --- NakdanWordListPort: confusion-table-aware word list -------------------
+    # OCR error tokens (table keys) are marked unknown so NakdanGate flags them
+    # as suspect. Correction candidates (table values) are marked known so the
+    # anti-hallucination guard accepts them. Everything else → Nakdan REST API.
+    from tirvi.correction.mlm_scorer import _load_table as _load_confusion_table
+    _table_path = str(_Path(__file__).parent / "correction" / "confusion_pairs.yaml")
+    _confusion = _load_confusion_table(_table_path)
+    _ocr_errors: frozenset[str] = frozenset(_confusion.keys())
+    _corrections: frozenset[str] = frozenset(
+        c for candidates in _confusion.values() for c in candidates
+    )
+
+    class _NakdanRestWordList(NakdanWordListPort):  # type: ignore[misc]
+        _cache: dict[str, bool] = {}
+
+        def is_known_word(self, token: str) -> bool:
+            if token in _ocr_errors:
+                return False   # known OCR error — force through cascade
+            if token in _corrections:
+                return True    # known correct form — anti-hallucination passes
+            if token in self._cache:
+                return self._cache[token]
+            try:
+                from tirvi.adapters.nakdan.inference import diacritize
+                result = diacritize(token)
+                known = bool(result.diacritized_text.strip())
+            except Exception:
+                known = True
+            self._cache[token] = known
+            return known
+
+    # --- FeedbackReadPort: empty (no QA rejections on first UAT run) ----------
+    class _EmptyFeedbackReader(FeedbackReadPort):  # type: ignore[misc]
+        def user_rejections(self, draft_sha: str):
+            return []
+
+    # --- StageHealthProbe impls -----------------------------------------------
+    class _OllamaProbe(StageHealthProbe):  # type: ignore[misc]
+        name = "ollama"
+        def is_healthy(self) -> bool:
+            req = _urllib.Request("http://127.0.0.1:11434/api/tags")
+            with _urllib.urlopen(req, timeout=1):
+                return True
+
+    class _AlwaysHealthy(StageHealthProbe):  # type: ignore[misc]
+        def __init__(self, label: str) -> None:
+            self.name = label
+        def is_healthy(self) -> bool:
+            return True
+
+    # --- Run health probe to select cascade mode ------------------------------
+    probe = HealthProbe(
+        ollama_probe=_OllamaProbe(),
+        mlm_probe=_AlwaysHealthy("mlm"),      # POC scorer never fails
+        word_list_probe=_AlwaysHealthy("wl"),  # fail-open in adapter
+    )
+    health = probe.run()
+    mode = probe.select_mode(health)
+
+    # --- Wire adapters --------------------------------------------------------
+    word_list = _NakdanRestWordList()
+    drafts_dir = _Path("drafts") / "cascade_cache"
+    llm_client = OllamaClient(
+        llm_cache_path=drafts_dir / "llm_cache.sqlite",
+        base_url="http://localhost:11434",
+    )
+    return CorrectionCascadeService(
+        nakdan_gate=NakdanGate(word_list=word_list, word_list_version="v1"),
+        mlm_scorer=DictaBertMLMScorer(
+            word_list=word_list, confusion_table_path=_table_path,
+        ),
+        llm_reviewer=OllamaLLMReviewer(
+            llm=llm_client,
+            anti_hallucination=AntiHallucinationPolicy(word_list=word_list),
+            model_id="llama3.1:8b",
+        ),
+        feedback=_EmptyFeedbackReader(),
+    ), mode
 
 
 def _make_deps() -> PipelineDeps:

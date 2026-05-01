@@ -156,6 +156,8 @@ class CorrectionCascadeService:
         mlm_v = self.mlm_scorer.evaluate(token, ctx)
         if mlm_v.verdict == "auto_apply":
             return mlm_v
+        # Thread MLM candidates to reviewer so prompt + anti-hallucination see them (INV-CCS-002)
+        self.llm_reviewer.candidates = mlm_v.candidates  # type: ignore[attr-defined]
         return self._llm_or_skip(token, ctx, mode)
 
     def _llm_or_skip(self, token: str, ctx: SentenceContext, mode: CascadeMode) -> CorrectionVerdict:

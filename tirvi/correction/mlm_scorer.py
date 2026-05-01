@@ -15,14 +15,20 @@ from .value_objects import CorrectionVerdict, SentenceContext
 
 
 def score_token_in_context(
-    token: str, ctx: SentenceContext, model_id: str
+    token: str, ctx: SentenceContext, model_id: str,
+    candidates: tuple[str, ...] = (),
 ) -> dict[str, float]:
     """Score original token and candidates via DictaBERT MLM.
 
     Returns {"original": score, candidate: score, ...}.
     Monkeypatched in unit tests to return deterministic scores.
+    POC: returns fixed delta=1.5 (ambiguous) so every confusion pair is
+    forwarded to the LLM reviewer. Real DictaBERT scoring is deferred.
     """
-    raise NotImplementedError("Real DictaBERT MLM — monkeypatched in unit tests")
+    scores: dict[str, float] = {"original": 1.0}
+    for c in candidates:
+        scores[c] = 2.5
+    return scores
 
 
 def _parse_table_line(line: str) -> tuple[str, str]:
@@ -86,7 +92,7 @@ class DictaBertMLMScorer(ICascadeStage):
         candidates = tuple(self._table.get(token, []))
         if not candidates:
             return self._no_candidates(token)
-        scores = score_token_in_context(token, context, self.mlm_model_id)
+        scores = score_token_in_context(token, context, self.mlm_model_id, candidates=candidates)
         ranked = self._rank(candidates, scores)
         if not ranked:
             return self._no_candidates(token)
