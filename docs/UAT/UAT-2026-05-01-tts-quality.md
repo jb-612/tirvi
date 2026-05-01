@@ -157,10 +157,39 @@ this scaling protects against the residual 1.1s padding effect.
 - DictaBERT-joint POS + morph features feeding `diacritize_in_context`
 - Real YAP server (BIU ONLP Lab) running locally with full morph + dep tree
 
+### F-8 — Gender slash read as Tav letter name
+
+**Symptom**: `לְנִבְחָן/ת` pronounced "lin'vchan tav" — Phonikud reads
+the standalone `ת` after the slash as the letter Tav. User decision:
+drop `/ת`, read only the masculine `נבחן` (no information loss for
+the listener).
+
+**Fix**: `strip_slash_suffix` in `tirvi/normalize/ocr_artifacts.py`
+removes `/ת`, `/ות`, `/ית`, `/ים`, `/ין`, `/ה` at word ends. Preserves
+`ו/או` (or/and — real Hebrew expression, suffix is a word not a marker).
+
+**Verified**: `לנבחן/ת → לנבחן`, `מורה/ות → מורה`, `ו/או → ו/או`.
+
+### F-9 — `סגורות` read as `סגורותָא`
+
+**Symptom**: `(''סגורות'').` pronounced with a trailing "ah" sound
+(`סְגוּרוֹתָא`).
+
+**Root cause**: Tesseract captures the wrapping `''` (two ASCII
+apostrophes) as part of the token. Nakdan then reads the trailing
+`''` as Hebrew gershayim (״, U+05F4) — the acronym marker — and
+treats `סגורות''` as an abbreviation, appending diacritized `ָא`.
+Standalone Nakdan query of `סגורות` returns `סְגוּרוֹת` correctly,
+proving the wrapping characters are the trigger.
+
+**Fix**: `strip_wrap_chars` strips `( ) [ ] { } " ' ״ ׳` and curly
+quotes from both ends of each token before they reach Nakdan, while
+preserving trailing sentence punctuation `.,!?:;`.
+
+**Verified**: `(''סגורות'').` → `סגורות.`.
+
 ## Known cosmetic items, not blocking
 
-- Gender slash `/` reaches Phonikud → pronounces as letter "Tav".
-  Trade-off for marker sync. Fix path: SSML `<sub alias>` rewrite.
 - Stub `_StubOCR` produces a 1×1 blank PNG; `--stubs` mode shows no
   page image. Not affecting POC mode.
 - AlephBERT+YAP webapi has uninitialised `maHebrew` nil pointer in
