@@ -78,9 +78,12 @@ def run_pipeline(
     blocks = build_blocks(words, stats)
     normalized = normalize_text(words)
 
-    # Post-OCR correction: fix common Hebrew final-letter misreads (ס→ם etc.)
+    # Post-OCR correction: strip artefacts (gender slash, wrapping quotes)
+    # then fix common Hebrew final-letter misreads (ס→ם etc.).
+    from tirvi.normalize.ocr_artifacts import clean_ocr_artifacts
     raw_tokens = normalized.text.split()
-    corrected_tokens = correct_final_letters(raw_tokens)
+    cleaned_tokens = clean_ocr_artifacts(raw_tokens)
+    corrected_tokens = correct_final_letters(cleaned_tokens)
     corrected_text = " ".join(corrected_tokens)
 
     # Hebrew text rules: geresh ordinal expansion only (1 token → 1 token).
