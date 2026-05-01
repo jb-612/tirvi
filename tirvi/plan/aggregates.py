@@ -99,6 +99,8 @@ class ReadingPlan:
             "page_image_url": page_image_url,
             "words": [_word_to_schema_dict(w) for w in page.words],
             "marks_to_word_index": _build_marks_to_word_index(self.blocks),
+            "nlp_tokens": _nlp_tokens_to_schema(self.blocks),
+            "diacritized_text": _collect_diacritized_text(self.blocks),
         }
 
 
@@ -114,6 +116,31 @@ def _word_to_schema_dict(word: OCRWord) -> dict[str, Any]:
         "bbox": [x0, y0, x1 - x0, y1 - y0],
         "lang_hint": word.lang_hint,
     }
+
+
+def _nlp_tokens_to_schema(blocks: tuple[PlanBlock, ...]) -> list[dict]:
+    """Extract NLP token data from all PlanTokens for the inspector NLP tab."""
+    result = []
+    for block in blocks:
+        for token in block.tokens:
+            entry: dict = {"text": token.surface_text}
+            prov = token.provenance or {}
+            if prov.get("pos"): entry["pos"] = prov["pos"]
+            if prov.get("lemma"): entry["lemma"] = prov["lemma"]
+            if prov.get("morph"): entry["morph"] = prov["morph"]
+            result.append(entry)
+    return result
+
+
+def _collect_diacritized_text(blocks: tuple[PlanBlock, ...]) -> str:
+    """Concatenate diacritized surface text across all blocks."""
+    parts = []
+    for block in blocks:
+        for token in block.tokens:
+            prov = token.provenance or {}
+            diacritized = prov.get("vocalized") or token.surface_text
+            parts.append(diacritized)
+    return " ".join(parts)
 
 
 def _build_marks_to_word_index(blocks: tuple[PlanBlock, ...]) -> dict[str, int]:

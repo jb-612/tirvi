@@ -87,7 +87,7 @@ function _populateNlpTab(pageJson) {
   if (!panel) return;
   panel.innerHTML = "";
 
-  const tokens = pageJson && Array.isArray(pageJson.tokens) ? pageJson.tokens : [];
+  const tokens = pageJson && Array.isArray(pageJson.nlp_tokens) ? pageJson.nlp_tokens : [];
 
   if (tokens.length === 0) {
     panel.appendChild(_emptyMsg("NLP data unavailable"));
