@@ -27,7 +27,7 @@ Element + Acceptance Criterion.
 
 ## T-02: Implement AuditSink class
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-04
 - acceptance_criteria: [US-05/AC-21, US-05/AC-23]
 - ft_anchors: [FT-319]
