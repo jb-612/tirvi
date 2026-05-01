@@ -123,7 +123,7 @@ def _nlp_tokens_to_schema(blocks: tuple[PlanBlock, ...]) -> list[dict]:
     result = []
     for block in blocks:
         for token in block.tokens:
-            entry: dict = {"text": token.surface_text}
+            entry: dict = {"text": token.diacritized_text or ""}
             prov = token.provenance or {}
             if prov.get("pos"): entry["pos"] = prov["pos"]
             if prov.get("lemma"): entry["lemma"] = prov["lemma"]
@@ -133,13 +133,13 @@ def _nlp_tokens_to_schema(blocks: tuple[PlanBlock, ...]) -> list[dict]:
 
 
 def _collect_diacritized_text(blocks: tuple[PlanBlock, ...]) -> str:
-    """Concatenate diacritized surface text across all blocks."""
-    parts = []
-    for block in blocks:
-        for token in block.tokens:
-            prov = token.provenance or {}
-            diacritized = prov.get("vocalized") or token.surface_text
-            parts.append(diacritized)
+    """Concatenate diacritized text across all blocks."""
+    parts = [
+        token.diacritized_text
+        for block in blocks
+        for token in block.tokens
+        if token.diacritized_text
+    ]
     return " ".join(parts)
 
 
