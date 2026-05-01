@@ -1,6 +1,6 @@
-// N04/F33 T-08/T-10 — feedback.js: mountFeedbackPanel word annotation panel.
-// DE-06  AC: US-02/AC-05, US-02/AC-06, US-02/AC-07, US-02/AC-08, US-02/AC-09, US-02/AC-10
-// FT-317, FT-318, FT-323, FT-324, FT-327  BT-209, BT-210, BT-212
+// N04/F33 T-08/T-10/T-12 — feedback.js: mountFeedbackPanel word annotation panel.
+// DE-06  AC: US-02/AC-05..AC-10, US-04/AC-16..AC-20
+// FT-317, FT-318, FT-322, FT-323, FT-324, FT-326, FT-327, FT-328  BT-209, BT-210, BT-212, BT-214, BT-215
 
 const CATEGORIES = [
   { id: "wrong_pronunciation", label: "Wrong pronunciation" },
@@ -23,13 +23,24 @@ export function mountFeedbackPanel(state) {
   const endpoint = state.feedbackEndpoint ?? "/feedback";
   // Track which markIds have been successfully submitted (cleared drafts)
   const submitted = new Set();
+  const run = _getRunParam();
+
+  // Build export button (hidden until first annotation exists)
+  const exportBtn = _buildExportBtn();
+  if (_collectEntries(run, localStorage).length > 0) {
+    exportBtn.hidden = false;
+  }
+  exportBtn.addEventListener("click", () => _exportFeedback(run, localStorage, document));
+  state.panel.appendChild(exportBtn);
+
   _renderEmpty(state.panel);
 
   state.onHighlight((word) => {
     if (!word) {
       _renderEmpty(state.panel);
+      state.panel.appendChild(exportBtn);
     } else {
-      _renderForm(state.panel, word, state, endpoint, submitted);
+      _renderForm(state.panel, word, state, endpoint, submitted, exportBtn);
     }
   });
 }
@@ -71,7 +82,7 @@ function _renderEmpty(panel) {
   panel.appendChild(msg);
 }
 
-function _renderForm(panel, word, state, endpoint, submitted) {
+function _renderForm(panel, word, state, endpoint, submitted, exportBtn) {
   panel.innerHTML = "";
 
   const wrapper = document.createElement("div");
@@ -105,10 +116,11 @@ function _renderForm(panel, word, state, endpoint, submitted) {
   );
 
   submitBtn.addEventListener("click", () =>
-    _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl, submitted })
+    _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl, submitted, exportBtn })
   );
 
   panel.appendChild(wrapper);
+  if (exportBtn) panel.appendChild(exportBtn);
 }
 
 function _restoreDraft(markId, ta, setCategory) {
@@ -209,7 +221,7 @@ function _buildSubmitBtn() {
 // Submit handler (CC ≤ 5 each)
 // ---------------------------------------------------------------------------
 
-async function _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl, submitted }) {
+async function _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, ta, errorEl, submitted, exportBtn }) {
   const category = getCategory();
   if (!category) {
     errorEl.style.display = "";
@@ -224,8 +236,10 @@ async function _onSubmit({ panel, wrapper, word, state, endpoint, getCategory, t
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+    _storeEntry(word.markId, body);
     _clearDraft(word.markId);
     submitted.add(word.markId);
+    if (exportBtn) exportBtn.hidden = false;
     _onSuccess({ wrapper, word });
   } catch (_) {
     // Network failure — leave form visible
@@ -261,4 +275,68 @@ function _onSuccess({ wrapper, word }) {
   success.className = "feedback-success";
   success.textContent = "Feedback submitted";
   wrapper.appendChild(success);
+}
+
+// ---------------------------------------------------------------------------
+// Entry storage helpers
+// ---------------------------------------------------------------------------
+
+function _entryKey(run, markId) {
+  return `feedback-entry:${run}:${markId}`;
+}
+
+function _storeEntry(markId, body) {
+  const run = _getRunParam();
+  localStorage.setItem(_entryKey(run, markId), JSON.stringify(body));
+}
+
+// ---------------------------------------------------------------------------
+// Export helpers (exported for testability)
+// ---------------------------------------------------------------------------
+
+/**
+ * Collect all feedback entries for a given run from a localStorage-like object.
+ * @param {string} run
+ * @param {{ keys: function(): string[], getItem: function(string): string|null }} ls
+ * @returns {Object[]}
+ */
+export function _collectEntries(run, ls) {
+  const prefix = `feedback-entry:${run}:`;
+  const allKeys = typeof ls.keys === "function" ? ls.keys() : Object.keys(ls);
+  return allKeys.reduce((acc, key) => {
+    if (!key.startsWith(prefix)) return acc;
+    const raw = ls.getItem(key);
+    if (!raw) return acc;
+    try {
+      acc.push(JSON.parse(raw));
+    } catch (_) { /* skip malformed */ }
+    return acc;
+  }, []);
+}
+
+/**
+ * Collect entries for run and trigger a JSON file download.
+ * @param {string} run
+ * @param {{ keys: function(): string[], getItem: function(string): string|null }} ls
+ * @param {Document} doc
+ */
+export function _exportFeedback(run, ls, doc) {
+  const entries = _collectEntries(run, ls);
+  const json = JSON.stringify(entries, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const iso = new Date().toISOString();
+  const a = doc.createElement("a");
+  a.href = url;
+  a.download = `feedback-run-${run}-${iso}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function _buildExportBtn() {
+  const btn = document.createElement("button");
+  btn.className = "feedback-export-btn";
+  btn.textContent = "Export feedback";
+  btn.hidden = true;
+  return btn;
 }

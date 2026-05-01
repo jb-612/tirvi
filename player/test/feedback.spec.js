@@ -3,7 +3,7 @@
 // Spec: N04/F33 DE-06  FT: FT-317, FT-318, FT-323, FT-327  BT: BT-210, BT-212
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mountFeedbackPanel } from "../js/feedback.js";
+import { mountFeedbackPanel, _collectEntries, _exportFeedback } from "../js/feedback.js";
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -522,5 +522,139 @@ describe("T-10: localStorage draft persistence", () => {
     expect(restoredTa.value).toBe("");
     const selectedBtns = state.panel.querySelectorAll(".issue-btn.selected");
     expect(selectedBtns.length).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-12: feedback export
+// ---------------------------------------------------------------------------
+
+describe("T-12: feedback export", () => {
+  function _makeLsMock(entries = {}) {
+    const store = new Map(Object.entries(entries));
+    return {
+      getItem: vi.fn((key) => store.get(key) ?? null),
+      setItem: vi.fn((key, value) => store.set(key, value)),
+      removeItem: vi.fn((key) => store.delete(key)),
+      keys: () => Array.from(store.keys()),
+      _store: store,
+    };
+  }
+
+  function _entry(run, markId, category = "wrong_pronunciation") {
+    return JSON.stringify({
+      markId,
+      run,
+      category,
+      note: "",
+      ocr_text: "שלום",
+      diacritized_text: "שָׁלוֹם",
+      stages_visible_at_capture: ["01-ocr"],
+      schema_version: "1",
+    });
+  }
+
+  beforeEach(() => {
+    Object.defineProperty(window, "location", {
+      value: { ...window.location, search: "?run=001" },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  // 1. Export button not visible when no annotations for run
+  it("export button not visible when no annotations for run", () => {
+    const lsMock = _makeLsMock();
+    vi.stubGlobal("localStorage", lsMock);
+
+    mountFeedbackPanel(state);
+
+    const btn = state.panel.querySelector(".feedback-export-btn");
+    const isHidden = !btn || btn.hidden || btn.getAttribute("hidden") !== null || btn.style.display === "none";
+    expect(isHidden).toBe(true);
+  });
+
+  // 2. Export button appears after successful annotation
+  it("export button appears after successful annotation", async () => {
+    const lsMock = _makeLsMock();
+    vi.stubGlobal("localStorage", lsMock);
+    vi.stubGlobal("fetch", _makeFetchOk());
+
+    mountFeedbackPanel(state);
+    state._fireHighlight({ markId: "word-3", ocrText: "שלום", diacritizedText: "שָׁלוֹם" });
+
+    state.panel.querySelector('.issue-btn[data-category="wrong_pronunciation"]').click();
+    state.panel.querySelector(".feedback-submit").click();
+
+    await vi.waitFor(() =>
+      expect(state.panel.querySelector(".feedback-success")).not.toBeNull()
+    );
+
+    const exportBtn = state.panel.querySelector(".feedback-export-btn");
+    const isVisible = exportBtn && !exportBtn.hidden && exportBtn.getAttribute("hidden") === null && exportBtn.style.display !== "none";
+    expect(isVisible).toBe(true);
+  });
+
+  // 3. _collectEntries with zero stored entries returns []
+  it("_collectEntries with zero stored entries returns []", () => {
+    const lsMock = _makeLsMock();
+    const entries = _collectEntries("001", lsMock);
+    expect(entries).toEqual([]);
+  });
+
+  // 4. _collectEntries collects only entries for current run
+  it("_collectEntries collects all entries for current run, ignores other runs", () => {
+    const lsMock = _makeLsMock({
+      "feedback-entry:001:word-1": _entry("001", "word-1"),
+      "feedback-entry:001:word-2": _entry("001", "word-2"),
+      "feedback-entry:002:word-3": _entry("002", "word-3"),
+    });
+    const entries = _collectEntries("001", lsMock);
+    expect(entries.length).toBe(2);
+    expect(entries.every((e) => e.run === "001")).toBe(true);
+  });
+
+  // 5. Downloaded filename matches feedback-run-<N>-<iso8601>.json format
+  it("downloaded filename matches feedback-run-<N>-<iso8601>.json format", () => {
+    const lsMock = _makeLsMock({
+      "feedback-entry:001:word-1": _entry("001", "word-1"),
+    });
+
+    const anchors = [];
+    const docMock = {
+      createElement: (tag) => {
+        if (tag === "a") {
+          const a = { href: "", download: "", click: vi.fn(), style: {} };
+          anchors.push(a);
+          return a;
+        }
+        return document.createElement(tag);
+      },
+      body: document.body,
+    };
+
+    vi.stubGlobal("URL", { createObjectURL: vi.fn(() => "blob:test"), revokeObjectURL: vi.fn() });
+
+    _exportFeedback("001", lsMock, docMock);
+
+    expect(anchors.length).toBeGreaterThan(0);
+    expect(anchors[0].download).toMatch(/^feedback-run-\d+-\d{4}-\d{2}-\d{2}T/);
+  });
+
+  // 6. Each exported entry has schema_version "1"
+  it("each exported entry has schema_version '1'", () => {
+    const lsMock = _makeLsMock({
+      "feedback-entry:001:word-1": _entry("001", "word-1"),
+      "feedback-entry:001:word-2": _entry("001", "word-2"),
+    });
+
+    // Test via _collectEntries directly — schema_version is on the stored objects
+    const entries = _collectEntries("001", lsMock);
+    expect(entries.length).toBe(2);
+    expect(entries.every((e) => e.schema_version === "1")).toBe(true);
   });
 });

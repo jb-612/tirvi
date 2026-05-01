@@ -35,7 +35,7 @@ T-10..T-13 + Dependency DAG here. T-01..T-09 in `tasks.md`.
 
 ## T-12: Feedback export — download all annotations as JSON
 
-- [ ] **T-12 done**
+- [x] **T-12 done**
 - design_element: DE-06
 - acceptance_criteria: [US-04/AC-16, US-04/AC-17, US-04/AC-18, US-04/AC-19, US-04/AC-20]
 - ft_anchors: [FT-322, FT-326, FT-328]
