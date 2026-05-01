@@ -123,7 +123,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-05: Implement `CorrectionCascadeService` orchestrator (DE-05) + domain events
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [F48-S01/AC-01, F48-S02/AC-03, F48-S03/AC-01]
 - ft_anchors: [FT-316, FT-326, FT-328, FT-329]

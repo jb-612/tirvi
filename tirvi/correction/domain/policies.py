@@ -32,10 +32,14 @@ class TokenInTokenOutPolicy:
     """
 
     def check(self, original: str, verdict: CorrectionVerdict) -> None:
-        # TODO INV-CCS-001 (T-05): assert verdict.corrected_or_none is None
-        #   OR contains no whitespace AND yields exactly 1 token under split().
-        # On violation raise CascadeInvariantViolation with original + verdict.
-        raise NotImplementedError("AC-F48-S01/AC-01 / INV-CCS-001 — TDD T-05 fills")
+        from ..errors import CascadeInvariantViolation
+        c = verdict.corrected_or_none
+        if c is None:
+            return
+        if len(c.split()) != 1:
+            raise CascadeInvariantViolation(
+                f"INV-CCS-001: '{c}' is not a single token (original={original!r})"
+            )
 
 
 @dataclass(frozen=True)

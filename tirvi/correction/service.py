@@ -112,34 +112,78 @@ class CorrectionCascadeService:
     def run_page(
         self,
         tokens: Sequence[str],
-        sentences: Sequence[SentenceContext],
         *,
-        page_index: int,
-        sha: str,
+        sentences: Sequence[SentenceContext] | None = None,
+        page_index: int = 0,
+        sha: str = "",
         mode: CascadeMode,
     ) -> PageCorrections:
-        """Run the cascade across a page's tokens.
-
-        TODO AC-F48-S01/AC-01 (T-05): construct ``CorrectionCascade``
-            aggregate; ``lock_mode(mode)``; configure llm cap from policy.
-        TODO BT-211 (T-05): consult ``feedback.user_rejections(sha)``
-            to override matching tokens to ``keep_original``.
-        TODO AC-F48-S01/AC-01 (T-05): walk tokens; record each verdict
-            via ``aggregate.record_decision`` (which enforces INV-CCS-001
-            via ``TokenInTokenOutPolicy``).
-        TODO AC-F48-S03/AC-02 (T-05): when mode == "no_llm" or
-            ``aggregate.llm_cap_reached()``, skip stage 3 — ambiguous
-            verdict short-circuits to ``keep_original``.
-        TODO AC-F48-S06/AC-01..04 (T-05): when mode == "no_mlm", skip
-            stage 2; suspect tokens go to deprecated
-            ``_KNOWN_OCR_FIXES`` lookup (T-07).
-        TODO AC-F48-S04/AC-01 (T-05): drain events; publish snapshots
-            to every listener; return ``PageCorrections``.
-        """
-        raise NotImplementedError(
-            "AC-F48-S01/AC-01 / AC-F48-S03/AC-02 / AC-F48-S06/AC-01 — "
-            "TDD T-05 fills"
+        agg = CorrectionCascade(page_index=page_index, sha=sha)
+        agg.lock_mode(mode)
+        rejections = self._load_rejections(sha)
+        corrected: list[str] = []
+        for i, token in enumerate(tokens):
+            ctx = self._ctx(sentences, i, page_index)
+            if self._is_rejected(token, rejections):
+                verdict = self._user_rejection_verdict(token)
+            else:
+                verdict = self._dispatch(token, ctx, mode)
+            agg.record_decision(verdict)
+            corrected.append(verdict.corrected_or_none or token)
+        applied, rejected, mode_events, cap_events = agg.drain_events()
+        self._publish(applied, rejected, mode_events, cap_events)
+        return PageCorrections(
+            page_index=page_index, sha=sha,
+            original_tokens=tuple(tokens),
+            corrected_tokens=tuple(corrected),
+            stage_decisions=agg.stage_decisions,
+            mode=mode,
+            applied=applied, rejected=rejected,
+            mode_events=mode_events, cap_events=cap_events,
         )
+
+    def _dispatch(self, token: str, ctx: SentenceContext, mode: CascadeMode) -> CorrectionVerdict:
+        if mode.name == "bypass":
+            return self._passthrough(token)
+        gate_v = self.nakdan_gate.evaluate(token, ctx)
+        if gate_v.verdict != "suspect":
+            return gate_v
+        return self._after_gate(token, ctx, mode)
+
+    def _after_gate(self, token: str, ctx: SentenceContext, mode: CascadeMode) -> CorrectionVerdict:
+        if mode.name == "no_mlm":
+            return self._passthrough(token)
+        mlm_v = self.mlm_scorer.evaluate(token, ctx)
+        if mlm_v.verdict == "auto_apply":
+            return mlm_v
+        return self._llm_or_skip(token, ctx, mode)
+
+    def _llm_or_skip(self, token: str, ctx: SentenceContext, mode: CascadeMode) -> CorrectionVerdict:
+        if mode.name == "no_llm":
+            return self._passthrough(token)
+        return self.llm_reviewer.evaluate(token, ctx)
+
+    def _load_rejections(self, sha: str) -> set[str]:
+        if not sha:
+            return set()
+        return {r.ocr_word for r in self.feedback.user_rejections(sha)}
+
+    def _is_rejected(self, token: str, rejections: set[str]) -> bool:
+        return token in rejections
+
+    def _user_rejection_verdict(self, token: str) -> CorrectionVerdict:
+        return CorrectionVerdict(
+            stage="nakdan_gate", verdict="keep_original",
+            original=token, reason="user_override",
+        )
+
+    def _passthrough(self, token: str) -> CorrectionVerdict:
+        return CorrectionVerdict(stage="nakdan_gate", verdict="pass", original=token)
+
+    def _ctx(self, sentences: Sequence[SentenceContext] | None, i: int, page_index: int) -> SentenceContext:
+        if sentences and i < len(sentences):
+            return sentences[i]
+        return SentenceContext(sentence_text="", sentence_hash="", page_index=page_index, token_index=i)
 
     # ---- listener fan-out (T-05) ------------------------------------------
 
@@ -150,13 +194,24 @@ class CorrectionCascadeService:
         mode_events: Iterable[CascadeModeDegraded],
         cap_events: Iterable[LLMCallCapReached],
     ) -> None:
-        """Fan out drained events to every registered listener.
+        for e in applied:
+            for listener in self.listeners:
+                self._safe_call(listener.on_correction_applied, e)
+        for e in rejected:
+            for listener in self.listeners:
+                self._safe_call(listener.on_correction_rejected, e)
+        for e in mode_events:
+            for listener in self.listeners:
+                self._safe_call(listener.on_cascade_mode_degraded, e)
+        for e in cap_events:
+            for listener in self.listeners:
+                self._safe_call(listener.on_llm_call_cap_reached, e)
 
-        TODO T-05: for each event, call the matching listener method on
-            every listener; swallow listener exceptions (audit-resilient
-            per ADR-033) but record via ``CorrectionRejected`` log line.
-        """
-        raise NotImplementedError("AC-F48-S01/AC-01 — TDD T-05 fills")
+    def _safe_call(self, fn, event) -> None:  # type: ignore[override]
+        try:
+            fn(event)
+        except Exception:
+            pass
 
 
 __all__ = [

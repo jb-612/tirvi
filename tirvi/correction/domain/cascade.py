@@ -13,7 +13,9 @@ NotImplementedError with the AC + task ref so TDD fills them in.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 
+from ..errors import CascadeConfigInvalid, CascadeInvariantViolation
 from ..value_objects import CascadeMode, CorrectionVerdict
 from .events import (
     CascadeModeDegraded,
@@ -21,6 +23,13 @@ from .events import (
     CorrectionRejected,
     LLMCallCapReached,
 )
+
+_REJECTION_REASONS = {"anti_hallucination_reject", "user_override", "llm_parse_failure"}
+_REJECTION_MAP = {
+    "anti_hallucination_reject": "anti_hallucination",
+    "user_override": "user_override",
+    "llm_parse_failure": "parse_failure",
+}
 
 
 @dataclass
@@ -58,14 +67,15 @@ class CorrectionCascade:
     # ---- mode lifecycle (DE-07, INV-CCS-005) ------------------------------
 
     def lock_mode(self, mode: CascadeMode) -> None:
-        """Lock the per-page cascade mode at run_page entry.
-
-        TODO INV-CCS-005 (T-07): if ``self._mode is not None`` and
-        ``mode.name != self._mode.name``, raise ``CascadeConfigInvalid``.
-        Otherwise set ``self._mode = mode`` and (if mode.name != "full")
-        emit a ``CascadeModeDegraded`` event into ``_mode_events``.
-        """
-        raise NotImplementedError("AC-F48-S06/AC-01 / INV-CCS-005 — TDD T-07 fills")
+        if self._mode is not None and mode.name != self._mode.name:
+            raise CascadeConfigInvalid(
+                f"mid-page mode flip rejected: {self._mode.name!r} → {mode.name!r}"
+            )
+        self._mode = mode
+        if mode.name != "full":
+            self._mode_events.append(CascadeModeDegraded(
+                page_index=self.page_index, mode=mode, occurred_at=datetime.utcnow(),
+            ))
 
     @property
     def mode(self) -> CascadeMode | None:
@@ -74,17 +84,42 @@ class CorrectionCascade:
     # ---- stage recording (DE-05) ------------------------------------------
 
     def record_decision(self, verdict: CorrectionVerdict) -> None:
-        """Record a stage's verdict on the current token.
+        self._check_token_shape(verdict)
+        self._stage_decisions.append(verdict)
+        if verdict.verdict in ("auto_apply", "apply"):
+            self._applied.append(self._make_applied(verdict))
+        elif verdict.reason in _REJECTION_REASONS:
+            self._rejected.append(self._make_rejected(verdict))
 
-        TODO INV-CCS-001 (T-05): apply ``TokenInTokenOutPolicy.check``
-        before appending.
-        TODO T-05: append to ``self._stage_decisions``.
-        TODO T-05: if verdict in {"auto_apply", "apply"}, emit
-        ``CorrectionApplied``; if verdict.reason indicates rejection
-        (anti-hallucination / parse-failure / user-override), emit
-        ``CorrectionRejected``.
-        """
-        raise NotImplementedError("AC-F48-S01/AC-01 / INV-CCS-001 — TDD T-05 fills")
+    def _check_token_shape(self, verdict: CorrectionVerdict) -> None:
+        c = verdict.corrected_or_none
+        if c is None:
+            return
+        if len(c.split()) != 1:
+            raise CascadeInvariantViolation(f"INV-CCS-001: '{c}' is not a single token")
+
+    def _make_applied(self, verdict: CorrectionVerdict) -> CorrectionApplied:
+        return CorrectionApplied(
+            page_index=self.page_index,
+            original=verdict.original,
+            corrected=verdict.corrected_or_none or verdict.original,
+            chosen_by_stage=verdict.stage,
+            score=verdict.score,
+            sentence_hash="",
+            occurred_at=datetime.utcnow(),
+        )
+
+    def _make_rejected(self, verdict: CorrectionVerdict) -> CorrectionRejected:
+        reason = verdict.reason or ""
+        return CorrectionRejected(
+            page_index=self.page_index,
+            original=verdict.original,
+            proposed=verdict.corrected_or_none,
+            rejected_by=_REJECTION_MAP.get(reason, reason),
+            sentence_hash="",
+            reason=reason,
+            occurred_at=datetime.utcnow(),
+        )
 
     @property
     def stage_decisions(self) -> tuple[CorrectionVerdict, ...]:
@@ -93,23 +128,20 @@ class CorrectionCascade:
     # ---- LLM-call cap (BT-F-05) -------------------------------------------
 
     def configure_llm_cap(self, cap: int) -> None:
-        """Set the per-page cap (default 10)."""
-        # TODO T-04a: assert cap > 0; set self._llm_cap = cap.
-        raise NotImplementedError("AC-F48-S03/AC-02 / BT-F-05 — TDD T-04a fills")
+        self._llm_cap = cap
 
     def note_llm_call(self) -> None:
-        """Increment the LLM-call counter; emit cap event when reached.
-
-        TODO BT-F-05 (T-04a): increment ``self._llm_calls_made``; if equal
-        to ``self._llm_cap`` emit ``LLMCallCapReached`` into
-        ``_cap_events``.
-        """
-        raise NotImplementedError("AC-F48-S03/AC-02 / BT-F-05 — TDD T-04a fills")
+        self._llm_calls_made += 1
+        if self._llm_calls_made >= self._llm_cap:
+            self._cap_events.append(LLMCallCapReached(
+                page_index=self.page_index,
+                calls_made=self._llm_calls_made,
+                cap=self._llm_cap,
+                occurred_at=datetime.utcnow(),
+            ))
 
     def llm_cap_reached(self) -> bool:
-        """Return whether the per-page LLM-call cap has been reached."""
-        # TODO T-04a: return self._llm_calls_made >= self._llm_cap.
-        raise NotImplementedError("AC-F48-S03/AC-02 / BT-F-05 — TDD T-04a fills")
+        return self._llm_calls_made >= self._llm_cap
 
     # ---- event drainage (DE-05) -------------------------------------------
 
@@ -119,12 +151,15 @@ class CorrectionCascade:
         tuple[CascadeModeDegraded, ...],
         tuple[LLMCallCapReached, ...],
     ]:
-        """Return all events accumulated this page; clear internal buffers.
-
-        TODO T-05: snapshot all four event lists, clear them, return tuples.
-        Service publishes the snapshot to its EventListener bus.
-        """
-        raise NotImplementedError("AC-F48-S01/AC-01 — TDD T-05 fills")
+        applied = tuple(self._applied)
+        rejected = tuple(self._rejected)
+        mode_events = tuple(self._mode_events)
+        cap_events = tuple(self._cap_events)
+        self._applied.clear()
+        self._rejected.clear()
+        self._mode_events.clear()
+        self._cap_events.clear()
+        return applied, rejected, mode_events, cap_events
 
 
 __all__ = ["CorrectionCascade"]
