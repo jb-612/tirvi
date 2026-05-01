@@ -75,7 +75,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-04a: Implement `LLMClientPort` adapter (Ollama HTTP) + sqlite cache
 
-- [ ] **T-04a done**
+- [x] **T-04a done**
 - design_element: DE-04
 - acceptance_criteria: [F48-S03/AC-02]
 - ft_anchors: [FT-321]
