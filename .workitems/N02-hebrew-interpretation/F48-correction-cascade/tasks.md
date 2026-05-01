@@ -16,7 +16,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-01: Define `ICascadeStage` port + `CorrectionVerdict` value object
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [F48-S01/AC-01, F48-S02/AC-02, F48-S03/AC-01, F48-S04/AC-01]
 - ft_anchors: [FT-316, FT-323, FT-330]
