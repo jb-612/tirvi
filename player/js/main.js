@@ -20,7 +20,11 @@ let _current = { pageJson: null, audioJson: null, sha: "" };
 
 export async function init() {
   try {
-    const state = await bootPlayer();
+    // Get current sha from server so version switching and notes work correctly
+    const currentInfo = await _fetchJson("/api/current");
+    _current.sha = currentInfo ? currentInfo.sha : "";
+
+    const state = await bootPlayer(_current.sha);
     _current.pageJson = state.pageProjection;
     _current.audioJson = _extractAudioJson(state);
 
@@ -33,7 +37,7 @@ export async function init() {
     _initTabs();
     _initInspectorToggle();
 
-    await initVersionNav({ onSwitch: (sha) => _onSwitch(sha, state) });
+    await initVersionNav({ currentSha: _current.sha, onSwitch: (sha) => _onSwitch(sha, state) });
 
     _wireHighlightLoop(state, marker, img);
   } catch (e) {
@@ -110,6 +114,7 @@ function _wireHighlightLoop(state, marker, img) {
 
 async function _onSwitch(sha, state) {
   state.audio.pause();
+  _current.sha = sha;
 
   const [pageJson, audioJson] = await Promise.all([
     _fetchJson(`/${sha}/page.json`),

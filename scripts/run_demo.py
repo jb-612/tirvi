@@ -107,6 +107,13 @@ def _try_enrich_from_audio_json(sha_dir: Path, default_label: str) -> str:
     return default_label
 
 
+def _mime(filename: str) -> str:
+    ext = filename.rsplit(".", 1)[-1].lower()
+    return {"json": "application/json", "mp3": "audio/mpeg", "png": "image/png",
+            "jpg": "image/jpeg", "js": "application/javascript", "css": "text/css"
+            }.get(ext, "application/octet-stream")
+
+
 def _build_versions_response(drafts_root: Path) -> bytes:
     """Serialize build_versions_list result to UTF-8 JSON bytes."""
     versions = build_versions_list(drafts_root)
@@ -133,37 +140,73 @@ def main() -> None:
     drafts_dir: Path = result["drafts_dir"]
     _LOG.info("Artefacts written to %s (sha=%s)", drafts_dir, result["sha"])
 
-    _copy_player_assets(drafts_dir)
+    # Serve from repo root so player/ assets and all drafts/<sha>/ are reachable.
+    # URL layout:
+    #   /                      → player/index.html  (current UI)
+    #   /player.css            → player/player.css
+    #   /js/<file>             → player/js/<file>
+    #   /api/versions          → JSON version list
+    #   /api/current           → {"sha": "<current_sha>"}
+    #   /<sha>/<file>          → drafts/<sha>/<file>  (page.json, audio.json, ...)
+
+    _repo_root = Path.cwd()
+    _current_sha = result["sha"]
+    _repo_drafts = _repo_root / _DRAFTS
+    _player_dir = _repo_root / _PLAYER
 
     url = f"http://localhost:{args.port}"
     _LOG.info("Starting HTTP server at %s — press Ctrl-C to stop", url)
     webbrowser.open(url)
 
-    # Keep reference to repo root for /api/versions (cwd will change below)
-    _repo_drafts = Path.cwd() / _DRAFTS
-
-    os.chdir(drafts_dir)
-
-    class _NoCacheHandler(http.server.SimpleHTTPRequestHandler):
-        def end_headers(self) -> None:  # type: ignore[override]
+    class _NoCacheHandler(http.server.BaseHTTPRequestHandler):
+        def end_headers(self) -> None:
             self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
             self.send_header("Pragma", "no-cache")
             self.send_header("Expires", "0")
             super().end_headers()
 
-        def do_GET(self) -> None:  # type: ignore[override]
-            if self.path == "/api/versions":
-                self._serve_versions()
+        def do_GET(self) -> None:
+            path = self.path.split("?")[0]
+            if path in ("/", "/index.html"):
+                self._serve_file(_player_dir / "index.html", "text/html; charset=utf-8")
+            elif path == "/player.css":
+                self._serve_file(_player_dir / "player.css", "text/css")
+            elif path.startswith("/js/"):
+                self._serve_file(_player_dir / path.lstrip("/"), "application/javascript")
+            elif path == "/api/versions":
+                self._serve_json(_build_versions_response(_repo_drafts))
+            elif path == "/api/current":
+                self._serve_json(json.dumps({"sha": _current_sha}).encode())
             else:
-                super().do_GET()
+                # /<sha>/<file> → drafts/<sha>/<file>
+                parts = path.lstrip("/").split("/", 1)
+                if len(parts) == 2:
+                    sha, fname = parts
+                    fpath = _repo_drafts / sha / fname
+                    self._serve_file(fpath, _mime(fname))
+                else:
+                    self.send_error(404)
 
-        def _serve_versions(self) -> None:
-            body = _build_versions_response(_repo_drafts)
+        def _serve_file(self, fpath: Path, ctype: str) -> None:
+            if not fpath.exists():
+                self.send_error(404)
+                return
+            body = fpath.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def _serve_json(self, body: bytes) -> None:
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+
+        def log_message(self, fmt: str, *args: object) -> None:  # silence request log
+            pass
 
     with http.server.HTTPServer(("", args.port), _NoCacheHandler) as srv:
         try:

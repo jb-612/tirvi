@@ -10,7 +10,7 @@
  * @param {(sha: string) => void} args.onSwitch  — called when user picks a run
  * @returns {Promise<void>}
  */
-export async function initVersionNav({ onSwitch }) {
+export async function initVersionNav({ currentSha = "", onSwitch }) {
   const list = document.getElementById("version-list");
   if (!list) return;
 
@@ -27,9 +27,7 @@ export async function initVersionNav({ onSwitch }) {
     return;
   }
 
-  // Active SHA comes from the current page URL (last path segment).
-  const activeSha = _detectCurrentSha();
-  _renderList(list, versions, activeSha, onSwitch);
+  _renderList(list, versions, currentSha, onSwitch);
 }
 
 // ---------------------------------------------------------------------------

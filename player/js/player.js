@@ -25,10 +25,11 @@ import { parseAudioTimings } from "./timing.js";
  * Boot the player.
  * @returns {Promise<PlayerState>}
  */
-export async function bootPlayer() {
-  const pageProjection = await _fetchRequired("page.json");
-  const audioOutcome = await _fetchOptional("audio.json");
-  const audio = _wireAudioElement();
+export async function bootPlayer(sha) {
+  const prefix = sha ? `/${sha}` : "";
+  const pageProjection = await _fetchRequired(`${prefix}/page.json`);
+  const audioOutcome = await _fetchOptional(`${prefix}/audio.json`);
+  const audio = _wireAudioElement(sha);
 
   if (audioOutcome.error) {
     _surfaceErrorBanner(audioOutcome.error);
@@ -64,10 +65,9 @@ async function _fetchOptional(url) {
   }
 }
 
-function _wireAudioElement() {
+function _wireAudioElement(sha) {
   const audio = document.getElementById("audio-element");
-  // POC default — audio.mp3 colocated with page.json under drafts/<sha>/.
-  audio.setAttribute("src", "audio.mp3");
+  audio.setAttribute("src", sha ? `/${sha}/audio.mp3` : "audio.mp3");
   return audio;
 }
 
