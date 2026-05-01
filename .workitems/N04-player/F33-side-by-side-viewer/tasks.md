@@ -39,7 +39,7 @@ Element + Acceptance Criterion.
 
 ## T-03: Implement build_manifest
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-04
 - acceptance_criteria: [US-05/AC-22, US-05/AC-24]
 - ft_anchors: [FT-319, FT-320]
