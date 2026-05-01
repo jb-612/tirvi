@@ -54,7 +54,7 @@ adapter/service tasks (T-03..T-08). After T-08, run `@test-functional` then
 
 ## T-03: Implement `DictaBertMLMScorer` (DE-03) — confusion-table + decision tree
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [F48-S02/AC-01, F48-S02/AC-02, F48-S02/AC-03]
 - ft_anchors: [FT-318, FT-319, FT-328]
