@@ -184,6 +184,7 @@ def _build_plan_block(
         block_type=block.block_type,
         tokens=tokens,
         bbox=block.bbox,
+        transformations=block.transformations,
     )
 
 

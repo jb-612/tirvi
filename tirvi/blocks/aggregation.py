@@ -19,6 +19,32 @@ from .classifier import classify_block
 from .value_objects import Block, PageStats
 
 _BLOCK_GAP_RATIO = 1.5
+_PROVENANCE_THRESHOLD = 0.6
+# F52: kinds that DO get a provenance entry. Fallbacks (paragraph, mixed)
+# do not — they are the absence of a confident pick.
+_PROVENANCE_KINDS: frozenset[str] = frozenset({
+    "instruction", "datum", "answer_blank",
+    "multi_choice_options", "question_stem", "heading",
+})
+
+
+def _build_classification_provenance(
+    block_type: str, confidence: float
+) -> tuple[dict, ...]:
+    """ADR-041 row #20 — emit one transformations entry per confident
+    non-fallback classification. Empty for fallback kinds (paragraph,
+    mixed) and below-threshold picks.
+    """
+    if confidence < _PROVENANCE_THRESHOLD:
+        return ()
+    if block_type not in _PROVENANCE_KINDS:
+        return ()
+    return ({
+        "kind": "block_kind_classification",
+        "to": block_type,
+        "confidence": confidence,
+        "adr_row": "ADR-041 #20",
+    },)
 
 
 def aggregate_block_bbox(words: list[OCRWord]) -> tuple[int, int, int, int]:
@@ -52,6 +78,7 @@ def _make_block(
         child_word_indices=tuple(indices),
         bbox=aggregate_block_bbox(block_words),
         classifier_confidence=conf,
+        transformations=_build_classification_provenance(block_type, conf),
     )
 
 
