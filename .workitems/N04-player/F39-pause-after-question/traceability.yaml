@@ -1,0 +1,98 @@
+# Traceability index — N04/F39 Pause-and-Jump Affordance
+feature_id: N04/F39
+status: designed
+phase: 0  # Phase 0 of reading-disability roadmap
+namespace_note: |
+  N04/F39 coexists with N05/F39-tirvi-bench-v0 per PR #30 question
+  6 answer (per-namespace numbering accepted). Different bounded
+  contexts; no code/contract overlap.
+
+hld_refs:
+  - HLD-§6/Player
+prd_refs:
+  - "PRD §6.6 — Player UX (accommodation controls)"
+adr_refs:
+  - ADR-041
+  - ADR-038
+
+research_findings:
+  - docs/research/reading-disability-pipeline-roadmap.md  # §B point 4, §D, §E
+
+ontology_refs:
+  - bo:Player
+  - bc:reading_accommodation
+
+acm_nodes:
+  feature: feature:N04/F39
+  specs:
+    - spec:N04/F39/DE-01
+    - spec:N04/F39/DE-02
+    - spec:N04/F39/DE-03
+    - spec:N04/F39/DE-04
+    - spec:N04/F39/DE-05
+    - spec:N04/F39/DE-06
+  user_stories:
+    - story:N04/F39/US-01
+    - story:N04/F39/US-02
+    - story:N04/F39/US-03
+    - story:N04/F39/US-04
+    - story:N04/F39/US-05
+    - story:N04/F39/US-06
+    - story:N04/F39/US-07
+  acceptance_criteria:
+    - criterion:N04/F39/US-01/AC-01
+    - criterion:N04/F39/US-02/AC-01
+    - criterion:N04/F39/US-03/AC-01
+    - criterion:N04/F39/US-04/AC-01
+    - criterion:N04/F39/US-05/AC-01
+    - criterion:N04/F39/US-06/AC-01
+    - criterion:N04/F39/US-07/AC-01
+  tasks:
+    - task:N04/F39/T-01
+    - task:N04/F39/T-02
+    - task:N04/F39/T-03
+    - task:N04/F39/T-04
+    - task:N04/F39/T-05
+    - task:N04/F39/T-06
+    - task:N04/F39/T-07
+
+acm_edges:
+  - {from: spec:N04/F39/DE-01, to: HLD-§6/Player, type: TRACED_TO}
+  - {from: spec:N04/F39/DE-02, to: HLD-§6/Player, type: TRACED_TO}
+  - {from: spec:N04/F39/DE-03, to: HLD-§6/Player, type: TRACED_TO}
+  - {from: spec:N04/F39/DE-04, to: HLD-§6/Player, type: TRACED_TO}
+  - {from: spec:N04/F39/DE-05, to: HLD-§6/Player, type: TRACED_TO}
+  - {from: spec:N04/F39/DE-06, to: HLD-§6/Player, type: TRACED_TO}
+  - {from: feature:N04/F39, to: feature:N02/F52, type: DEPENDS_ON}   # HARD — needs question_stem
+  - {from: feature:N04/F39, to: feature:N04/F35, type: DEPENDS_ON}   # marker hook
+  - {from: feature:N04/F39, to: feature:N04/F36, type: EXTENDS}      # state machine + settings panel
+  - {from: feature:N04/F39, to: feature:N04/F38, type: REVIEWED_BY}  # WCAG audit
+  - {from: feature:N04/F39, to: adr:041, type: TRACED_TO}            # red-line row #5
+
+de_to_hld:
+  DE-01: HLD-§6/Player
+  DE-02: HLD-§6/Player
+  DE-03: HLD-§6/Player
+  DE-04: HLD-§6/Player
+  DE-05: HLD-§6/Player
+  DE-06: HLD-§6/Player
+
+ac_to_story:
+  "F39-S01/AC-01": story:N04/F39/US-01
+  "F39-S02/AC-01": story:N04/F39/US-02
+  "F39-S03/AC-01": story:N04/F39/US-03
+  "F39-S04/AC-01": story:N04/F39/US-04
+  "F39-S05/AC-01": story:N04/F39/US-05
+  "F39-S06/AC-01": story:N04/F39/US-06
+  "F39-S07/AC-01": story:N04/F39/US-07
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-01
+  T-04: DE-03
+  T-05: DE-04
+  T-06: DE-05
+  T-07: DE-01
+
+tests: []  # populated by TDD as code lands
