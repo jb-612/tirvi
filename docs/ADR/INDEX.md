@@ -51,3 +51,4 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-035 | `corrections.json` schema and chunking policy | Proposed | hebrew-interpretation | F48 |
 | ADR-036 | Exam Review Portal — auth deferred as NFR (localhost-only until auth infra exists) | **Accepted** | exam_review | N04/F33 |
 | ADR-037 | Pipeline observability — injectable ProgressReporter protocol | Proposed | ingest / platform | N01/F49 |
+| ADR-038 | Homograph context-rules layer between Nakdan and the LLM reviewer | Proposed | hebrew-interpretation | N02/F19, F21, F48, F51 |

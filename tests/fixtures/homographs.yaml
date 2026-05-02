@@ -1,0 +1,308 @@
+# F51 T-04 — homograph regression fixture
+#
+# Each case is fed to `_project_with_context` with pre-baked Dicta-shape
+# entries (the focus word's options are real Nakdan output captured by
+# scripts/discover_homograph_cases.py). The integration test asserts on
+# the resolved focus word.
+#
+# Per ADR-038, the test scope is the F51 RULE LAYER + Nakdan top-1
+# fallback (no LLM judge in the loop) — kept deterministic + fast for CI.
+# A separate slow test (with Ollama) exercises the full cascade.
+#
+# `must_contain_any` is matched after NFD normalisation so encoders that
+# emit precomposed nikud also pass. Hebrew characters in must_contain_any
+# include the prefix-stripped, fully-vocalized form for each gold reading.
+schema_version: 1
+
+cases:
+  # ====== Original 6 bench cases ======
+  - id: C01
+    sentence: "האם הקריאה ספר לילדה"
+    focus: "האם"
+    category: mother_or_whether_ambiguous
+    rule_should_fire: false
+    must_contain_any: ["הָאֵם", "הַאִם"]   # ambiguous; either reading acceptable
+    notes: "UAT-2026-05-02 §S1 — genuinely two-valued sentence"
+    focus_options: ["הָ|אֵם","הַאִם","הָ|אִם","הַ|אֵם","הָ|אֹם","הַ|אֶם","הַ|אֻם","הַ|אֹם"]
+
+  - id: C02
+    sentence: "האם כדאי להקריא ספר"
+    focus: "האם"
+    category: whether_interrogative
+    rule_should_fire: false
+    must_contain_any: ["הַאִם"]
+    notes: "UAT §S2 — interrogative with infinitive complement"
+    focus_options: ["הַאִם","הָ|אֵם","הָ|אִם","הַ|אֵם","הָ|אֹם","הַ|אֶם","הַ|אֻם","הַ|אֹם"]
+
+  - id: C03
+    sentence: "האים כדאי להקריא ספר"
+    focus: "האים"
+    category: whether_plene
+    rule_should_fire: false
+    must_contain_any: ["הַאִם"]
+    notes: "UAT §S3 — plene spelling normalises to whether"
+    focus_options: ["הַאִם","הָ|אָיֹם","הֵאִים","הָ|אִם","הָ|אֵים","הָ|אַיֹּם","הָ|אֵם","הַ|אֵים","הַ|אַיֹּם","הַ|אֵם","הַ|אִיֵּם","הַ|אַיָּם","הַ|אֲיֹם","הֶ|אָיֹם","הַ|אִיָּם","הַ|אֻיַּם","הַ|אַיֵּם","הַ|אֻיֵּם","הֶ|אָיַם","הַ|אֱיֹם"]
+
+  - id: C04
+    sentence: "הוא טיפוס שלו ורגוע"
+    focus: "שלו"
+    category: shalu_calm
+    rule_should_fire: false
+    must_contain_any: ["שָׁלֵו"]
+    expected_failure: true   # Nakdan top-1 is "שֶׁלּוֹ" (his); needs T-05 or LLM judge
+    notes: "UAT §S4 — calm; current rule layer cannot rescue, see T-05"
+    focus_options: ["שֶׁלּוֹ","שֶׁ|לּוּ","שָׁלֵו","שְׂלָו","שלו","שָׁלוּ","שְׁלוּ","שִׁלוֹ","שְׁלַו","שְׂלַו","שָׁלַו","שַׁלּוּ","שַׁלּוֹ","שֶׁלֶו","שָׁלוֹ","שְׁלֵו","שִׁלּוּ","שְׁלֹו","שִׁלּוֹ"]
+
+  - id: C05
+    sentence: "זה הספר שלו"
+    focus: "שלו"
+    category: shalu_his
+    rule_should_fire: false
+    must_contain_any: ["שֶׁלּוֹ"]
+    notes: "UAT §S5 — possessive his"
+    focus_options: ["שֶׁלּוֹ","שֶׁ|לּוּ","שָׁלֵו","שְׂלָו","שלו","שָׁלוּ","שְׁלוּ","שִׁלוֹ","שָׁלַו","שַׁלּוּ","שְׁלַו","שַׁלּוֹ","שֶׁלֶו","שָׁלוֹ","שְׁלֵו","שִׁלּוּ","שִׁלּוֹ","שְׂלַו","שְׁלֹו"]
+
+  - id: C06
+    sentence: "כל אם רוצה את הטוב ביותר לילדה"
+    focus: "לילדה"
+    category: mappiq_possessive_rule_rescue
+    rule_should_fire: true
+    must_contain_any: ["לְיַלְדָּהּ"]
+    notes: "UAT §S6 — flagship mappiq case; rule rescues over Nakdan top-1"
+    focus_options: ["לַ|יַּלְדָּה","לְ|יַלְדָּה","לְ|יַלְדָּהּ","לְיַלְּדָהּ","לַ|יְּלֻדָּה","לִ|ילֻדָּה","לַ|יֹּלֵדָה","לְ|יֹלֵדָה","לְ|יֹלְדָהּ"]
+
+  # ====== Mappiq positives — possessor trigger present, rule must fire ======
+  - id: C07
+    sentence: "כל אם דואגת לבתה"
+    focus: "לבתה"
+    category: mappiq_possessive
+    rule_should_fire: true
+    must_contain_any: ["לְבִתָּהּ"]
+    notes: "every mother worries about her daughter"
+    focus_options: ["לְ|בִתָּהּ","לִבָּתָהּ","לְבָתָהּ","לַבָּתָהּ","לִבְּתָה","לֻבְּתָה","לְ|בָתָה","לַ|בָּתָה","לְ|בַתָּהּ","לְ|בַתָּה","לַ|בַּתָּה"]
+
+  - id: C08
+    sentence: "כל אישה אוהבת את ילדה"
+    focus: "ילדה"
+    category: mappiq_possessive_rule_rescue
+    rule_should_fire: true
+    must_contain_any: ["יַלְדָּהּ"]
+    notes: "every woman loves her child — rule overrides indefinite top-1"
+    focus_options: ["יַלְדָּה","יַלְדָּהּ","יְלָדָה","יָלְדָה","יִלְּדָה","יָלַדְתָּה","יְלָדַתָּה","יִלְּדָהּ","יָלַדְתָהּ","יָלְדָהּ","יָלְדֶיהָ","יָלְדֶהָ","יָלַדְתָּהּ","יָלְדָהָ","יִלְּדֶיהָ"]
+
+  - id: C09
+    sentence: "כל אם נותנת אהבה לילדה"
+    focus: "לילדה"
+    category: mappiq_possessive_rule_rescue
+    rule_should_fire: true
+    must_contain_any: ["לְיַלְדָּהּ"]
+    notes: "every mother gives love to her child — same shape as C06"
+    focus_options: ["לַ|יַּלְדָּה","לְ|יַלְדָּה","לְ|יַלְדָּהּ","לְיַלְּדָהּ","לַ|יְּלֻדָּה","לִ|ילֻדָּה","לַ|יֹּלֵדָה","לְ|יֹלֵדָה","לְ|יֹלְדָהּ"]
+
+  - id: C10
+    sentence: "כל אם משחקת עם ילדתה"
+    focus: "ילדתה"
+    category: mappiq_possessive
+    rule_should_fire: true
+    must_contain_any: ["יַלְדָּתָהּ"]
+    notes: "every mother plays with her daughter"
+    focus_options: ["יַלְדָּתָהּ","יְלָדַתָּה","יְלַדְתָּהּ","יִלְּדַתָּה","יִלַּדְתָּהּ"]
+
+  - id: C11
+    sentence: "כל בת מקשיבה לאמה"
+    focus: "לאמה"
+    category: mappiq_possessive
+    rule_should_fire: true
+    must_contain_any: ["לְאִמָּהּ"]
+    notes: "every daughter listens to her mother"
+    focus_options: ["לְ|אִמָּהּ","לְ|אֻמָּה","לְ|אָמָה","לְ|אַמָּה","לָ|אַמָּה","לָ|אֻמָּה","לְאֻמָּהּ","לְ|אֵמָה","לָ|אָמָה","לְ|אִמָּה","לָ|אִמָּה"]
+
+  - id: C12
+    sentence: "כל אדם זוכר את אמו"
+    focus: "אמו"
+    category: rule_fires_no_mappiq_in_options
+    rule_should_fire: false   # trigger present but no mappiq variant available
+    must_contain_any: ["אִמּוֹ"]
+    notes: "masculine possessive (his mother) — no mappiq form exists, rule returns None"
+    focus_options: ["אִמּוֹ","אָמוּ","אַמּוּ"]
+
+  - id: C13
+    sentence: "כל אם רוצה את ספרה"
+    focus: "ספרה"
+    category: mappiq_possessive
+    rule_should_fire: true
+    must_contain_any: ["סִפְרָהּ"]
+    notes: "every mother wants her book — top-1 is already mappiq, rule confirms"
+    focus_options: ["סִפְרָהּ","סִפְּרָה","סָפְרָה","סַפְּרָהּ","סִפְרָה","סְפָרָהּ","סַפָּרָהּ","סְפָרָה","סַפְּרֶהָ","סֻפְּרָה","סִפְּרָהּ","סָפְרָהּ","סָפְרֶהָ","סַפְּרָה"]
+
+  # ====== Mappiq negatives — no possessor trigger, rule MUST NOT fire ======
+  - id: C14
+    sentence: "המשחק הזה מתאים לכל ילד או ילדה"
+    focus: "ילדה"
+    category: mappiq_negative_no_trigger
+    rule_should_fire: false
+    must_contain_any: ["יַלְדָּה"]
+    must_not_contain_any: ["יַלְדָּהּ"]
+    notes: "trigger 'ילד' is NOT in the lexicon; rule must not over-fire"
+    focus_options: ["יַלְדָּה","יַלְדָּהּ","יְלָדָה","יָלְדָה","יִלְּדָה","יָלַדְתָּה","יְלָדַתָּה","יִלְּדָהּ","יָלַדְתָהּ","יָלְדָהּ","יָלְדֶיהָ","יָלְדֶהָ","יָלַדְתָּהּ","יָלְדָהָ","יִלְּדֶיהָ"]
+
+  - id: C15
+    sentence: "הילדה הולכת לבית הספר"
+    focus: "הילדה"
+    category: mappiq_negative_no_trigger
+    rule_should_fire: false
+    must_contain_any: ["הַיַּלְדָּה"]
+    must_not_contain_any: ["הֲיַלְדָּהּ"]
+    notes: "the girl goes to school — definite article, not possessive"
+    focus_options: ["הַ|יַּלְדָּה","הַ|יַּלְדָּה","הַ|יְּלָדָה","הַ|יְּלָדָה","הַ|יָּלְדָה","הַ|יְלָדָה","הַ|יַּלַדְתָּה","הַ|יִלְּדָה","הַ|יָלְדָה","הַ|יִּלָּדָה","הֲ|יָלַדְתָּהּ","הֲ|יָלְדָהּ","הֲ|יִלְּדָה","הֲ|יָלַדְתָּה","הֲ|יִלְּדָהּ","הֲ|יָלַדְתָהּ","הֲ|יַלְדָּהּ"]
+
+  - id: C16
+    sentence: "אני אוהב את הילדה החדשה"
+    focus: "הילדה"
+    category: mappiq_negative_no_trigger
+    rule_should_fire: false
+    must_contain_any: ["הַיַּלְדָּה"]
+    must_not_contain_any: ["הֲיַלְדָּהּ"]
+    notes: "I love the new girl — definite, not possessive"
+    focus_options: ["הַ|יַּלְדָּה","הַ|יַּלְדָּה","הַ|יְּלָדָה","הַ|יְּלָדָה","הַ|יָּלְדָה","הַ|יְלָדָה","הַ|יַּלַדְתָּה","הַ|יִלְּדָה","הַ|יָלְדָה","הַ|יִּלָּדָה","הֲ|יָלַדְתָּהּ","הֲ|יָלְדָהּ","הֲ|יִלְּדָה","הֲ|יָלַדְתָּה","הֲ|יִלְּדָהּ","הֲ|יָלַדְתָהּ","הֲ|יַלְדָּהּ"]
+
+  - id: C17
+    sentence: "ראיתי ילדה ברחוב"
+    focus: "ילדה"
+    category: mappiq_negative_no_trigger
+    rule_should_fire: false
+    must_contain_any: ["יַלְדָּה"]
+    must_not_contain_any: ["יַלְדָּהּ"]
+    notes: "I saw a girl in the street — indefinite"
+    focus_options: ["יַלְדָּה","יַלְדָּהּ","יְלָדָה","יָלְדָה","יִלְּדָה","יָלַדְתָּה","יְלָדַתָּה","יִלְּדָהּ","יָלַדְתָהּ","יָלְדָהּ","יָלְדֶיהָ","יָלְדֶהָ","יָלַדְתָּהּ","יָלְדָהָ","יִלְּדֶיהָ"]
+
+  # ====== she-conjoined-adjective cases — currently fail without LLM ======
+  - id: C18
+    sentence: "הוא היה שלו ורגוע במהלך כל הבחינה"
+    focus: "שלו"
+    category: shalu_calm
+    rule_should_fire: false
+    must_contain_any: ["שָׁלֵו"]
+    notes: "Nakdan top-1 here happens to be calm — context length helps"
+    focus_options: ["שָׁלֵו","שֶׁלּוֹ","שֶׁ|לּוּ","שְׂלָו","שלו","שָׁלוּ","שְׁלוּ","שִׁלוֹ","שָׁלַו","שַׁלּוּ","שְׁלַו","שַׁלּוֹ","שֶׁלֶו","שָׁלוֹ","שְׁלֵו","שִׁלּוּ","שִׁלּוֹ","שְׂלַו","שְׁלֹו"]
+
+  - id: C19
+    sentence: "הילד שלו ורגוע אחרי שאכל"
+    focus: "שלו"
+    category: shalu_calm
+    rule_should_fire: false
+    must_contain_any: ["שָׁלֵו"]
+    expected_failure: true   # T-05 candidate
+    notes: "ambiguous (his/calm); without T-05 or LLM, top-1 wrong"
+    focus_options: ["שֶׁלּוֹ","שֶׁ|לּוּ","שָׁלֵו","שְׂלָו","שלו","שָׁלוּ","שְׁלוּ","שִׁלוֹ","שָׁלַו","שַׁלּוּ","שְׁלַו","שַׁלּוֹ","שֶׁלֶו","שָׁלוֹ","שְׁלֵו","שִׁלּוּ","שִׁלּוֹ","שְׂלַו","שְׁלֹו"]
+
+  - id: C20
+    sentence: "הספר שלו על השולחן"
+    focus: "שלו"
+    category: shalu_his
+    rule_should_fire: false
+    must_contain_any: ["שֶׁלּוֹ"]
+    notes: "his book is on the table — possessive"
+    focus_options: ["שֶׁלּוֹ","שֶׁ|לּוּ","שָׁלֵו","שְׂלָו","שלו","שָׁלוּ","שְׁלוּ","שִׁלוֹ","שָׁלַו","שַׁלּוּ","שְׁלַו","שַׁלּוֹ","שֶׁלֶו","שָׁלוֹ","שְׁלֵו","שִׁלּוּ","שִׁלּוֹ","שְׂלַו","שְׁלֹו"]
+
+  - id: C21
+    sentence: "המכונית שלה חדשה"
+    focus: "שלה"
+    category: shela_her_no_trigger
+    rule_should_fire: false   # no possessor trigger; rule doesn't fire
+    must_contain_any: ["שֶׁלָּהּ"]
+    notes: "her car is new — possessive (mappiq) but no 'kol X' trigger; Nakdan top-1 is already correct"
+    focus_options: ["שֶׁלָּהּ","שֶׁ|לָּה","שָׁלָה","שִׁלֹה","שלה","שֵׁלָה","שְׁלֵה","שַׁלֵּה","שַׁלָּהּ","שָׁלֹה","שָׁלָהּ","שְׁלָהּ","שָׁלֶהָ","שְׁלֶהָ","שִׁלָּה","שִׁלָּהּ","שֶׁ|לֹּהַּ","שֶׁ|לֵּהּ","שֶׁ|לַּהּ"]
+
+  # ====== mother / whether ======
+  - id: C22
+    sentence: "האם אתה יודע את התשובה"
+    focus: "האם"
+    category: whether_interrogative
+    rule_should_fire: false
+    must_contain_any: ["הַאִם"]
+    notes: "do you know the answer — clear interrogative"
+    focus_options: ["הַאִם","הָ|אֵם","הָ|אִם","הַ|אֵם","הָ|אֹם","הַ|אֶם","הַ|אֻם","הַ|אֹם"]
+
+  - id: C23
+    sentence: "האם החליטה לקנות מתנה"
+    focus: "האם"
+    category: mother_or_whether_ambiguous
+    rule_should_fire: false
+    must_contain_any: ["הָאֵם", "הַאִם"]
+    notes: "ambiguous; either reading acceptable"
+    focus_options: ["הָ|אֵם","הַאִם","הָ|אִם","הַ|אֵם","הָ|אֹם","הַ|אֶם","הַ|אֻם","הַ|אֹם"]
+
+  # ====== Control cases — verify cascade runs cleanly on simple sentences ======
+  - id: C24
+    sentence: "הילד אכל את התפוח"
+    focus: "אכל"
+    category: control_simple
+    rule_should_fire: false
+    must_contain_any: ["אָכַל"]
+    notes: "the child ate the apple — basic past-tense verb"
+    focus_options: ["אָכַל","אָכֵל","אֹכֶל","אֻכַּל","אַכָּל","אֲכֹל","אִכֵּל"]
+
+  - id: C25
+    sentence: "המורה הסביר את החומר"
+    focus: "המורה"
+    category: control_definite_noun
+    rule_should_fire: false
+    must_contain_any: ["הַמּוֹרֶה"]
+    notes: "the teacher explained the material"
+    focus_options: ["הַ|מּוֹרֶה","הַ|מּוֹרָה","הִמּוּרָהּ","הַ|מֹּרֶה","הַ|מֹּרָה","הֲ|מוֹרָה","הֲ|מוֹרֶה","הֲ|מוֹרֵה","הֲ|מֹרֶה","הֲ|מֹרָה","הֲ|מֹרָהּ","הֲ|מוֹרֶהָ","הֲ|מוֹרָהּ"]
+
+  - id: C26
+    sentence: "הספר נמצא על המדף"
+    focus: "הספר"
+    category: control_definite_noun
+    rule_should_fire: false
+    must_contain_any: ["הַסֵּפֶר"]
+    notes: "the book is on the shelf"
+    focus_options: ["הַ|סֵּפֶר","הַ|סְּפָר","הַ|סַּפָּר","הַ|סֹּפֵר","הִסְפֵּר","הַ|סְּפַר","הִסְפַּר","הַסְּפָר","הִסָּפֵר","הִסָּפְרָה","הַסֻּפַּר","הַסֻּפָּר","הֻסְפַּר","הֻסְפָּר","הִסָּפֵרַ","הִסָּפָר","הֻסְפְּרָה"]
+
+  - id: C27
+    sentence: "הוא קרא את העיתון"
+    focus: "קרא"
+    category: control_simple
+    rule_should_fire: false
+    must_contain_any: ["קָרָא"]
+    notes: "he read the newspaper"
+    focus_options: ["קָרָא","קֹרָא","קָרֵא","קִרֵּא","קֹרֵא","קֻרָּא","קְרָא"]
+
+  - id: C28
+    sentence: "הם הולכים לחנות"
+    focus: "הולכים"
+    category: control_simple
+    rule_should_fire: false
+    must_contain_any: ["הוֹלְכִים"]
+    notes: "they walk to the store — plural masc participle"
+    focus_options: ["הוֹלְכִים","הֹלְכִים"]
+
+  - id: C29
+    sentence: "היא רוקדת בשמחה"
+    focus: "רוקדת"
+    category: control_simple
+    rule_should_fire: false
+    must_contain_any: ["רוֹקֶדֶת"]
+    notes: "she dances joyfully"
+    focus_options: ["רוֹקֶדֶת","רֻקֶּדֶת","רֹקֶדֶת"]
+
+  - id: C30
+    sentence: "הכלב נובח על הזר"
+    focus: "נובח"
+    category: control_simple
+    rule_should_fire: false
+    must_contain_any: ["נוֹבֵחַ"]
+    notes: "the dog barks at the stranger"
+    focus_options: ["נוֹבֵחַ","נֻבַּח"]
+
+  - id: C31
+    sentence: "היונה עפה לעץ"
+    focus: "עפה"
+    category: control_simple
+    rule_should_fire: false
+    must_contain_any: ["עָפָה"]
+    must_not_contain_any: ["עָפָהּ"]   # mappiq variant exists but is the wrong reading here
+    notes: "the dove flew to the tree — verb past 3sg fem, not possessive"
+    focus_options: ["עָפָה","עָפָהּ"]

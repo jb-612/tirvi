@@ -1,0 +1,36 @@
+prompt_template_version: "v1-homograph"
+status: active
+purpose: |
+  Hebrew homograph disambiguation judge — distinct from the OCR
+  correction reviewer at `tirvi/correction/prompts/he_reviewer/`.
+
+  The OCR reviewer answers OK / REPLACE on a single suspicious token.
+  This judge answers "which of N vocalization options fits the
+  sentence", and is consumed by the F51 context-rules layer (per
+  ADR-038) when a deterministic rule does not fire and the cascade
+  needs an LLM judgement on the focus token's nikud.
+
+variables: ["{sentence}", "{focus}", "{options_block}"]
+
+reasoning_categories:
+  - mappiq inside final ה (לְיַלְדָּה / לְיַלְדָּהּ — to-a-girl vs to-her-child)
+  - prefix-letter parsing (ב, כ, ל, מ, ה, ו attached to a stem)
+  - possessive vs adjective (שֶׁלּוֹ / שָׁלֵו — his vs calm)
+  - interrogative vs definite-article+noun (הַאִם / הָ|אֵם — whether vs the-mother)
+
+few_shot_examples_count: 3
+few_shot_in_test_set: false  # examples chosen to NOT overlap the homograph regression fixture
+
+operational_notes: |
+  Gemma 4 31B does ~2-5k tokens of internal reasoning before emitting
+  the JSON. Production callers MUST NOT cap `num_predict` below ~6000
+  (or leave it unset). Capping below produces empty-string responses.
+  See ADR-038 §Operational footnote.
+
+cache_key_strategy: |
+  Per ADR-034: cache key includes prompt_template_version. The
+  v1-homograph version is isolated from any future v2-homograph
+  iteration and from the OCR reviewer's v1-scaffold version.
+
+source_research: docs/UAT/UAT-2026-05-02-homograph-pipeline.md
+adr: ADR-038

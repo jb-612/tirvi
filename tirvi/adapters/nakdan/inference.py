@@ -15,6 +15,8 @@ from typing import Any
 
 from tirvi.results import DiacritizationResult, NLPResult, NLPToken
 
+from tirvi.homograph.possessive_mappiq import apply_rule as _possessive_mappiq
+
 from .client import diacritize_via_api
 from .normalize import to_nfd
 from .overrides import HOMOGRAPH_OVERRIDES
@@ -47,7 +49,7 @@ def diacritize_in_context(text: str, nlp: NLPResult) -> DiacritizationResult:
     if not text.strip():
         return DiacritizationResult(provider=PROVIDER, diacritized_text="", confidence=None)
     raw = diacritize_via_api(text)
-    projected = _project_with_context(raw, nlp.tokens)
+    projected = _project_with_context(raw, nlp.tokens, sentence=text)
     return DiacritizationResult(
         provider=PROVIDER,
         diacritized_text=to_nfd(projected),
@@ -62,7 +64,9 @@ def _project_response(entries: list[dict[str, Any]]) -> str:
 
 
 def _project_with_context(
-    entries: list[dict[str, Any]], tokens: list[NLPToken]
+    entries: list[dict[str, Any]],
+    tokens: list[NLPToken],
+    sentence: str | None = None,
 ) -> str:
     parts: list[str] = []
     cursor = 0
@@ -71,9 +75,36 @@ def _project_with_context(
             parts.append(_pick(entry))
             continue
         token = tokens[cursor] if cursor < len(tokens) else None
-        parts.append(_pick_in_context(entry, token))
+        parts.append(_resolve_entry(entry, token, sentence))
         cursor += 1
     return "".join(parts)
+
+
+def _resolve_entry(
+    entry: dict[str, Any], token: NLPToken | None, sentence: str | None
+) -> str:
+    """ADR-038 — F51 rule layer first, then F19 NLP-context, else top-1."""
+    rule_pick = _apply_context_rules(entry, sentence)
+    if rule_pick is not None:
+        return rule_pick
+    return _pick_in_context(entry, token)
+
+
+def _apply_context_rules(
+    entry: dict[str, Any], sentence: str | None
+) -> str | None:
+    """Run F51 deterministic rules; return resolved string or None."""
+    if not sentence:
+        return None
+    options = entry.get("options") or []
+    str_options = [o for o in options if isinstance(o, str)]
+    if not str_options:
+        return None
+    word = str(entry.get("word", ""))
+    pick = _possessive_mappiq(sentence, word, str_options)
+    if pick is None:
+        return None
+    return str_options[pick - 1].replace(_PREFIX_MARKER, "")
 
 
 def _pick_in_context(entry: dict[str, Any], token: NLPToken | None) -> str:

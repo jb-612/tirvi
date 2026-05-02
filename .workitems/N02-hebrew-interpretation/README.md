@@ -23,6 +23,7 @@ research.
 - **F23-ssml-shaping** — breaks between answers, emphasis on question numbers, per-word marks
 - **F24-lang-switch-policy** — Azure inline `<lang xml:lang="en-US">` for English spans
 - **F25-content-templates** — math reading template + table reading template
+- **F51-homograph-context-rules** — sentence-context rule layer between Nakdan and the LLM reviewer (sibling of F21; ships possessive-mappiq rule + Gemma harness prompt; per ADR-038)
 
 ## Exit criteria
 
@@ -35,3 +36,16 @@ research.
 
 - ADR-002 NLP backbone (DictaBERT-large-joint primary, AlephBERT fallback)
 - ADR-003 Diacritization + G2P (Dicta-Nakdan + Phonikud)
+
+## Deferred follow-ups (opened, not yet scheduled)
+
+- [Issue #27](https://github.com/jb-612/tirvi/issues/27) — fix dormant
+  DictaBERT→Nakdan integration (`_pick_in_context` morph-options gating
+  is unreachable under current Dicta REST option shape; per
+  ADR-038 §Finding 1). Independent of F51. Needs an ADR-039 to choose
+  between (A) request morph-bearing Dicta response shape and
+  (B) string-level POS scoring on candidate options.
+- [Issue #28](https://github.com/jb-612/tirvi/issues/28) — ambiguity
+  flagging in `corrections.json` for genuinely two-valued sentences
+  like UAT-2026-05-02 §S1. Refines ADR-035 schema with
+  `verdict: "ambiguous"`. Reviewed UI (F50) is the downstream consumer.
