@@ -38,11 +38,27 @@ form for that language. Sections in order:
 4. Include both the "scaffold" code (what to write) and the "anti-pattern" code (what NOT to write)
 5. Reference the project's actual package/folder conventions if known; otherwise generic conventions
 
-## Notes for tirvi specifically
+## How the agent picks a reference for the hosting project
 
-- Production code lives under `tirvi/` (not `pkg/`/`internal/` despite Go conventions in some repos)
-- Tests live under `tests/unit/`, `tests/integration/`, `tests/e2e/`
-- Flutter app under `flutter_app/lib/`; Flutter tests under `flutter_app/test/`
-- No Go code in tirvi today (despite repo conventions allowing it) — `go.md` exists for portability to other projects
+**The harness is project-agnostic.** It does NOT know which language(s)
+the hosting project uses, and the agent must NOT assume one based on
+the references that happen to exist in this folder.
 
-The agent runs L1 inspection first to confirm actual paths before writing.
+The right inspection order:
+
+1. Read the project's `CLAUDE.md` "Project Conventions" / "Stack"
+   section — the project declares its languages and code roots.
+2. Run `ls` / `Glob` against the project root to confirm what code
+   actually exists. Look for `package.json`, `pyproject.toml`,
+   `go.mod`, `pubspec.yaml`, `Cargo.toml`, etc. as language signals.
+3. Pick the matching reference file from this folder. If the
+   project uses a language not represented here, follow "Adding a
+   new language" above.
+4. **Do NOT proceed past L1 until you've confirmed the actual code
+   roots and test roots from the project's repo.** Pattern-matching
+   from "this folder has a `dart.md`" to "this project has a Flutter
+   app" has caused real design errors — see
+   `docs/research/sdlc-shortcut-postmortem-phase0.md §lesson 5`.
+
+The agent runs L1 inspection first to confirm actual paths before
+writing any L2+ artifact.

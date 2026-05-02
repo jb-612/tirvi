@@ -142,11 +142,58 @@ review.
    the design ceremony was reduced, file the postmortem honestly
    and tighten the rule. Don't pantomime the missing rounds against
    shipped code.
+5. **Harness-meta drift is a real failure mode.** Discovered after
+   the F39 backfill landed: F39's design artifacts referenced
+   `flutter_app/lib/components/player/*.dart` with Riverpod —
+   completely wrong stack. The actual player is **vanilla JS +
+   vitest**, mandated by ADR-023, with F33/F35/F36 already shipped
+   in that stack. The harness rules `coding-standards.md` and
+   `tdd-rules.md`, plus `.claude/skills/ddd-7l-scaffold/references/
+   README.md` all carried Flutter/Dart-specific assumptions
+   (e.g., `flutter_app/lib/**/*.dart` paths in frontmatter,
+   "Flutter app under `flutter_app/lib/`" in the references README)
+   that pattern-matched onto F39 even though the project doesn't
+   use Flutter. The error compounded: long context + harness rules
+   that conflated "tooling exists" with "project uses tooling" →
+   F39 design referenced fictional `.dart` files that the workflow
+   ceremony was supposed to catch but didn't.
+
+   **Corrective actions taken in PR #37**:
+
+   - `.claude/rules/coding-standards.md` — restructured into
+     "Universal Rules" (apply to every project, every language) +
+     "Per-language sections" (templates the agent reads ONLY when
+     the hosting project's CLAUDE.md declares the language as in
+     use). Frontmatter `paths:` removed (project-set, not
+     harness-set). Added `### TypeScript / JavaScript` section
+     since most browser-side projects need it.
+   - `.claude/rules/tdd-rules.md` — abstracted the TDD entry-point
+     to "the router detects language from the task's test_file
+     path and the project's CLAUDE.md, then delegates to the
+     matching per-language TDD skill". Removed the hard-coded
+     "@tdd-go or @tdd-flutter" delegation. Three-agent role
+     separation stays as a universal pattern; per-language path
+     matrices live in the corresponding TDD skill's SKILL.md, not
+     in this rule.
+   - `.claude/skills/ddd-7l-scaffold/references/README.md` —
+     removed the "Notes for tirvi specifically" section that
+     incorrectly claimed tirvi has `flutter_app/lib/`. Replaced
+     with a "How the agent picks a reference" section that
+     explicitly mandates project-CLAUDE.md inspection + repo `ls`
+     before assuming any language is in use.
+
+   **The F39 design artifacts themselves still need correction**
+   — they were authored in PR #33 + backfilled in PR #36 against
+   the wrong stack. That correction is its own follow-up PR
+   (out of scope for PR #37), and SHOULD start from a fresh
+   conversation context to avoid re-importing the long-context
+   drift that produced the original error.
 
 ## Sign-off
 
 This document, the workflow.md amendment, and the three backfilled
 artifacts per feature are the explicit closure of the Phase-0 design-
 ceremony gap. PR #36 is the carrier; F53's same-three artifacts
-ride on PR #35. Subsequent feature PRs MUST include all seven
+ride on PR #35. PR #37 follows with the harness-meta corrections
+described in lesson 5. Subsequent feature PRs MUST include all seven
 workitem files at merge time.
