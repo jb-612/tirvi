@@ -1,0 +1,146 @@
+# Ontology delta — N02/F51 Homograph Context-Rules
+# Authored 2026-05-02 as Phase-0 design backfill; F51 already merged in PR #29.
+
+version: 1
+feature_id: N02/F51
+
+modules:
+  - id: MOD-N02-F51-possessive-mappiq
+    name: tirvi.homograph.possessive_mappiq
+    description: |
+      Pure deterministic rule. Detects possessor patterns in Hebrew
+      sentences (כל + {אם/אב/הורה/אישה/איש/בן/בת/אדם}) and prefers
+      mappiq-bearing candidates of the focus word when the trigger
+      fires.
+    feature_refs: [N02/F51]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/homograph/possessive_mappiq.py
+    status: implemented
+  - id: MOD-N02-F51-nakdan-context-rules
+    name: tirvi.adapters.nakdan.inference._apply_context_rules
+    description: |
+      F19 inference helper that runs F51 rules before falling through
+      to NLP-context picks. Calls possessive-mappiq; future rules
+      (e.g., she-conjoined-adjective) plug into the same dispatch.
+    feature_refs: [N02/F19, N02/F51]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/adapters/nakdan/inference.py
+    status: implemented
+  - id: MOD-N02-F51-prompt-template
+    name: tirvi.correction.prompts.he_homograph_judge
+    description: |
+      Linguistic-harness prompt template for the future
+      OllamaHomographJudge ICascadeStage (deferred per ADR-038).
+      Template version v1-homograph-ambiguous (per ADR-040
+      uncertainty addition).
+    feature_refs: [N02/F48, N02/F51]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/correction/prompts/he_homograph_judge/v1.txt
+    status: implemented
+
+services: []
+ports: []
+adapters: []
+
+classes: []  # No new dataclasses; rule is a pure function.
+
+functions:
+  - id: FN-N02-F51-apply-rule
+    name: apply_rule
+    description: |
+      apply_rule(sentence, focus, options) -> int | None. Returns
+      1-based index of preferred mappiq option when trigger fires
+      AND a mappiq variant exists in candidates. Returns None for
+      fall-through.
+    feature_refs: [N02/F51]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F51-possessive-mappiq
+    source_path: tirvi/homograph/possessive_mappiq.py
+    status: implemented
+  - id: FN-N02-F51-has-possessor-trigger
+    name: _has_possessor_trigger
+    description: |
+      Returns True iff the sentence matches any pattern in
+      _POSSESSOR_TRIGGERS (currently a single regex covering
+      `כל + 8 trigger nouns`).
+    feature_refs: [N02/F51]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F51-possessive-mappiq
+    source_path: tirvi/homograph/possessive_mappiq.py
+    status: implemented
+  - id: FN-N02-F51-has-mappiq-on-final-he
+    name: _has_mappiq_on_final_he
+    description: |
+      Returns True iff the candidate's stem ends with `ה` + U+05BC
+      (mappiq). Handles pipe-prefix marker by splitting on `|`
+      and inspecting the stem.
+    feature_refs: [N02/F51]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F51-possessive-mappiq
+    source_path: tirvi/homograph/possessive_mappiq.py
+    status: implemented
+
+constants:
+  - id: CONST-N02-F51-possessor-triggers
+    name: _POSSESSOR_TRIGGERS
+    description: |
+      tuple of compiled regex patterns. Initial: `\bכל\s+(אם|אב|הורה|
+      אישה|איש|בן|בת|אדם)\b`. Conservative; extension requires unit
+      test + reviewer sign-off per BT-301.
+    feature_refs: [N02/F51]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F51-possessive-mappiq
+    source_path: tirvi/homograph/possessive_mappiq.py
+    status: implemented
+  - id: CONST-N02-F51-mappiq-codepoint
+    name: _MAPPIQ
+    description: U+05BC HEBREW POINT DAGESH OR MAPIQ OR SHURUQ.
+    feature_refs: [N02/F51]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F51-possessive-mappiq
+    source_path: tirvi/homograph/possessive_mappiq.py
+    status: implemented
+
+adr_decisions:
+  - id: adr:038
+    name: homograph context-rules layer
+    description: F51 design decision — rule layer between Nakdan and F48 reviewer; conservative trigger lexicon; lex-based heuristic scoring (extended in ADR-039).
+    feature_refs: [N02/F51]
+    status: proposed
+  - id: adr:040
+    name: ambiguous verdict shape
+    description: F51 prompt template version bumped to v1-homograph-ambiguous to support pick_index: null + alternatives_indices on genuinely two-valued sentences.
+    feature_refs: [N02/F51]
+    status: proposed
+
+tasks:
+  - id: task:N02/F51/T-01
+    name: possessive-mappiq-rule-promote
+    feature_refs: [N02/F51]
+    spec_refs: [spec:N02/F51/DE-01]
+    test_path: tests/unit/test_possessive_mappiq.py
+    status: implemented
+  - id: task:N02/F51/T-02
+    name: nakdan-inference-wiring
+    feature_refs: [N02/F19, N02/F51]
+    spec_refs: [spec:N02/F51/DE-02]
+    test_path: tests/unit/test_nakdan_inference_context_rules.py
+    status: implemented
+  - id: task:N02/F51/T-03
+    name: homograph-judge-prompt-template
+    feature_refs: [N02/F48, N02/F51]
+    spec_refs: [spec:N02/F51/DE-03]
+    test_path: tests/unit/test_he_homograph_judge_template.py
+    status: implemented
+  - id: task:N02/F51/T-04
+    name: regression-fixture-corpus
+    feature_refs: [N02/F51]
+    spec_refs: [spec:N02/F51/DE-04]
+    test_path: tests/integration/test_homograph_cascade.py
+    status: implemented
+  - id: task:N02/F51/T-05
+    name: she-conjoined-adjective-rule
+    feature_refs: [N02/F51]
+    spec_refs: [spec:N02/F51/DE-05]
+    test_path: tests/unit/test_she_conjoined_adjective.py
+    status: deferred  # conditional on harness prompt 100% coverage; not built

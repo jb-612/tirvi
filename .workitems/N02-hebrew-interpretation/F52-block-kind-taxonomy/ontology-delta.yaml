@@ -1,0 +1,171 @@
+# Ontology delta — N02/F52 Block-kind Taxonomy Completion
+# Authored 2026-05-02 as Phase-0 design backfill; F52 already merged in PR #34.
+
+version: 1
+feature_id: N02/F52
+
+modules:
+  - id: MOD-N02-F52-taxonomy
+    name: tirvi.blocks.taxonomy
+    description: |
+      BlockType Literal expanded from 3 (heading / paragraph /
+      question_stem) to 8 — adds mixed (Q2 fallback), instruction,
+      datum, answer_blank, multi_choice_options. Legacy three keep
+      front-of-tuple position for any rank-aware consumer.
+    feature_refs: [N01/F11, N02/F52]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/blocks/taxonomy.py
+    status: implemented
+  - id: MOD-N02-F52-classifier-ext
+    name: tirvi.blocks.classifier
+    description: |
+      F11 heuristic classifier — extended in F52 with priority-ordered
+      cue dispatch table. New predicates: _is_instruction (3 prefixes),
+      _is_datum (1 prefix), _is_multi_choice (≥ 3 letter-prefixes).
+      Below-confidence fallback split: short ambiguous → mixed; long
+      plain → paragraph.
+    feature_refs: [N01/F11, N02/F52]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/blocks/classifier.py
+    status: implemented
+  - id: MOD-N02-F52-aggregation-ext
+    name: tirvi.blocks.aggregation
+    description: |
+      F11 block aggregator — extended in F52 with
+      _build_classification_provenance helper. Emits one
+      transformations[] entry on confident non-fallback classifications.
+    feature_refs: [N01/F11, N02/F52]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/blocks/aggregation.py
+    status: implemented
+  - id: MOD-N02-F52-plan-ext
+    name: tirvi.plan.value_objects + tirvi.plan.aggregates
+    description: |
+      F22 plan-block VO — extended in F52 with optional
+      transformations field; aggregator copies the upstream
+      Block.transformations field through unchanged.
+    feature_refs: [N02/F22, N02/F52]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/plan/value_objects.py + tirvi/plan/aggregates.py
+    status: implemented
+
+services: []
+ports: []
+adapters: []
+
+classes:
+  - id: CLS-N02-F52-Block-transformations-field
+    name: Block.transformations  # field, not class
+    description: |
+      Optional tuple[dict, ...] field on tirvi.blocks.Block. Default
+      empty (). Populated by F52 classifier with one entry per
+      confident non-fallback pick. Audit-trail for F50 portal review.
+    feature_refs: [N02/F52]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F52-aggregation-ext
+    source_path: tirvi/blocks/value_objects.py
+    status: implemented
+
+functions:
+  - id: FN-N02-F52-classify-block
+    name: classify_block
+    description: |
+      Returns (BlockType, confidence). Walks priority-ordered cue
+      dispatch table; first match wins. Fallback to mixed (≤ 2 words)
+      or paragraph (long).
+    feature_refs: [N02/F52]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F52-classifier-ext
+    source_path: tirvi/blocks/classifier.py
+    status: implemented
+  - id: FN-N02-F52-build-classification-provenance
+    name: _build_classification_provenance
+    description: |
+      Emits one transformations[] entry of shape
+      {kind: "block_kind_classification", to: <BlockType>,
+       confidence: <float>, adr_row: "ADR-041 #20"} when confidence
+      ≥ 0.6 AND kind is non-fallback. Empty tuple otherwise.
+    feature_refs: [N02/F52]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F52-aggregation-ext
+    source_path: tirvi/blocks/aggregation.py
+    status: implemented
+
+constants:
+  - id: CONST-N02-F52-block-types
+    name: BLOCK_TYPES
+    description: tuple[BlockType, ...] of all 8 valid block kinds.
+    feature_refs: [N02/F52]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F52-taxonomy
+    source_path: tirvi/blocks/taxonomy.py
+    status: implemented
+  - id: CONST-N02-F52-instruction-prefixes
+    name: _INSTRUCTION_PREFIXES
+    description: 3-tuple — הוראות / קרא בעיון / שים לב.
+    feature_refs: [N02/F52]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F52-classifier-ext
+    source_path: tirvi/blocks/classifier.py
+    status: implemented
+  - id: CONST-N02-F52-datum-prefixes
+    name: _DATUM_PREFIXES
+    description: 1-tuple — נתונים. Extensible.
+    feature_refs: [N02/F52]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F52-classifier-ext
+    source_path: tirvi/blocks/classifier.py
+    status: implemented
+  - id: CONST-N02-F52-letter-choice-re
+    name: _LETTER_CHOICE_RE
+    description: regex `^[א-ד]\.$` — matches single letter-prefix tokens.
+    feature_refs: [N02/F52]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F52-classifier-ext
+    source_path: tirvi/blocks/classifier.py
+    status: implemented
+
+adr_decisions:
+  - id: adr:041
+    name: red-line decision register
+    description: F52 entry — row #20 (verbal block markers ALLOW with caution; rendering of structural information present in printed exam).
+    feature_refs: [N02/F52]
+    status: proposed
+
+tasks:
+  - id: task:N02/F52/T-01
+    name: blocktype-enum-extension
+    feature_refs: [N02/F52]
+    spec_refs: [spec:N02/F52/DE-01]
+    test_path: tests/unit/test_block_taxonomy_f52.py
+    status: implemented
+  - id: task:N02/F52/T-02
+    name: classifier-cue-extension
+    feature_refs: [N02/F52]
+    spec_refs: [spec:N02/F52/DE-02]
+    test_path: tests/unit/test_block_classifier_f52.py
+    status: implemented
+  - id: task:N02/F52/T-03
+    name: planblock-contract-propagation
+    feature_refs: [N02/F22, N02/F52]
+    spec_refs: [spec:N02/F52/DE-03]
+    test_path: tests/unit/test_block_provenance_f52.py
+    status: implemented
+  - id: task:N02/F52/T-04
+    name: classifier-provenance-emission
+    feature_refs: [N02/F52]
+    spec_refs: [spec:N02/F52/DE-04]
+    test_path: tests/unit/test_block_provenance_f52.py
+    status: implemented
+  - id: task:N02/F52/T-05
+    name: regression-fixture-corpus
+    feature_refs: [N02/F52]
+    spec_refs: [spec:N02/F52/DE-05]
+    test_path: tests/integration/test_block_taxonomy_corpus.py
+    status: implemented
+  - id: task:N02/F52/T-06
+    name: economy-pdf-demo-smoke
+    feature_refs: [N02/F52]
+    spec_refs: [spec:N02/F52/DE-05]
+    test_path: tests/integration/test_economy_pdf_taxonomy_smoke.py
+    status: deferred  # heavyweight integration — DictaBERT + real OCR
