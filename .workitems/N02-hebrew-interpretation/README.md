@@ -23,6 +23,7 @@ research.
 - **F23-ssml-shaping** — breaks between answers, emphasis on question numbers, per-word marks
 - **F24-lang-switch-policy** — Azure inline `<lang xml:lang="en-US">` for English spans
 - **F25-content-templates** — math reading template + table reading template
+- **F51-homograph-context-rules** — sentence-context rule layer between Nakdan and the LLM reviewer (sibling of F21; ships possessive-mappiq rule + Gemma harness prompt; per ADR-038)
 
 ## Exit criteria
 

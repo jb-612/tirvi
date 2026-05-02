@@ -1,0 +1,90 @@
+# Traceability index — N02/F51 Homograph Context Rules
+feature_id: N02/F51
+status: designed
+
+hld_refs:
+  - HLD-§5.2/Processing
+prd_refs:
+  - "PRD §6.3 — Hebrew NLP"
+adr_refs:
+  - ADR-038
+  - ADR-025
+  - ADR-033
+  - ADR-034
+  - ADR-035
+
+research_findings:
+  - docs/UAT/UAT-2026-05-02-homograph-pipeline.md
+
+gh_issues:
+  - "https://github.com/jb-612/tirvi/issues/25"  # T-01, T-02
+  - "https://github.com/jb-612/tirvi/issues/26"  # T-03
+
+ontology_refs:
+  - bo:HomographEntry
+  - bo:Lexicon
+  - bc:hebrew_nlp
+
+acm_nodes:
+  feature: feature:N02/F51
+  specs:
+    - spec:N02/F51/DE-01
+    - spec:N02/F51/DE-02
+    - spec:N02/F51/DE-03
+    - spec:N02/F51/DE-04
+    - spec:N02/F51/DE-05
+  user_stories:
+    - story:N02/F51/US-01
+    - story:N02/F51/US-02
+    - story:N02/F51/US-03
+    - story:N02/F51/US-04
+  acceptance_criteria:
+    - criterion:N02/F51/US-01/AC-01
+    - criterion:N02/F51/US-01/AC-02
+    - criterion:N02/F51/US-02/AC-01
+    - criterion:N02/F51/US-03/AC-01
+    - criterion:N02/F51/US-04/AC-01
+  tasks:
+    - task:N02/F51/T-01
+    - task:N02/F51/T-02
+    - task:N02/F51/T-03
+    - task:N02/F51/T-04
+    - task:N02/F51/T-05
+
+acm_edges:
+  - {from: spec:N02/F51/DE-01, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F51/DE-02, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F51/DE-03, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F51/DE-04, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F51/DE-05, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: feature:N02/F51, to: feature:N02/F19, type: DEPENDS_ON}
+  - {from: feature:N02/F51, to: feature:N02/F17, type: DEPENDS_ON}
+  - {from: feature:N02/F51, to: feature:N02/F48, type: DEPENDS_ON}
+  - {from: feature:N02/F51, to: feature:N02/F21, type: SIBLING_OF}
+  - {from: spec:N02/F51/DE-01, to: adr:038, type: TRACED_TO}
+  - {from: spec:N02/F51/DE-02, to: adr:038, type: TRACED_TO}
+  - {from: spec:N02/F51/DE-03, to: adr:034, type: TRACED_TO}
+  - {from: spec:N02/F51/DE-03, to: adr:038, type: TRACED_TO}
+
+de_to_hld:
+  DE-01: HLD-§5.2/Processing
+  DE-02: HLD-§5.2/Processing
+  DE-03: HLD-§5.2/Processing
+  DE-04: HLD-§5.2/Processing
+  DE-05: HLD-§5.2/Processing
+
+ac_to_story:
+  "F51-S01/AC-01": story:N02/F51/US-01
+  "F51-S01/AC-02": story:N02/F51/US-01
+  "F51-S02/AC-01": story:N02/F51/US-02
+  "F51-S03/AC-01": story:N02/F51/US-03
+  "F51-S04/AC-01": story:N02/F51/US-04
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-04
+  T-05: DE-05
+
+tests: []  # populated by TDD as code lands
