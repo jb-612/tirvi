@@ -17,6 +17,30 @@ and HITL gates defined inline.
    adversary challenge), and `@task-breakdown` for atomic decomposition.
    For daemon work: verify async patterns and shared state implications.
 
+   **Mandatory workitem artifacts** (per the Phase-0 design alignment,
+   2026-05-02). Every workitem under `.workitems/<NXX>/<FYY>/` MUST
+   contain these files before any code task in the workitem moves to
+   `[x] done`:
+
+   | File                       | Purpose                                                          |
+   |----------------------------|------------------------------------------------------------------|
+   | `design.md`                | Overview, problem, dependencies, interfaces, DEs, OOS, risks      |
+   | `tasks.md`                 | T-NN list with the standard done-marker contract (`task-format.md`) |
+   | `user_stories.md`          | US-NN with explicit ACs                                          |
+   | `traceability.yaml`        | ACM nodes/edges, de_to_hld, ac_to_story, task_to_de              |
+   | **`functional-test-plan.md`** | FT-NNN scenarios, negative / boundary / integration / audit; regression risks; open questions |
+   | **`behavioural-test-plan.md`**  | BT-NNN persona scenarios, edge / misuse / recovery, collaboration breakdown, open questions |
+   | **`ontology-delta.yaml`**       | modules / classes / functions / constants / adr_decisions / tasks added by this feature |
+
+   The latter three are the foundational design assets. They MAY be
+   authored as a backfill within the same PR that ships the feature
+   code, but they MUST land before merge — no exceptions for "scaffold-
+   only" work. F21's workitem is the canonical template for all three.
+
+   See `docs/research/sdlc-shortcut-postmortem-phase0.md` for the
+   incident that surfaced this rule and the explicit decision to make
+   these artifacts mandatory.
+
    **Two-skill design (biz → sw)** — When `@biz-functional-design` has been
    run for a feature (presence of `functional-test-plan.md` in the workitem
    folder), `@design-pipeline` Stage 0 detects this and delegates to
