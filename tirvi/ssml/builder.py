@@ -8,7 +8,10 @@ from dataclasses import replace
 from tirvi.plan import PlanBlock, PlanToken, ReadingPlan
 
 from .breaks import inter_block_break
+from .chunker import chunk_block_tokens
 from .escape import xml_escape
+
+_INTRA_BLOCK_BREAK = '<break time="500ms"/>'
 
 
 def build_block_ssml(block: PlanBlock) -> str:
@@ -28,8 +31,23 @@ def build_block_ssml(block: PlanBlock) -> str:
     landed in T-03 / T-04 respectively. ``populate_plan_ssml`` (T-05)
     composes builds at the plan level.
     """
-    body = " ".join(_token_to_ssml_fragment(t) for t in block.tokens)
+    body = _block_body_with_intra_breaks(block)
     return f'<speak xml:lang="he-IL">{body}</speak>'
+
+
+def _block_body_with_intra_breaks(block: PlanBlock) -> str:
+    """F53 — chunk long blocks at safe boundaries; emit intra-block break.
+
+    Under-threshold blocks pass through unchanged (chunker returns one
+    fragment). Over-threshold blocks split at the first safe boundary
+    (punctuation or SCONJ conjunction); fragments join with the
+    canonical 500ms break.
+    """
+    fragments, _breaks = chunk_block_tokens(list(block.tokens))
+    return _INTRA_BLOCK_BREAK.join(
+        " ".join(_token_to_ssml_fragment(t) for t in frag)
+        for frag in fragments
+    )
 
 
 def _token_to_ssml_fragment(token: PlanToken) -> str:
@@ -55,18 +73,35 @@ def populate_plan_ssml(plan: ReadingPlan) -> ReadingPlan:
       - INV-SSML-008 (T-03 wire): inter-block break is the canonical 500ms
     """
     new_blocks = tuple(
-        replace(
-            block,
-            ssml=_block_ssml_with_break(block, leading_break=(i > 0)),
-        )
+        _block_with_ssml_and_provenance(block, leading_break=(i > 0))
         for i, block in enumerate(plan.blocks)
     )
     return replace(plan, blocks=new_blocks)
 
 
+def _block_with_ssml_and_provenance(
+    block: PlanBlock, *, leading_break: bool,
+) -> PlanBlock:
+    """Build the block's SSML AND append F53 chunker provenance to
+    its transformations[] field (per ADR-041 row #9).
+    """
+    fragments, breaks = chunk_block_tokens(list(block.tokens))
+    body = _INTRA_BLOCK_BREAK.join(
+        " ".join(_token_to_ssml_fragment(t) for t in frag)
+        for frag in fragments
+    )
+    prefix = inter_block_break() if leading_break else ""
+    ssml = f'<speak xml:lang="he-IL">{prefix}{body}</speak>'
+    return replace(
+        block,
+        ssml=ssml,
+        transformations=tuple(block.transformations) + tuple(breaks),
+    )
+
+
 def _block_ssml_with_break(block: PlanBlock, *, leading_break: bool) -> str:
     """Build a block's full SSML, optionally prefixed with a 500ms break."""
-    body = " ".join(_token_to_ssml_fragment(t) for t in block.tokens)
+    body = _block_body_with_intra_breaks(block)
     prefix = inter_block_break() if leading_break else ""
     return f'<speak xml:lang="he-IL">{prefix}{body}</speak>'
 
@@ -81,7 +116,7 @@ def build_page_ssml(plan: ReadingPlan) -> str:
     parts: list[str] = []
     prev_block = None
     for i, block in enumerate(plan.blocks):
-        body = " ".join(_token_to_ssml_fragment(t) for t in block.tokens)
+        body = _block_body_with_intra_breaks(block)
         if i > 0:
             prev_text = " ".join(
                 (t.diacritized_text or t.text) for t in prev_block.tokens
