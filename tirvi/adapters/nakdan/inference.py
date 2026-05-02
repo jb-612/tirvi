@@ -18,6 +18,7 @@ from tirvi.results import DiacritizationResult, NLPResult, NLPToken
 from tirvi.homograph.possessive_mappiq import apply_rule as _possessive_mappiq
 
 from .client import diacritize_via_api
+from .function_words import FUNCTION_WORD_LEXICON
 from .normalize import to_nfd
 from .overrides import HOMOGRAPH_OVERRIDES
 
@@ -90,6 +91,13 @@ def _resolve_entry(
     return _pick_in_context(entry, token)
 
 
+def _option_w(option: Any) -> str:
+    """Extract the vocalized form ``w`` from either str or dict option."""
+    if isinstance(option, dict):
+        return str(option.get("w", ""))
+    return str(option)
+
+
 def _apply_context_rules(
     entry: dict[str, Any], sentence: str | None
 ) -> str | None:
@@ -97,7 +105,8 @@ def _apply_context_rules(
     if not sentence:
         return None
     options = entry.get("options") or []
-    str_options = [o for o in options if isinstance(o, str)]
+    str_options = [_option_w(o) for o in options if isinstance(o, (str, dict))]
+    str_options = [s for s in str_options if s]
     if not str_options:
         return None
     word = str(entry.get("word", ""))
@@ -119,20 +128,66 @@ def _pick_in_context(entry: dict[str, Any], token: NLPToken | None) -> str:
 
 
 def _is_morph_option(option: Any) -> bool:
-    return isinstance(option, dict) and "w" in option and "morph" in option
+    """ADR-039: a morph-bearing option is a dict carrying both ``w``
+    (vocalized form) and ``lex`` (lemma). The undocumented ``morph``
+    bitfield is not required — we score on lex + prefix_len."""
+    return isinstance(option, dict) and "w" in option and "lex" in option
+
+
+def _strip_nikud(text: str) -> str:
+    return "".join(c for c in text if not 0x0591 <= ord(c) <= 0x05C7)
 
 
 def _score_option(option: dict[str, Any], token: NLPToken) -> int:
-    morph = option.get("morph") or {}
-    return _pos_score(morph, token.pos) + _morph_keys_score(morph, token.morph_features)
+    """Heuristic POS-fit score for a Dicta morph-shape option (ADR-039).
+
+    Score 3 = strong fit (POS-specific signal lands).
+    Score 2 = decent fit (verb pattern recognised).
+    Score 1 = weak positive fit.
+    Score 0 = no signal — top-1 wins via tie-break.
+    """
+    if not token.pos:
+        return 0
+    return _score_by_pos(option, token.pos)
 
 
-def _pos_score(morph: dict[str, Any], pos: str | None) -> int:
-    return 2 if pos and morph.get("pos") == pos else 0
+def _score_by_pos(option: dict[str, Any], pos: str) -> int:
+    if pos == "ADJ":
+        return _score_adj(option)
+    if pos in {"ADP", "SCONJ"}:
+        return _score_function_word(option)
+    if pos == "VERB":
+        return _score_verb(option)
+    if pos == "NOUN":
+        return _score_noun(option)
+    return 0
 
 
-def _morph_keys_score(morph: dict[str, Any], nlp_morph: dict[str, str] | None) -> int:
-    return sum(1 for k, v in (nlp_morph or {}).items() if morph.get(k) == v)
+def _score_adj(option: dict[str, Any]) -> int:
+    """Adjective: prefix_len=0 AND lex == w (canonical, no clitic)."""
+    w = str(option.get("w", "")).replace(_PREFIX_MARKER, "")
+    lex = str(option.get("lex", ""))
+    if option.get("prefix_len", 0) == 0 and _strip_nikud(w) == _strip_nikud(lex):
+        return 3
+    return 0
+
+
+def _score_function_word(option: dict[str, Any]) -> int:
+    """Function word: lex is in the curated lexicon."""
+    return 3 if option.get("lex", "") in FUNCTION_WORD_LEXICON else 0
+
+
+def _score_verb(option: dict[str, Any]) -> int:
+    """Verb: Dicta lemma uses '_' separator (e.g., 'קרא_פעל')."""
+    return 2 if "_" in str(option.get("lex", "")) else 0
+
+
+def _score_noun(option: dict[str, Any]) -> int:
+    """Noun: prefix_len ≤ 1 AND lex is non-verb-shaped."""
+    lex = str(option.get("lex", ""))
+    if option.get("prefix_len", 0) <= 1 and "_" not in lex:
+        return 1
+    return 0
 
 
 def _pick(entry: dict[str, Any]) -> str:
@@ -164,12 +219,11 @@ def _override_hit(word: str) -> str | None:
 def _confidence_gated(entry: dict[str, Any], word: str) -> str:
     """Pick top diacritized option even when confidence is low.
 
-    Previously: returned raw (un-vocalized) word when fconfident=False, which
-    left most words without nikud and broke TTS pronunciation. Now: always
-    pick the top option (Nakdan's best guess) — _pick_in_context uses NLP
-    tokens to override this when context is available.
+    Handles both bare-string options (``task: nakdan`` legacy) and
+    dict-shape options (``task: morph`` per ADR-039) — extracts the
+    ``w`` field for dicts, falls back to ``str()`` for strings.
     """
     options = entry.get("options") or []
     if not options:
         return word
-    return str(options[0]).replace(_PREFIX_MARKER, "")
+    return _option_w(options[0]).replace(_PREFIX_MARKER, "")

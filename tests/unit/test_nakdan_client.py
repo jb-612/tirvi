@@ -51,7 +51,7 @@ class TestDictaClient:
             diacritize_via_api("הבחינה")
 
         body = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
-        assert body["task"] == "nakdan"
+        assert body["task"] == "morph"  # ADR-039: morph variant for richer options
         assert body["data"] == "הבחינה"
         assert body["genre"] == "modern"
 
