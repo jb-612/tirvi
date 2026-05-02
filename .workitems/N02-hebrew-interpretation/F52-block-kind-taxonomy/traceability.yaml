@@ -1,0 +1,90 @@
+# Traceability index — N02/F52 Block-kind Taxonomy Completion
+feature_id: N02/F52
+status: designed
+phase: 0  # Phase 0 of reading-disability roadmap
+
+hld_refs:
+  - HLD-§5.1/Ingest
+  - HLD-§5.2/Processing
+prd_refs:
+  - "PRD §6.1 — Ingest / OCR (block segmentation)"
+  - "PRD §6.4 — Reading plan output"
+adr_refs:
+  - ADR-041   # red-line decision register
+  - ADR-038   # adjacent reading-accommodation ADR (homograph context-rules)
+
+research_findings:
+  - docs/research/reading-disability-pipeline-roadmap.md  # §B point-6, §D, §E
+
+ontology_refs:
+  - bo:PlanBlock
+  - bc:hebrew_nlp
+  - bc:reading_accommodation
+
+acm_nodes:
+  feature: feature:N02/F52
+  specs:
+    - spec:N02/F52/DE-01
+    - spec:N02/F52/DE-02
+    - spec:N02/F52/DE-03
+    - spec:N02/F52/DE-04
+    - spec:N02/F52/DE-05
+  user_stories:
+    - story:N02/F52/US-01
+    - story:N02/F52/US-02
+    - story:N02/F52/US-03
+    - story:N02/F52/US-04
+    - story:N02/F52/US-05
+    - story:N02/F52/US-06
+  acceptance_criteria:
+    - criterion:N02/F52/US-01/AC-01
+    - criterion:N02/F52/US-01/AC-02
+    - criterion:N02/F52/US-02/AC-01
+    - criterion:N02/F52/US-03/AC-01
+    - criterion:N02/F52/US-04/AC-01
+    - criterion:N02/F52/US-05/AC-01
+    - criterion:N02/F52/US-06/AC-01
+  tasks:
+    - task:N02/F52/T-01
+    - task:N02/F52/T-02
+    - task:N02/F52/T-03
+    - task:N02/F52/T-04
+    - task:N02/F52/T-05
+    - task:N02/F52/T-06
+
+acm_edges:
+  - {from: spec:N02/F52/DE-01, to: HLD-§5.1/Ingest, type: TRACED_TO}
+  - {from: spec:N02/F52/DE-02, to: HLD-§5.1/Ingest, type: TRACED_TO}
+  - {from: spec:N02/F52/DE-03, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F52/DE-04, to: adr:041, type: TRACED_TO}
+  - {from: spec:N02/F52/DE-05, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: feature:N02/F52, to: feature:N01/F11, type: DEPENDS_ON}   # block segmentation
+  - {from: feature:N02/F52, to: feature:N02/F22, type: DEPENDS_ON}   # plan.json
+  - {from: feature:N02/F53, to: feature:N02/F52, type: DEPENDS_ON}   # F53 needs question_stem
+  - {from: feature:N04/F39, to: feature:N02/F52, type: DEPENDS_ON}   # F39 needs question_stem
+
+de_to_hld:
+  DE-01: HLD-§5.1/Ingest
+  DE-02: HLD-§5.1/Ingest
+  DE-03: HLD-§5.2/Processing
+  DE-04: HLD-§5.2/Processing
+  DE-05: HLD-§5.2/Processing
+
+ac_to_story:
+  "F52-S01/AC-01": story:N02/F52/US-01
+  "F52-S01/AC-02": story:N02/F52/US-01
+  "F52-S02/AC-01": story:N02/F52/US-02
+  "F52-S03/AC-01": story:N02/F52/US-03
+  "F52-S04/AC-01": story:N02/F52/US-04
+  "F52-S05/AC-01": story:N02/F52/US-05
+  "F52-S06/AC-01": story:N02/F52/US-06
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-04
+  T-05: DE-05
+  T-06: DE-05
+
+tests: []  # populated by TDD as code lands

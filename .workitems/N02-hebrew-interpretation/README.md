@@ -24,6 +24,8 @@ research.
 - **F24-lang-switch-policy** — Azure inline `<lang xml:lang="en-US">` for English spans
 - **F25-content-templates** — math reading template + table reading template
 - **F51-homograph-context-rules** — sentence-context rule layer between Nakdan and the LLM reviewer (sibling of F21; ships possessive-mappiq rule + Gemma harness prompt; per ADR-038)
+- **F52-block-kind-taxonomy** *(Phase 0 reading-accommodation)* — extend F11 segmenter with `instruction / question_stem / datum / answer_blank / multi_choice_options` block kinds; per ADR-041
+- **F53-clause-split-ssml-chunker** *(Phase 0 reading-accommodation)* — F23-resident chunker that inserts `<break time="500ms"/>` SSML breaks at safe boundaries when a sentence > 22 words; per ADR-041
 
 ## Exit criteria
 
