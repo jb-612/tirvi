@@ -1,0 +1,92 @@
+# Traceability index — N02/F53 Clause-Split SSML Chunker
+feature_id: N02/F53
+status: designed
+phase: 0  # Phase 0 of reading-disability roadmap
+
+hld_refs:
+  - HLD-§5.2/Processing
+  - HLD-§5.3/SSML
+prd_refs:
+  - "PRD §6.4 — Reading plan output"
+  - "PRD §6.5 — SSML / TTS"
+adr_refs:
+  - ADR-041
+  - ADR-038
+
+research_findings:
+  - docs/research/reading-disability-pipeline-roadmap.md  # §B points 1+2, §D, §E
+
+ontology_refs:
+  - bo:PlanBlock
+  - bc:hebrew_nlp
+  - bc:reading_accommodation
+
+acm_nodes:
+  feature: feature:N02/F53
+  specs:
+    - spec:N02/F53/DE-01
+    - spec:N02/F53/DE-02
+    - spec:N02/F53/DE-03
+    - spec:N02/F53/DE-04
+    - spec:N02/F53/DE-05
+    - spec:N02/F53/DE-06
+  user_stories:
+    - story:N02/F53/US-01
+    - story:N02/F53/US-02
+    - story:N02/F53/US-03
+    - story:N02/F53/US-04
+    - story:N02/F53/US-05
+    - story:N02/F53/US-06
+  acceptance_criteria:
+    - criterion:N02/F53/US-01/AC-01
+    - criterion:N02/F53/US-01/AC-02
+    - criterion:N02/F53/US-02/AC-01
+    - criterion:N02/F53/US-03/AC-01
+    - criterion:N02/F53/US-04/AC-01
+    - criterion:N02/F53/US-05/AC-01
+    - criterion:N02/F53/US-06/AC-01
+  tasks:
+    - task:N02/F53/T-01
+    - task:N02/F53/T-02
+    - task:N02/F53/T-03
+    - task:N02/F53/T-04
+    - task:N02/F53/T-05
+    - task:N02/F53/T-06
+
+acm_edges:
+  - {from: spec:N02/F53/DE-01, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F53/DE-02, to: HLD-§5.2/Processing, type: TRACED_TO}
+  - {from: spec:N02/F53/DE-03, to: adr:041, type: TRACED_TO}
+  - {from: spec:N02/F53/DE-04, to: HLD-§5.3/SSML, type: TRACED_TO}
+  - {from: spec:N02/F53/DE-05, to: HLD-§5.3/SSML, type: TRACED_TO}
+  - {from: spec:N02/F53/DE-06, to: HLD-§5.3/SSML, type: TRACED_TO}
+  - {from: feature:N02/F53, to: feature:N02/F18, type: DEPENDS_ON}   # SCONJ POS guard
+  - {from: feature:N02/F53, to: feature:N02/F22, type: DEPENDS_ON}   # plan.json
+  - {from: feature:N02/F53, to: feature:N02/F23, type: EXTENDS}      # SSML shaping host
+
+de_to_hld:
+  DE-01: HLD-§5.2/Processing
+  DE-02: HLD-§5.2/Processing
+  DE-03: HLD-§5.2/Processing
+  DE-04: HLD-§5.3/SSML
+  DE-05: HLD-§5.3/SSML
+  DE-06: HLD-§5.3/SSML
+
+ac_to_story:
+  "F53-S01/AC-01": story:N02/F53/US-01
+  "F53-S01/AC-02": story:N02/F53/US-01
+  "F53-S02/AC-01": story:N02/F53/US-02
+  "F53-S03/AC-01": story:N02/F53/US-03
+  "F53-S04/AC-01": story:N02/F53/US-04
+  "F53-S05/AC-01": story:N02/F53/US-05
+  "F53-S06/AC-01": story:N02/F53/US-06
+
+task_to_de:
+  T-01: DE-01
+  T-02: DE-02
+  T-03: DE-03
+  T-04: DE-04
+  T-05: DE-05
+  T-06: DE-06
+
+tests: []  # populated by TDD as code lands

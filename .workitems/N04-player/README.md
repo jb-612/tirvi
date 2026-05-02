@@ -15,6 +15,7 @@ AA from day 1, not as a polish step.
 - **F36-accessibility-controls** — play/pause, speed (0.5×–1.5×), repeat sentence, next/prev block, font size, high-contrast
 - **F37-spell-word** — long-press to spell a word letter-by-letter
 - **F38-wcag-conformance** — keyboard, focus, contrast ≥ 4.5:1, `prefers-reduced-motion`, no autoplay
+- **F39-pause-after-question** *(Phase 0 reading-accommodation)* — auto-pause at `question_stem` block end (default ON), `J`/`K` keyboard navigation between questions, "שאלה N מתוך M" progress hint; per ADR-041 row #5. Coexists with N05/F39-tirvi-bench-v0 per per-namespace numbering policy.
 
 ## Exit criteria
 
