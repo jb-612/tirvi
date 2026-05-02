@@ -1,0 +1,171 @@
+# Ontology delta — N04/F39 Pause-and-Jump Affordance
+# Authored 2026-05-02 as Phase-0 design backfill (pre-implementation).
+# F39 will introduce Flutter/Dart code under flutter_app/lib/components/player/.
+
+version: 1
+feature_id: N04/F39
+
+modules:
+  - id: MOD-N04-F39-auto-pause-policy
+    name: flutter_app.lib.components.player.auto_pause_policy
+    description: |
+      Riverpod state class. Holds a single boolean `enabled`. Default
+      true (per Q4). Persists in localStorage under
+      tirvi.player.auto_pause_after_question.
+    feature_refs: [N04/F39]
+    bounded_context: player
+    source_path: flutter_app/lib/components/player/auto_pause_policy.dart
+    status: designed
+  - id: MOD-N04-F39-question-index
+    name: flutter_app.lib.components.player.question_index
+    description: |
+      Computes (current, total) of question_stem blocks for the active
+      page. Updates on block-boundary events from F35. Bound to
+      ProgressHint widget via Riverpod.
+    feature_refs: [N04/F39]
+    bounded_context: player
+    source_path: flutter_app/lib/components/player/question_index.dart
+    status: designed
+  - id: MOD-N04-F39-keyboard-handler
+    name: flutter_app.lib.components.player.keyboard_handler  # extension to F36
+    description: |
+      Adds J / K bindings to the F36 keyboard router. J advances
+      marker to next question_stem; K reverses. State-aware
+      (paused stays paused on jump).
+    feature_refs: [N04/F36, N04/F39]
+    bounded_context: player
+    source_path: flutter_app/lib/components/player/keyboard_handler.dart
+    status: designed
+  - id: MOD-N04-F39-progress-hint
+    name: flutter_app.lib.components.player.progress_hint
+    description: |
+      Widget rendering "שאלה N מתוך M" adjacent to play/pause control.
+      aria-live="polite" for screen-reader announcements (per F38
+      WCAG audit).
+    feature_refs: [N04/F39]
+    bounded_context: player
+    source_path: flutter_app/lib/components/player/progress_hint.dart
+    status: designed
+
+services: []
+ports: []
+adapters: []
+
+classes:
+  - id: CLS-N04-F39-AutoPausePolicy
+    name: AutoPausePolicy
+    description: |
+      Riverpod-managed state class. Single boolean field `enabled`
+      (default true). Persisted via localStorage adapter.
+    feature_refs: [N04/F39]
+    bounded_context: player
+    module_ref: MOD-N04-F39-auto-pause-policy
+    source_path: flutter_app/lib/components/player/auto_pause_policy.dart
+    status: designed
+  - id: CLS-N04-F39-QuestionIndex
+    name: QuestionIndex
+    description: |
+      Frozen value object — `(current: int, total: int)`. Constructed
+      via QuestionIndex.fromPlan(plan); updated on block-boundary
+      events.
+    feature_refs: [N04/F39]
+    bounded_context: player
+    module_ref: MOD-N04-F39-question-index
+    source_path: flutter_app/lib/components/player/question_index.dart
+    status: designed
+
+functions:
+  - id: FN-N04-F39-on-block-end
+    name: onBlockEnd
+    description: |
+      Player state-machine handler. On block_end event, if the
+      finished block_kind == question_stem AND
+      AutoPausePolicy.enabled, transition to paused state.
+    feature_refs: [N04/F36, N04/F39]
+    bounded_context: player
+    module_ref: MOD-N04-F39-auto-pause-policy
+    source_path: flutter_app/lib/components/player/state_machine.dart
+    status: designed
+  - id: FN-N04-F39-jump-next-question
+    name: jumpToNextQuestion
+    description: |
+      Advances the F35 marker to the start of the next question_stem
+      block. Audio resumes from that point IF playing; remains
+      paused IF paused.
+    feature_refs: [N04/F39]
+    bounded_context: player
+    module_ref: MOD-N04-F39-keyboard-handler
+    source_path: flutter_app/lib/components/player/keyboard_handler.dart
+    status: designed
+  - id: FN-N04-F39-jump-previous-question
+    name: jumpToPreviousQuestion
+    description: |
+      Reverses to the start of the previous question_stem block.
+      Symmetric to jumpToNextQuestion.
+    feature_refs: [N04/F39]
+    bounded_context: player
+    module_ref: MOD-N04-F39-keyboard-handler
+    source_path: flutter_app/lib/components/player/keyboard_handler.dart
+    status: designed
+
+constants:
+  - id: CONST-N04-F39-localstorage-key
+    name: tirvi.player.auto_pause_after_question
+    description: |
+      localStorage key (string) for AutoPausePolicy persistence.
+      Reserved per F32 localStorage convention.
+    feature_refs: [N04/F32, N04/F39]
+    bounded_context: player
+    source_path: flutter_app/lib/components/player/auto_pause_policy.dart
+    status: designed
+
+adr_decisions:
+  - id: adr:041
+    name: red-line decision register
+    description: F39 entry — row #5 (auto-pause at question_stem end ALLOW; auto-pause is "extra time wired into the medium" rather than exam modification, aligning with MoE Level 1).
+    feature_refs: [N04/F39]
+    status: proposed
+
+tasks:
+  - id: task:N04/F39/T-01
+    name: auto-pause-policy-class
+    feature_refs: [N04/F39]
+    spec_refs: [spec:N04/F39/DE-01, spec:N04/F39/DE-05]
+    test_path: flutter_app/test/player/auto_pause_policy_test.dart
+    status: designed
+  - id: task:N04/F39/T-02
+    name: question-index-computation
+    feature_refs: [N04/F39]
+    spec_refs: [spec:N04/F39/DE-02]
+    test_path: flutter_app/test/player/question_index_test.dart
+    status: designed
+  - id: task:N04/F39/T-03
+    name: state-machine-auto-pause
+    feature_refs: [N04/F36, N04/F39]
+    spec_refs: [spec:N04/F39/DE-01]
+    test_path: flutter_app/test/player/state_machine_auto_pause_test.dart
+    status: designed
+  - id: task:N04/F39/T-04
+    name: jk-keyboard-handlers
+    feature_refs: [N04/F36, N04/F39]
+    spec_refs: [spec:N04/F39/DE-03, spec:N04/F39/DE-06]
+    test_path: flutter_app/test/player/keyboard_jk_test.dart
+    status: designed
+  - id: task:N04/F39/T-05
+    name: progress-hint-widget
+    feature_refs: [N04/F39]
+    spec_refs: [spec:N04/F39/DE-04]
+    test_path: flutter_app/test/player/progress_hint_widget_test.dart
+    status: designed
+  - id: task:N04/F39/T-06
+    name: settings-panel-toggle
+    feature_refs: [N04/F36, N04/F39]
+    spec_refs: [spec:N04/F39/DE-05]
+    test_path: flutter_app/test/player/auto_pause_toggle_widget_test.dart
+    status: designed
+  - id: task:N04/F39/T-07
+    name: economy-pdf-pause-jump-integration
+    feature_refs: [N02/F52, N04/F39]
+    spec_refs: [spec:N04/F39/DE-01..DE-06]
+    test_path: flutter_app/integration_test/economy_pdf_pause_jump_test.dart
+    status: designed
