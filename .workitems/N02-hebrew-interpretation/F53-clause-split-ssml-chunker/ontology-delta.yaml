@@ -1,0 +1,138 @@
+# Ontology delta — N02/F53 Clause-Split SSML Chunker
+# Authored 2026-05-02 as Phase-0 design backfill.
+# Module + class additions; F53 EXTENDS F23 SSML shaping (no new ports).
+
+version: 1
+feature_id: N02/F53
+
+modules:
+  - id: MOD-N02-F53-chunker
+    name: tirvi.ssml.chunker
+    description: |
+      Pure clause-split chunker for long Hebrew sentences. Token-count
+      gate (default 22 per Q3) + safe-boundary detection (punctuation
+      + SCONJ-tagged CONJUNCTION_LEXICON) + provenance emission per
+      ADR-041 row #9. No I/O; no input mutation.
+    feature_refs: [N02/F53]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/ssml/chunker.py
+    status: implemented
+  - id: MOD-N02-F53-builder-ext
+    name: tirvi.ssml.builder
+    description: |
+      F23 SSML builder — extended in F53 to call the chunker for every
+      block body and to append clause-split provenance to
+      PlanBlock.transformations[] via a new
+      _block_with_ssml_and_provenance helper.
+    feature_refs: [N02/F23, N02/F53]
+    bounded_context: hebrew_nlp
+    source_path: tirvi/ssml/builder.py
+    status: implemented
+
+services: []
+ports: []
+adapters: []
+
+classes: []   # No new dataclasses; PlanBlock.transformations field
+              # was added by F52 and re-used here.
+
+functions:
+  - id: FN-N02-F53-chunk-block-tokens
+    name: chunk_block_tokens
+    description: |
+      Returns (fragments, breaks) for a block's tokens. Under-threshold
+      input passes through unchanged. Over-threshold walks the first
+      safe boundary and emits one split, with provenance. No safe
+      boundary → emits clause_split_skipped, fragments unchanged.
+    feature_refs: [N02/F53]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F53-chunker
+    source_path: tirvi/ssml/chunker.py
+    status: implemented
+  - id: FN-N02-F53-find-safe-boundary
+    name: _find_safe_boundary
+    description: |
+      Resolves the earliest of (punctuation, SCONJ-conjunction) safe
+      boundaries; ties favour punctuation. Returns None when neither
+      is in scope.
+    feature_refs: [N02/F53]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F53-chunker
+    source_path: tirvi/ssml/chunker.py
+    status: implemented
+  - id: FN-N02-F53-block-with-ssml-and-provenance
+    name: _block_with_ssml_and_provenance
+    description: |
+      Builds a block's full SSML AND appends F53 chunker breaks to its
+      transformations[] field via dataclasses.replace. Called from
+      F23 populate_plan_ssml.
+    feature_refs: [N02/F23, N02/F53]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F53-builder-ext
+    source_path: tirvi/ssml/builder.py
+    status: implemented
+
+constants:
+  - id: CONST-N02-F53-default-threshold
+    name: DEFAULT_THRESHOLD
+    description: 22 — calibratable; per PR #30 reviewer Q3 answer.
+    feature_refs: [N02/F53]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F53-chunker
+    source_path: tirvi/ssml/chunker.py
+    status: implemented
+  - id: CONST-N02-F53-conjunction-lexicon
+    name: CONJUNCTION_LEXICON
+    description: |
+      frozenset of 7 Hebrew SCONJ multi-word lemmas — initial conservative
+      seed. Extension requires unit test + reviewer sign-off per BT-221.
+    feature_refs: [N02/F53]
+    bounded_context: hebrew_nlp
+    module_ref: MOD-N02-F53-chunker
+    source_path: tirvi/ssml/chunker.py
+    status: implemented
+
+adr_decisions:
+  - id: adr:041
+    name: red-line decision register
+    description: F53 entries — row #3 (punctuation breaks ALLOW), row #4 (clause-splitting at known conjunctions ALLOW with guardrail), row #9 (sentence splitting with provenance ALLOW).
+    feature_refs: [N02/F53]
+    status: proposed
+
+tasks:
+  - id: task:N02/F53/T-01
+    name: chunker-module-and-threshold-gate
+    feature_refs: [N02/F53]
+    spec_refs: [spec:N02/F53/DE-01]
+    test_path: tests/unit/test_clause_chunker.py
+    status: implemented
+  - id: task:N02/F53/T-02
+    name: safe-boundary-detection
+    feature_refs: [N02/F53]
+    spec_refs: [spec:N02/F53/DE-02]
+    test_path: tests/unit/test_clause_chunker.py
+    status: implemented
+  - id: task:N02/F53/T-03
+    name: transformations-provenance
+    feature_refs: [N02/F53]
+    spec_refs: [spec:N02/F53/DE-03]
+    test_path: tests/unit/test_clause_chunker.py
+    status: implemented
+  - id: task:N02/F53/T-04
+    name: f23-builder-integration
+    feature_refs: [N02/F23, N02/F53]
+    spec_refs: [spec:N02/F53/DE-04]
+    test_path: tests/unit/test_ssml_intra_block_breaks.py
+    status: implemented
+  - id: task:N02/F53/T-05
+    name: regression-fixture-corpus
+    feature_refs: [N02/F53]
+    spec_refs: [spec:N02/F53/DE-05]
+    test_path: tests/integration/test_clause_split_corpus.py
+    status: implemented
+  - id: task:N02/F53/T-06
+    name: economy-pdf-demo-smoke
+    feature_refs: [N02/F53]
+    spec_refs: [spec:N02/F53/DE-06]
+    test_path: tests/integration/test_economy_pdf_chunker_smoke.py
+    status: deferred  # heavyweight integration — DictaBERT + real OCR

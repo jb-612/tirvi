@@ -1,0 +1,547 @@
+# F53 T-05 — clause-split chunker regression fixture
+#
+# 22 token-level test cases. Each case is a list of tokens (text +
+# optional pos for SCONJ guard) and the expected break placement.
+#
+# Strict-pick threshold (per F53 design.md DE-05): ≥ 18/22 (≥ 81%);
+# the implementation target is 90% (≥ 20/22) but the floor is 18.
+schema_version: 1
+
+cases:
+  # ====== under-threshold passthrough (5) ======
+  - id: U01
+    description: "10-word sentence — no breaks expected"
+    tokens:
+      - {text: "המורה"}
+      - {text: "כתבה"}
+      - {text: "על"}
+      - {text: "הלוח"}
+      - {text: "את"}
+      - {text: "השאלות"}
+      - {text: "שהיו"}
+      - {text: "במבחן"}
+      - {text: "אתמול"}
+      - {text: "בבוקר"}
+    expected_fragments: 1
+    expected_breaks: 0
+  - id: U02
+    description: "20-word sentence — at-threshold, no break"
+    tokens: &twenty
+      - {text: "פסקה"}
+      - {text: "ארוכה"}
+      - {text: "אבל"}
+      - {text: "עדיין"}
+      - {text: "מתחת"}
+      - {text: "לסף"}
+      - {text: "של"}
+      - {text: "עשרים"}
+      - {text: "ושתיים"}
+      - {text: "מילים"}
+      - {text: "כי"}
+      - {text: "המספר"}
+      - {text: "המדויק"}
+      - {text: "הוא"}
+      - {text: "עשרים"}
+      - {text: "מילים"}
+      - {text: "בלבד"}
+      - {text: "במשפט"}
+      - {text: "הזה"}
+      - {text: "כעת"}
+    expected_fragments: 1
+    expected_breaks: 0
+  - id: U03
+    description: "5-word sentence with period — no break (under threshold)"
+    tokens:
+      - {text: "השמש"}
+      - {text: "זרחה"}
+      - {text: "בבוקר"}
+      - {text: "."}
+      - {text: "אהבתי"}
+    expected_fragments: 1
+    expected_breaks: 0
+  - id: U04
+    description: "Empty token list (degenerate input)"
+    tokens: []
+    expected_fragments: 1   # [[]] is one empty fragment
+    expected_breaks: 0
+  - id: U05
+    description: "Single-token sentence — under threshold"
+    tokens:
+      - {text: "כן"}
+    expected_fragments: 1
+    expected_breaks: 0
+
+  # ====== over-threshold with safe boundary — chunker splits (12) ======
+  - id: S01
+    description: "30-word sentence with period at index 15 — split after period"
+    tokens: &s01_tokens
+      - {text: "החברה"}
+      - {text: "הכריזה"}
+      - {text: "אתמול"}
+      - {text: "על"}
+      - {text: "תוכנית"}
+      - {text: "חדשה"}
+      - {text: "להגדלת"}
+      - {text: "מספר"}
+      - {text: "העובדים"}
+      - {text: "בחטיבה"}
+      - {text: "הצפונית"}
+      - {text: "במהלך"}
+      - {text: "השנה"}
+      - {text: "הקרובה"}
+      - {text: "מאוד"}
+      - {text: "."}
+      - {text: "התוכנית"}
+      - {text: "כוללת"}
+      - {text: "הכשרה"}
+      - {text: "מעמיקה"}
+      - {text: "וליווי"}
+      - {text: "אישי"}
+      - {text: "לכל"}
+      - {text: "עובד"}
+      - {text: "ועובדת"}
+      - {text: "במשך"}
+      - {text: "ששת"}
+      - {text: "החודשים"}
+      - {text: "הראשונים"}
+      - {text: "בעבודה"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_kind: "clause_split"
+    expected_break_reason: "punctuation"
+  - id: S02
+    description: "23-word sentence with question mark at idx 12 — split after"
+    tokens:
+      - {text: "האם"}
+      - {text: "אתה"}
+      - {text: "יודע"}
+      - {text: "מה"}
+      - {text: "השעה"}
+      - {text: "המדויקת"}
+      - {text: "כעת"}
+      - {text: "בעיר"}
+      - {text: "תל-אביב"}
+      - {text: "באמצע"}
+      - {text: "החורף"}
+      - {text: "הקר"}
+      - {text: "?"}
+      - {text: "אני"}
+      - {text: "צריך"}
+      - {text: "לדעת"}
+      - {text: "את"}
+      - {text: "התשובה"}
+      - {text: "המדויקת"}
+      - {text: "לפני"}
+      - {text: "הפגישה"}
+      - {text: "החשובה"}
+      - {text: "מחר"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+  - id: S03
+    description: "25-word sentence with comma at idx 14"
+    tokens:
+      - {text: "במהלך"}
+      - {text: "השיעור"}
+      - {text: "השני"}
+      - {text: "הוא"}
+      - {text: "הסביר"}
+      - {text: "את"}
+      - {text: "הנושא"}
+      - {text: "המורכב"}
+      - {text: "של"}
+      - {text: "מבוא"}
+      - {text: "לסטטיסטיקה"}
+      - {text: "תיאורית"}
+      - {text: "מתקדמת"}
+      - {text: "מאוד"}
+      - {text: ","}
+      - {text: "ולאחר"}
+      - {text: "מכן"}
+      - {text: "ניתחנו"}
+      - {text: "יחד"}
+      - {text: "תוצאות"}
+      - {text: "של"}
+      - {text: "ניסוי"}
+      - {text: "מעשי"}
+      - {text: "אחד"}
+      - {text: "פשוט"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+  - id: S04
+    description: "30-word sentence with SCONJ `כיוון ש` at idx 14 — splits before"
+    tokens:
+      - {text: "המודל"}
+      - {text: "הכלכלי"}
+      - {text: "מתבסס"}
+      - {text: "על"}
+      - {text: "שלושה"}
+      - {text: "פרמטרים"}
+      - {text: "מרכזיים"}
+      - {text: "הקשורים"}
+      - {text: "לכל"}
+      - {text: "המגזרים"}
+      - {text: "במשק"}
+      - {text: "המקומי"}
+      - {text: "כעת"}
+      - {text: "בארץ"}
+      - {text: "כיוון ש", pos: "SCONJ"}
+      - {text: "המשק"}
+      - {text: "הזה"}
+      - {text: "מציג"}
+      - {text: "תופעות"}
+      - {text: "כלכליות"}
+      - {text: "מורכבות"}
+      - {text: "במיוחד"}
+      - {text: "במהלך"}
+      - {text: "התקופה"}
+      - {text: "האחרונה"}
+      - {text: "של"}
+      - {text: "השנה"}
+      - {text: "הזאת"}
+      - {text: "כמו"}
+      - {text: "שנים"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason_starts_with: "conjunction:"
+  - id: S05
+    description: "27-word sentence with SCONJ `מאחר ש` mid-sentence"
+    tokens:
+      - {text: "ההחלטה"}
+      - {text: "התקבלה"}
+      - {text: "אתמול"}
+      - {text: "בערב"}
+      - {text: "על"}
+      - {text: "ידי"}
+      - {text: "מועצת"}
+      - {text: "המנהלים"}
+      - {text: "המקומית"}
+      - {text: "של"}
+      - {text: "החברה"}
+      - {text: "הגדולה"}
+      - {text: "הזאת"}
+      - {text: "מאחר ש", pos: "SCONJ"}
+      - {text: "התוצאות"}
+      - {text: "הכספיות"}
+      - {text: "של"}
+      - {text: "הרבעון"}
+      - {text: "האחרון"}
+      - {text: "היו"}
+      - {text: "טובות"}
+      - {text: "מאוד"}
+      - {text: "מהציפיות"}
+      - {text: "המקוריות"}
+      - {text: "של"}
+      - {text: "השוק"}
+      - {text: "כולו"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason_starts_with: "conjunction:"
+  - id: S06
+    description: "Period precedes SCONJ — punctuation wins (earlier index)"
+    tokens:
+      - {text: "המורה"}
+      - {text: "הסביר"}
+      - {text: "את"}
+      - {text: "החומר"}
+      - {text: "באריכות"}
+      - {text: "."}
+      - {text: "התלמידים"}
+      - {text: "הקשיבו"}
+      - {text: "בעיון"}
+      - {text: "רב"}
+      - {text: "וכתבו"}
+      - {text: "הערות"}
+      - {text: "כיוון ש", pos: "SCONJ"}
+      - {text: "המבחן"}
+      - {text: "מתקרב"}
+      - {text: "במהירות"}
+      - {text: "ולא"}
+      - {text: "כל"}
+      - {text: "התלמידים"}
+      - {text: "מבינים"}
+      - {text: "את"}
+      - {text: "הנושא"}
+      - {text: "החדש"}
+      - {text: "במלואו"}
+      - {text: "כעת"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+  - id: S07
+    description: "SCONJ token without SCONJ tag — falls back to punctuation"
+    tokens:
+      - {text: "המשק"}
+      - {text: "צמח"}
+      - {text: "השנה"}
+      - {text: "בשיעור"}
+      - {text: "גבוה"}
+      - {text: "מאוד"}
+      - {text: ","}
+      - {text: "כיוון ש"}   # NO pos tag → not SCONJ-confirmed
+      - {text: "אנחנו"}
+      - {text: "ראינו"}
+      - {text: "שיפור"}
+      - {text: "ניכר"}
+      - {text: "בכל"}
+      - {text: "המגזרים"}
+      - {text: "המרכזיים"}
+      - {text: "של"}
+      - {text: "הכלכלה"}
+      - {text: "המקומית"}
+      - {text: "במהלך"}
+      - {text: "השנה"}
+      - {text: "האחרונה"}
+      - {text: "במלואה"}
+      - {text: "כעת"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+  - id: S08
+    description: "Multiple sentences (period + period) — first split wins"
+    tokens:
+      - {text: "אבא"}
+      - {text: "אמר"}
+      - {text: "שלום"}
+      - {text: "לכולם"}
+      - {text: "."}
+      - {text: "אמא"}
+      - {text: "הכינה"}
+      - {text: "לנו"}
+      - {text: "ארוחת"}
+      - {text: "בוקר"}
+      - {text: "טעימה"}
+      - {text: "מאוד"}
+      - {text: "."}
+      - {text: "כל"}
+      - {text: "הילדים"}
+      - {text: "אכלו"}
+      - {text: "בשמחה"}
+      - {text: "רבה"}
+      - {text: "ואחר"}
+      - {text: "כך"}
+      - {text: "הלכו"}
+      - {text: "לבית"}
+      - {text: "הספר"}
+      - {text: "המקומי"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+  - id: S09
+    description: "Long sentence with `אם כי` SCONJ"
+    tokens:
+      - {text: "התוכנית"}
+      - {text: "הצליחה"}
+      - {text: "מאוד"}
+      - {text: "בקרב"}
+      - {text: "המשתתפים"}
+      - {text: "הצעירים"}
+      - {text: "במהלך"}
+      - {text: "החודשים"}
+      - {text: "הראשונים"}
+      - {text: "של"}
+      - {text: "הניסוי"}
+      - {text: "המקיף"}
+      - {text: "אם כי", pos: "SCONJ"}
+      - {text: "היו"}
+      - {text: "גם"}
+      - {text: "אתגרים"}
+      - {text: "מסוימים"}
+      - {text: "שדרשו"}
+      - {text: "התאמות"}
+      - {text: "בלוח"}
+      - {text: "הזמנים"}
+      - {text: "המקורי"}
+      - {text: "של"}
+      - {text: "התוכנית"}
+      - {text: "כולה"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason_starts_with: "conjunction:"
+  - id: S10
+    description: "Question mark in long sentence"
+    tokens:
+      - {text: "במהלך"}
+      - {text: "המבחן"}
+      - {text: "הקשה"}
+      - {text: "אתמול"}
+      - {text: "תהינו"}
+      - {text: "כל"}
+      - {text: "התלמידים"}
+      - {text: "כיצד"}
+      - {text: "אפשר"}
+      - {text: "לפתור"}
+      - {text: "את"}
+      - {text: "השאלה"}
+      - {text: "הקשה"}
+      - {text: "ביותר"}
+      - {text: "?"}
+      - {text: "המורה"}
+      - {text: "הסבירה"}
+      - {text: "לאחר"}
+      - {text: "מכן"}
+      - {text: "את"}
+      - {text: "הפתרון"}
+      - {text: "הנכון"}
+      - {text: "לכולנו"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+  - id: S11
+    description: "Colon as boundary"
+    tokens:
+      - {text: "להלן"}
+      - {text: "רשימת"}
+      - {text: "המשתתפים"}
+      - {text: "בכנס"}
+      - {text: "המקצועי"}
+      - {text: "הקרוב"}
+      - {text: "של"}
+      - {text: "החברה"}
+      - {text: "הגדולה"}
+      - {text: "ביותר"}
+      - {text: "במשק"}
+      - {text: "המקומי"}
+      - {text: ":"}
+      - {text: "ראש"}
+      - {text: "הממשלה"}
+      - {text: "ושר"}
+      - {text: "האוצר"}
+      - {text: "ושר"}
+      - {text: "הכלכלה"}
+      - {text: "ושר"}
+      - {text: "המסחר"}
+      - {text: "ועוד"}
+      - {text: "אישים"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+  - id: S12
+    description: "Semicolon as boundary"
+    tokens:
+      - {text: "המודל"}
+      - {text: "המתמטי"}
+      - {text: "מורכב"}
+      - {text: "משלושה"}
+      - {text: "פרמטרים"}
+      - {text: "עיקריים"}
+      - {text: "המתוארים"}
+      - {text: "בפרק"}
+      - {text: "השלישי"}
+      - {text: "של"}
+      - {text: "הספר"}
+      - {text: "הנוכחי"}
+      - {text: ";"}
+      - {text: "כל"}
+      - {text: "אחד"}
+      - {text: "מהם"}
+      - {text: "משפיע"}
+      - {text: "באופן"}
+      - {text: "שונה"}
+      - {text: "על"}
+      - {text: "התוצאות"}
+      - {text: "הסופיות"}
+      - {text: "כולן"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason: "punctuation"
+
+  # ====== over-threshold no boundary — skipped (3) ======
+  - id: K01
+    description: "30 plain words — no punctuation, no SCONJ — skipped"
+    tokens: [
+      {text: "אחת"},  {text: "שתיים"}, {text: "שלוש"}, {text: "ארבע"}, {text: "חמש"},
+      {text: "שש"},   {text: "שבע"},   {text: "שמונה"}, {text: "תשע"},  {text: "עשר"},
+      {text: "מאה"},  {text: "אלף"},   {text: "מיליון"}, {text: "מיליארד"}, {text: "כסף"},
+      {text: "זמן"},  {text: "אדם"},   {text: "ילד"},  {text: "אישה"}, {text: "בית"},
+      {text: "ספר"},  {text: "כתב"},   {text: "אמר"},  {text: "ראה"},  {text: "שמע"},
+      {text: "הלך"},  {text: "בא"},    {text: "ישב"},  {text: "עמד"},  {text: "רץ"},
+    ]
+    expected_fragments: 1
+    expected_breaks: 1
+    expected_break_kind: "clause_split_skipped"
+  - id: K02
+    description: "23 plain words — no boundary"
+    tokens: [
+      {text: "א1"}, {text: "א2"}, {text: "א3"}, {text: "א4"}, {text: "א5"},
+      {text: "א6"}, {text: "א7"}, {text: "א8"}, {text: "א9"}, {text: "א10"},
+      {text: "א11"}, {text: "א12"}, {text: "א13"}, {text: "א14"}, {text: "א15"},
+      {text: "א16"}, {text: "א17"}, {text: "א18"}, {text: "א19"}, {text: "א20"},
+      {text: "א21"}, {text: "א22"}, {text: "א23"},
+    ]
+    expected_fragments: 1
+    expected_breaks: 1
+    expected_break_kind: "clause_split_skipped"
+  - id: K03
+    description: "25 plain words — no boundary; demonstrates skipped path"
+    tokens: [
+      {text: "ב1"}, {text: "ב2"}, {text: "ב3"}, {text: "ב4"}, {text: "ב5"},
+      {text: "ב6"}, {text: "ב7"}, {text: "ב8"}, {text: "ב9"}, {text: "ב10"},
+      {text: "ב11"}, {text: "ב12"}, {text: "ב13"}, {text: "ב14"}, {text: "ב15"},
+      {text: "ב16"}, {text: "ב17"}, {text: "ב18"}, {text: "ב19"}, {text: "ב20"},
+      {text: "ב21"}, {text: "ב22"}, {text: "ב23"}, {text: "ב24"}, {text: "ב25"},
+    ]
+    expected_fragments: 1
+    expected_breaks: 1
+    expected_break_kind: "clause_split_skipped"
+
+  # ====== conjunction lexicon coverage (2) ======
+  - id: L01
+    description: "`למרות ש` SCONJ"
+    tokens:
+      - {text: "המבחן"}
+      - {text: "היה"}
+      - {text: "קשה"}
+      - {text: "במיוחד"}
+      - {text: "השנה"}
+      - {text: "בכל"}
+      - {text: "המקצועות"}
+      - {text: "המדעיים"}
+      - {text: "של"}
+      - {text: "התיכון"}
+      - {text: "הזה"}
+      - {text: "המקומי"}
+      - {text: "למרות ש", pos: "SCONJ"}
+      - {text: "התלמידים"}
+      - {text: "התכוננו"}
+      - {text: "אליו"}
+      - {text: "במשך"}
+      - {text: "כל"}
+      - {text: "השנה"}
+      - {text: "בלי"}
+      - {text: "הפסקות"}
+      - {text: "ארוכות"}
+      - {text: "מהלימוד"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason_starts_with: "conjunction:"
+  - id: L02
+    description: "`על מנת ש` SCONJ"
+    tokens:
+      - {text: "התלמידים"}
+      - {text: "צריכים"}
+      - {text: "להתכונן"}
+      - {text: "היטב"}
+      - {text: "למבחן"}
+      - {text: "הקרוב"}
+      - {text: "של"}
+      - {text: "סוף"}
+      - {text: "השנה"}
+      - {text: "האקדמית"}
+      - {text: "הזאת"}
+      - {text: "כעת"}
+      - {text: "על מנת ש", pos: "SCONJ"}
+      - {text: "יוכלו"}
+      - {text: "להצליח"}
+      - {text: "בו"}
+      - {text: "ולקבל"}
+      - {text: "ציון"}
+      - {text: "גבוה"}
+      - {text: "במיוחד"}
+      - {text: "בסיום"}
+      - {text: "התואר"}
+      - {text: "כולו"}
+    expected_fragments: 2
+    expected_breaks: 1
+    expected_break_reason_starts_with: "conjunction:"
