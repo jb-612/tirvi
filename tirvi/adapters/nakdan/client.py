@@ -18,10 +18,19 @@ API_URL = "https://nakdan-2-0.loadbalancer.dicta.org.il/api"
 
 def diacritize_via_api(text: str, *, timeout: float = 30.0) -> list[dict[str, Any]]:
     """POST ``text`` to the Dicta Nakdan REST endpoint and return the parsed
-    JSON list. Each entry is a per-word dict with keys ``word``, ``sep``,
-    and ``options`` (top-pick at index 0)."""
+    JSON list.
+
+    Per ADR-039: we use ``task: "morph"`` so options come back as dicts
+    with ``{w, lex, morph, levelChoice, prefix_len, ...}`` — the ``lex``
+    (lemma) and ``prefix_len`` fields drive the heuristic POS-fit
+    scoring in :mod:`tirvi.adapters.nakdan.inference`. The undocumented
+    ``morph`` bitfield is intentionally NOT decoded.
+
+    Each entry is a per-word dict with ``word``, ``sep``, and
+    ``options`` (top-pick at index 0).
+    """
     payload = json.dumps(
-        {"task": "nakdan", "data": text, "genre": "modern"}
+        {"task": "morph", "data": text, "genre": "modern"}
     ).encode("utf-8")
     request = urllib.request.Request(
         API_URL,

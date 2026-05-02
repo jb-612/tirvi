@@ -52,4 +52,5 @@ Proposed → Accepted | Superseded | Deprecated.
 | ADR-036 | Exam Review Portal — auth deferred as NFR (localhost-only until auth infra exists) | **Accepted** | exam_review | N04/F33 |
 | ADR-037 | Pipeline observability — injectable ProgressReporter protocol | Proposed | ingest / platform | N01/F49 |
 | ADR-038 | Homograph context-rules layer between Nakdan and the LLM reviewer | Proposed | hebrew-interpretation | N02/F19, F21, F48, F51 |
+| ADR-039 | Dicta-Nakdan `task: morph` endpoint + lex-based context scoring (closes #27) | Proposed | hebrew-interpretation | N02/F19, F17, F51 |
 | ADR-040 | `verdict: "ambiguous"` shape for LLM-emitted uncertainty (closes #28) | Proposed | hebrew-interpretation | N02/F48, F51 |
