@@ -1,0 +1,131 @@
+# F52 T-05 — block-kind classifier regression fixture
+#
+# 30+ synthetic Hebrew exam-style cases. Each case is a list of word
+# texts (bbox/height inferred default unless specified for heading
+# detection); the integration test runs `classify_block` and asserts
+# the classifier returns the `expected_kind`.
+#
+# Strict-pick threshold (per F52 design.md DE-05): ≥ 28/30 (≥ 93%).
+schema_version: 1
+
+# Default bbox for ordinary words (height ~ page modal 30).
+# Override per-case for heading detection or specific layout signals.
+defaults:
+  median_word_height: 30.0
+  modal_x_start: 100
+  line_spacing: 40.0
+  default_bbox: [100, 0, 200, 30]
+  heading_bbox: [100, 0, 200, 60]   # ≥ 1.5× modal → heading
+
+cases:
+  # ====== instruction (5) ======
+  - id: I01
+    expected_kind: instruction
+    words: ["הוראות", ":", "ענה", "על", "השאלות", "הבאות"]
+  - id: I02
+    expected_kind: instruction
+    words: ["קרא בעיון", "את", "הקטע", "הבא"]
+  - id: I03
+    expected_kind: instruction
+    words: ["שים לב", "להוראות", "בסעיף", "זה"]
+  - id: I04
+    expected_kind: instruction
+    words: ["הוראות", "מילוי", "הטופס"]
+  - id: I05
+    expected_kind: instruction
+    words: ["קרא בעיון", "את", "כל", "השאלות", "לפני", "שתתחיל"]
+
+  # ====== datum (5) ======
+  - id: D01
+    expected_kind: datum
+    words: ["נתונים", ":", "חברה", "ייצרה", "מאה", "מוצרים"]
+  - id: D02
+    expected_kind: datum
+    words: ["נתונים", "בטבלה", "הבאה", "מתוארים", "מספרי"]
+  - id: D03
+    expected_kind: datum
+    words: ["נתונים", ":", "בשנת", "2024", "רשמה", "החברה", "רווח"]
+  - id: D04
+    expected_kind: datum
+    words: ["נתונים", ":", "גיל", "המשתתפים", "נע", "בין", "18", "ל-65"]
+  - id: D05
+    expected_kind: datum
+    words: ["נתונים", ":", "שנת", "ההסכם", "הראשון", "הייתה", "1995"]
+
+  # ====== question_stem (5) ======
+  - id: Q01
+    expected_kind: question_stem
+    words: ["שאלה", "1", "מה", "ערך", "X"]
+  - id: Q02
+    expected_kind: question_stem
+    words: ["שאלה", "2", "חשב", "את", "ערך", "Y"]
+  - id: Q03
+    expected_kind: question_stem
+    words: ["שאלה", "5", "ענה", "על", "הסעיפים"]
+  - id: Q04
+    expected_kind: question_stem
+    words: ["שאלה", "12", "הסבר", "את", "התופעה"]
+  - id: Q05
+    expected_kind: question_stem
+    words: ["שאלה", "7", "מהי", "משמעות", "המושג"]
+
+  # ====== multi_choice_options (5) ======
+  - id: M01
+    expected_kind: multi_choice_options
+    words: ["א.", "ראשון", "ב.", "שני", "ג.", "שלישי"]
+  - id: M02
+    expected_kind: multi_choice_options
+    words: ["א.", "אופציה", "אחת", "ב.", "אופציה", "שתיים", "ג.", "אופציה", "שלוש", "ד.", "אופציה", "ארבע"]
+  - id: M03
+    expected_kind: multi_choice_options
+    words: ["א.", "נכון", "ב.", "לא נכון", "ג.", "אי אפשר לדעת"]
+  - id: M04
+    expected_kind: multi_choice_options
+    words: ["א.", "עולה", "ב.", "יורד", "ג.", "קבוע", "ד.", "משתנה"]
+  - id: M05
+    expected_kind: multi_choice_options
+    words: ["א.", "כן", "ב.", "לא", "ג.", "לפעמים"]
+
+  # ====== heading (3) — needs height ≥ 1.5× modal ======
+  - id: H01
+    expected_kind: heading
+    words: ["פרק", "ראשון"]
+    word_bbox: heading_bbox
+  - id: H02
+    expected_kind: heading
+    words: ["סעיף", "א"]
+    word_bbox: heading_bbox
+  - id: H03
+    expected_kind: heading
+    words: ["תוכן", "עניינים"]
+    word_bbox: heading_bbox
+
+  # ====== paragraph (3) — long text, no cue ======
+  - id: P01
+    expected_kind: paragraph
+    words: ["החברה", "ייצרה", "רווח", "של", "מאתיים", "אלף", "שקלים", "בשנת", "אלפיים", "עשרים", "וארבע"]
+  - id: P02
+    expected_kind: paragraph
+    words: ["במסגרת", "הניסוי", "בדקנו", "השפעת", "מספר", "משתנים", "על", "התוצאה", "הסופית"]
+  - id: P03
+    expected_kind: paragraph
+    words: ["המודל", "הכלכלי", "מבוסס", "על", "שלושה", "פרמטרים", "מרכזיים", "שמתוארים", "בהמשך"]
+
+  # ====== mixed (3) — short ambiguous ======
+  - id: X01
+    expected_kind: mixed
+    words: ["א", "ב"]
+  - id: X02
+    expected_kind: mixed
+    words: ["כן", "לא"]
+  - id: X03
+    expected_kind: mixed
+    words: ["?"]
+
+  # ====== answer_blank (2) — empty words list ======
+  - id: B01
+    expected_kind: answer_blank
+    words: []
+  - id: B02
+    expected_kind: answer_blank
+    words: []
