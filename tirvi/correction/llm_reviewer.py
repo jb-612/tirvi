@@ -35,7 +35,7 @@ class OllamaLLMReviewer(ICascadeStage):
     anti_hallucination: AntiHallucinationPolicy
     cap_policy: PerPageLLMCapPolicy = field(default_factory=PerPageLLMCapPolicy)
     model_id: str = "gemma4:31b-nvfp4"
-    prompt_template_path: str = "tirvi/correction/prompts/he_reviewer/v1.txt"
+    prompt_template_path: str = "tirvi/correction/prompts/he_reviewer/v2.txt"
     prompt_template_version: str = "v1-scaffold"
     temperature: float = 0.0
     seed: int = 0
@@ -77,12 +77,27 @@ class OllamaLLMReviewer(ICascadeStage):
     def _accept(self, token: str, parsed: dict) -> CorrectionVerdict:
         chosen = parsed.get("chosen")
         if not chosen:
-            return self._verdict(token, "keep_original", None, parsed.get("reason"))
+            return self._maybe_ambiguous(token, parsed)
         try:
             self.anti_hallucination.check(chosen, self.candidates)
         except LLMWordListViolation:
             return self._verdict(token, "keep_original", None, "anti_hallucination_reject")
         return self._verdict(token, "apply", chosen, parsed.get("reason"))
+
+    def _maybe_ambiguous(self, token: str, parsed: dict) -> CorrectionVerdict:
+        """ADR-040: when chosen is null AND alternatives ≥ 2 AND every
+        alternative is in the candidates list, emit verdict='ambiguous'.
+        Otherwise fall back to keep_original."""
+        alternatives = parsed.get("alternatives") or []
+        if len(alternatives) < 2:
+            return self._verdict(token, "keep_original", None, parsed.get("reason"))
+        if not self._all_in_candidates(alternatives):
+            return self._verdict(token, "keep_original", None, "anti_hallucination_reject")
+        return self._verdict_ambiguous(token, tuple(alternatives), parsed.get("reason"))
+
+    def _all_in_candidates(self, alternatives: list) -> bool:
+        cand_set = set(self.candidates)
+        return all(isinstance(a, str) and a in cand_set for a in alternatives)
 
     def _parse(self, raw: str) -> dict | None:
         try:
@@ -110,6 +125,17 @@ class OllamaLLMReviewer(ICascadeStage):
             stage="llm_reviewer", verdict=name, original=token,
             corrected_or_none=chosen, candidates=self.candidates,
             reason=reason, prompt_template_version=self.prompt_template_version,
+        )
+
+    def _verdict_ambiguous(
+        self, token: str, alternatives: tuple, reason: str | None
+    ) -> CorrectionVerdict:
+        """ADR-040: ambiguous verdict carries alternatives_retained."""
+        return CorrectionVerdict(
+            stage="llm_reviewer", verdict="ambiguous", original=token,
+            corrected_or_none=None, candidates=self.candidates,
+            reason=reason, prompt_template_version=self.prompt_template_version,
+            alternatives_retained=alternatives,
         )
 
 

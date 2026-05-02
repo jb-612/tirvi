@@ -1,5 +1,18 @@
-prompt_template_version: "v1"
+prompt_template_version: "v2-uncertain"
 status: active
+active_template: v2.txt
+legacy_templates:
+  - v1.txt   # kept as reference; pre-ADR-040 binary OK/REPLACE
 notes: |
-  TDD T-04b: minimal Hebrew OCR correction prompt.
+  v1: minimal Hebrew OCR correction prompt — binary OK/REPLACE verdict.
+  v2: adds AMBIGUOUS verdict shape per ADR-040, for cases where the
+      LLM cannot pick a single correction with confidence. The
+      `alternatives` array MUST be a non-empty subset (length 2-3) of
+      the input candidates list.
+
   Variables: {sentence}, {original}, {candidates} (sorted, comma-separated).
+
+  Cache-key impact (ADR-034): bumping prompt_template_version from "v1"
+  to "v2-uncertain" automatically isolates v1 and v2 cache rows. First
+  production run after this change re-evaluates each previously-cached
+  suspect token; not a correctness risk, one-day cost spike.
