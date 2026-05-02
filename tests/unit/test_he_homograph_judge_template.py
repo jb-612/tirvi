@@ -22,9 +22,15 @@ def test_v1_template_exists_with_required_placeholders():
     assert "{options_block}" in template
 
 
-def test_meta_yaml_declares_v1_homograph_version():
+def test_meta_yaml_declares_homograph_version():
+    """Version string must contain 'homograph' to ensure cache-key
+    isolation from the OCR reviewer template (per ADR-034).
+    Bumped to 'v1-homograph-ambiguous' per ADR-040 when the AMBIGUOUS
+    instruction was added; future bumps should keep the 'homograph'
+    substring for this assertion to remain meaningful.
+    """
     meta = yaml.safe_load((PROMPT_DIR / "_meta.yaml").read_text(encoding="utf-8"))
-    assert meta["prompt_template_version"] == "v1-homograph"
+    assert "homograph" in meta["prompt_template_version"]
     assert meta["status"] == "active"
 
 

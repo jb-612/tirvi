@@ -71,8 +71,15 @@ Example E3
    Candidates: 1. לִ|בְנוֹ   2. לְבִנּוֹ
    Answer: {"pick_index": 1, "reason": "dative 'to-his-son' with possessive masculine suffix; subject is 'every father' — possessor trigger fires"}
 
-OUTPUT FORMAT — reply with ONLY a single-line JSON object, no markdown, no commentary outside the JSON:
-{"reasoning_he": "<short explanation in Hebrew, 1 line>", "pick_index": <integer 1..N>, "reason": "<one short clause in English>"}
+OUTPUT FORMAT — reply with ONLY a single-line JSON object, no markdown, no commentary outside the JSON. Two shapes are valid:
+
+(1) When you can pick a single answer with confidence:
+{"reasoning_he": "<short Hebrew explanation, 1 line>", "pick_index": <integer 1..N>, "reason": "<one short clause in English>"}
+
+(2) When the sentence is genuinely two-valued and you cannot pick one with confidence (per ADR-040, "ambiguous" verdict):
+{"reasoning_he": "<why the sentence is ambiguous, 1 line>", "pick_index": null, "alternatives_indices": [<int>, <int>], "reason": "ambiguous: <short clause>"}
+
+The alternatives_indices array MUST be a list of 2-3 indices from the candidate list, each between 1 and N. Pick shape (2) only when shape (1) would be a coin-flip — most cases are pickable; reserve ambiguous for sentences like "האם הקריאה ספר לילדה" where both readings are linguistically defensible.
 
 NOW ANSWER THIS CASE:
 

@@ -104,6 +104,10 @@ class CorrectionVerdict:
     reason: str | None = None
     model_versions: dict[str, str] = field(default_factory=dict)
     prompt_template_version: str | None = None
+    # ADR-040: populated when verdict="ambiguous" with the curated subset
+    # of candidates the emitter believes are all defensible. Empty tuple
+    # for non-ambiguous verdicts.
+    alternatives_retained: tuple[str, ...] = ()
 
 
 # ---------------------------------------------------------------------------

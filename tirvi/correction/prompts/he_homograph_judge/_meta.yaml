@@ -1,4 +1,4 @@
-prompt_template_version: "v1-homograph"
+prompt_template_version: "v1-homograph-ambiguous"
 status: active
 purpose: |
   Hebrew homograph disambiguation judge — distinct from the OCR
