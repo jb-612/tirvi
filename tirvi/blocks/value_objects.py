@@ -38,3 +38,10 @@ class Block:
     child_word_indices: tuple[int, ...]
     bbox: tuple[int, int, int, int]
     classifier_confidence: float | None = None
+    # F52 / ADR-041: audit-trail provenance for taxonomy decisions.
+    # Empty tuple for blocks whose classification is unchanged (the
+    # legacy POC contract). Populated for confident non-fallback picks
+    # under the F52 classifier with shape:
+    #   {"kind": "block_kind_classification", "to": <BlockType>,
+    #    "confidence": <float>, "adr_row": "ADR-041 #20"}
+    transformations: tuple[dict, ...] = ()

@@ -37,14 +37,19 @@ class TestBlockClassifier:
         assert block_type == "question_stem"
         assert conf >= 0.6
 
-    def test_us_01_ac_01_paragraph_default_for_low_confidence(self) -> None:
-        # Average-height words at modal x_start, no question prefix → paragraph
+    def test_us_01_ac_01_short_block_default_for_low_confidence(self) -> None:
+        # Average-height words at modal x_start, no question prefix.
+        # Legacy F11 contract: → paragraph.
+        # Post-F52 contract (per PR #30 Q2 answer): short ambiguous
+        # blocks fall back to `mixed` so consumers can route them to
+        # human review. The 2-word block here is at the legacy
+        # threshold; with F52 it becomes mixed.
         words = [
             _w("מילה", 100, 100, 150, 130),
             _w("שניה", 160, 100, 210, 130),
         ]
         block_type, _ = classify_block(words, _STATS)
-        assert block_type == "paragraph"
+        assert block_type == "mixed"
 
     def test_question_stem_takes_priority_over_heading(self) -> None:
         # Big text starting with "שאלה N" — question_stem wins per priority order

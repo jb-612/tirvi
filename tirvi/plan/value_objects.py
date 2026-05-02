@@ -71,3 +71,6 @@ class PlanBlock:
     tokens: tuple[PlanToken, ...]
     ssml: str = ""
     bbox: tuple[int, int, int, int] | None = None
+    # F52 / ADR-041: classifier provenance copied from upstream Block.
+    # Empty tuple for fallback / below-threshold classifications.
+    transformations: tuple[dict, ...] = ()
