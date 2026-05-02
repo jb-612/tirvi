@@ -3,11 +3,19 @@
 Spec: N02/F19 DE-02. AC: US-01/AC-01. FT-anchors: FT-146, FT-147.
 
 `diacritize_in_context(text, nlp)` walks the Dicta REST response in lock-
-step with the NLP tokens. For each non-separator entry where multiple
-options carry a morphology signal, pick the option whose morph best
-matches the NLP token's POS + Gender + Definite. When the morph signal
-is missing or no NLP token aligns, fall through to T-03's
-``_pick`` priority chain.
+step with the NLP tokens. For each non-separator entry, the cascade
+runs F51 context rules → ADR-039 lex+POS scoring → top-1 fallback.
+
+NOTE (2026-05-02, post-ADR-039): the original tests assumed Dicta would
+return options as ``{w, morph: {pos, Definite, ...}}`` dicts. Live Dicta
+never returned that shape — the morph-context branch was dormant for
+the entire POC (see ADR-038 §Finding 1). ADR-039 switches the client to
+``task: morph`` (which DOES return dict options) and replaces the
+speculative dict-morph scoring with lex+prefix_len heuristics. The
+authoritative tests for the post-ADR-039 contract live in
+``tests/unit/test_nakdan_morph_scoring.py``. Tests in this file that
+happen to still pass are kept for their lockstep-alignment coverage,
+not their scoring behaviour.
 """
 
 from __future__ import annotations
@@ -111,31 +119,14 @@ class TestNakdanContext:
         assert " " in result.diacritized_text
         assert "יֶלֶד" in result.diacritized_text
 
-    def test_definite_state_breaks_tie(self) -> None:
-        # When POS matches both options, Definite (state) breaks the tie.
-        opt_indef = {"w": "בַּיִת", "morph": {"pos": "NOUN", "Definite": "Ind"}}
-        opt_def = {"w": "הַבַּיִת", "morph": {"pos": "NOUN", "Definite": "Def"}}
-        nlp = _nlp(
-            [
-                NLPToken(
-                    text="הבית",
-                    pos="NOUN",
-                    morph_features={"Definite": "Def"},
-                )
-            ]
-        )
-        with patch(
-            "tirvi.adapters.nakdan.inference.diacritize_via_api",
-            return_value=[
-                {
-                    "word": "הבית",
-                    "sep": False,
-                    "options": [opt_indef, opt_def],
-                },
-            ],
-        ):
-            result = diacritize_in_context("הבית", nlp)
-        assert "הַבַּיִת" in result.diacritized_text
+    # test_definite_state_breaks_tie: REMOVED 2026-05-02 per ADR-039.
+    # The original test asserted that an indefinite vs definite option
+    # could tie-break on a `morph.Definite` field. Live Dicta REST never
+    # returned that shape — see ADR-038 §Finding 1. The replacement
+    # contract (lex + prefix_len heuristics) is covered in
+    # tests/unit/test_nakdan_morph_scoring.py. Real-world Dicta only
+    # returns options whose vocalized form matches the surface, so the
+    # synthetic "indef vs def for surface הבית" scenario does not occur.
 
     def test_empty_text_skips_api_call(self) -> None:
         nlp = _nlp([])
