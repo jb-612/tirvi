@@ -30,8 +30,8 @@ allowed under Israeli MoE Level 1 accommodation framework).
 - **FT-261** AutoPausePolicy state persists in localStorage under
   key `tirvi.player.auto_pause_after_question`. High.
 - **FT-262** Toggle change in settings panel updates the
-  Riverpod-bound state AND writes to localStorage atomically.
-  High.
+  in-memory state AND writes to localStorage atomically (one
+  click → one `saveAutoPause` call). High.
 - **FT-263** QuestionIndex.from_plan returns
   `{current: 1, total: 3}` on a plan with 3 question_stem blocks
   before any marker advances. High (F39-S02/AC-01).
@@ -81,9 +81,10 @@ allowed under Israeli MoE Level 1 accommodation framework).
 ## Boundary Tests
 
 - **FT-277** AutoPausePolicy toggled exactly at question_stem
-  block_end moment: race-free per Riverpod state-update model
-  (toggle write happens before state-machine event handler
-  reads).
+  block_end moment: race-free because both writes go through
+  the same single-threaded JS event loop — `saveAutoPause`
+  finishes before the `block_end` handler reads via
+  `loadAutoPause`.
 - **FT-278** localStorage write fails (quota exceeded, private
   browsing): policy still works in-memory; warns to console.
   Documented degradation.

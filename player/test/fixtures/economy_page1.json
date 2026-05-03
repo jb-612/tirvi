@@ -1,0 +1,60 @@
+{
+  "page_image_url": "economy-page-1.png",
+  "words": [
+    { "text": "הקדמה",  "bbox": [500, 50,  80, 20], "lang_hint": "he" },
+    { "text": "לכלכלה", "bbox": [400, 50,  90, 20], "lang_hint": "he" },
+    { "text": "שאלה",  "bbox": [500, 100, 60, 20], "lang_hint": "he" },
+    { "text": "1:",    "bbox": [460, 100, 20, 20], "lang_hint": "he" },
+    { "text": "מה",    "bbox": [430, 100, 30, 20], "lang_hint": "he" },
+    { "text": "נתון",  "bbox": [500, 150, 50, 20], "lang_hint": "he" },
+    { "text": "שאלה",  "bbox": [500, 200, 60, 20], "lang_hint": "he" },
+    { "text": "2:",    "bbox": [460, 200, 20, 20], "lang_hint": "he" }
+  ],
+  "blocks": [
+    {
+      "block_id": "b0",
+      "block_kind": "paragraph",
+      "first_mark_id": "b0-0",
+      "last_mark_id": "b0-1"
+    },
+    {
+      "block_id": "b1",
+      "block_kind": "question_stem",
+      "first_mark_id": "b1-0",
+      "last_mark_id": "b1-2"
+    },
+    {
+      "block_id": "b2",
+      "block_kind": "datum",
+      "first_mark_id": "b2-0",
+      "last_mark_id": "b2-0"
+    },
+    {
+      "block_id": "b3",
+      "block_kind": "question_stem",
+      "first_mark_id": "b3-0",
+      "last_mark_id": "b3-1"
+    }
+  ],
+  "marks_to_word_index": {
+    "b0-0": 0,
+    "b0-1": 1,
+    "b1-0": 2,
+    "b1-1": 3,
+    "b1-2": 4,
+    "b2-0": 5,
+    "b3-0": 6,
+    "b3-1": 7
+  },
+  "nlp_tokens": [
+    { "text": "הקדמה" },
+    { "text": "לכלכלה" },
+    { "text": "שאלה" },
+    { "text": "1:" },
+    { "text": "מה" },
+    { "text": "נתון" },
+    { "text": "שאלה" },
+    { "text": "2:" }
+  ],
+  "diacritized_text": "הַקְדָּמָה לְכַלְכָּלָה שְׁאֵלָה 1: מָה נָתוּן שְׁאֵלָה 2:"
+}

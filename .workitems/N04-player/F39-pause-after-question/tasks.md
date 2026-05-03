@@ -7,99 +7,116 @@ phase: 0
 
 # Tasks: N04/F39 — Pause-and-Jump Affordance
 
-## T-01: AutoPausePolicy class + localStorage persistence
+POC implementation per ADR-023: vanilla JS in `player/js/`, vitest in
+`player/test/`. No Flutter / Riverpod.
 
-- [ ] **T-01 done**
+## T-01: AutoPausePolicy module + localStorage persistence
+
+- [x] **T-01 done**
 - design_element: DE-01, DE-05
 - acceptance_criteria: [F39-S01/AC-01]
 - estimate: 0.5h
-- test_file: flutter_app/test/player/auto_pause_policy_test.dart
+- test_file: player/test/auto_pause_policy.spec.js
 - dependencies: []
-- hints: `flutter_app/lib/components/player/auto_pause_policy.dart`.
-  Riverpod state: `enabled: bool` (default true). Persists to
-  localStorage under `tirvi.player.auto_pause_after_question` per
-  F32 convention. Frozen-state pattern; toggle via Riverpod
-  notifier. Test: default enabled=true; toggle persists across
-  reload; default-true survives a fresh localStorage read.
+- hints: `player/js/auto_pause_policy.js` exports
+  `loadAutoPause(storage = localStorage)`,
+  `saveAutoPause(enabled, storage = localStorage)`, and
+  `STORAGE_KEY = "tirvi.player.auto_pause_after_question"`. Default
+  `true` when the key is absent or unparseable. `saveAutoPause`
+  must swallow `setItem` quota / SecurityError exceptions
+  (FT-278) and warn via `console.warn`. Test: default-true on
+  empty store; round-trip false → load returns false; corrupted
+  value (e.g., `"banana"`) → load returns true (default); save
+  failure does not throw.
 
-## T-02: QuestionIndex computation
+## T-02: questionIndex computation
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [F39-S02/AC-01]
 - estimate: 0.5h
-- test_file: flutter_app/test/player/question_index_test.dart
-- dependencies: [F52-T-03 (PlanBlock.block_kind expansion)]
-- hints: `QuestionIndex.from_plan(plan)` returns
-  `{current: int, total: int}`. `current` updates on marker block
-  boundary crossings. Test with synthetic plan.json containing 3
-  question_stem blocks: traversal updates current 1→2→3.
+- test_file: player/test/question_index.spec.js
+- dependencies: [F22 schema extension carrying blocks[]; F52-T-03]
+- hints: `player/js/question_index.js` exports
+  `questionIndexFromBlocks(blocks)` returning
+  `{current: 1, total: N}` for the FIRST question_stem block, and
+  `advanceQuestion(blocks, currentMarkId, direction)` returning
+  `{current, markId}` after a J/K jump. Pure functions over a
+  blocks array; no DOM / no fetch. Tests: 3 question_stem blocks
+  → total === 3; advance from question 1 → question 2 markId.
 
 ## T-03: state-machine extension — auto-pause on question_stem block end
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-01
 - acceptance_criteria: [F39-S03/AC-01]
 - estimate: 0.5h
-- test_file: flutter_app/test/player/state_machine_auto_pause_test.dart
+- test_file: player/test/auto_pause_state.spec.js
 - dependencies: [T-01, T-02]
-- hints: extend F36 player state machine. On `block_end` event,
-  if just-finished block_kind == question_stem AND
-  AutoPausePolicy.enabled, transition to paused. Test: 3-question
-  page produces 3 auto-pauses if toggle on; produces 0 auto-pauses
-  if toggle off. Mid-page toggle-off does not dismiss the current
-  pause (test the negative case explicitly).
+- hints: extend `player/js/controls.js` with a `block_end` event
+  case; on `block_end` event whose just-finished block_kind ===
+  `"question_stem"` AND `loadAutoPause()` is true, dispatch
+  `pause`. Test: synthetic 3-question plan dispatches 3
+  block_end events → 3 paused transitions when policy on; 0
+  when policy off. Mid-page toggle-off does not dismiss the
+  current pause (assert explicitly).
 
 ## T-04: J/K keyboard handlers + tooltip
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-03, DE-06
 - acceptance_criteria: [F39-S04/AC-01]
 - estimate: 0.5h
-- test_file: flutter_app/test/player/keyboard_jk_test.dart
+- test_file: player/test/jk_keys.spec.js
 - dependencies: [T-02, F36 (existing)]
-- hints: register `J` (advance to next question_stem block) and
-  `K` (previous) in F36's keyboard router. Audio resumes from the
-  target block's start when paused — wait, NO: per design, J/K
-  only navigate the marker; if the player was paused at jump time,
-  it stays paused. Test: from paused state, J advances marker but
-  audio remains paused. From playing state, J jumps audio to next
-  question_stem.
+- hints: extend `bindKeyboard` in `player/js/controls.js` to
+  handle `J` / `K` (and `j` / `k`) by computing the next/prev
+  question_stem mark via `advanceQuestion` and seeking
+  `audio.currentTime`. If the player was paused, it stays
+  paused (do NOT dispatch `continue`); if playing, audio
+  remains playing through the seek. Tooltip text appended to
+  the toolbar's `aria-keyshortcuts` map.
 
-## T-05: ProgressHint widget — `שאלה N מתוך M`
+## T-05: ProgressHint element — `שאלה N מתוך M`
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-04
 - acceptance_criteria: [F39-S05/AC-01]
 - estimate: 0.25h
-- test_file: flutter_app/test/player/progress_hint_widget_test.dart
+- test_file: player/test/progress_hint.spec.js
 - dependencies: [T-02]
-- hints: Riverpod-bound widget reading QuestionIndex provider.
-  Widget test: 3-question page renders "שאלה 1 מתוך 3" initially;
-  after a marker-cross to question 2, renders "שאלה 2 מתוך 3".
+- hints: `player/js/progress_hint.js` exports
+  `mountProgressHint(parent)` returning
+  `{el, render({current, total})}`. `el` is a `<span
+  aria-live="polite">` with class `progress-hint`. Test: render
+  `{current:1,total:3}` → text content `"שאלה 1 מתוך 3"`;
+  re-render `{current:2,total:3}` → updated text.
 
 ## T-06: settings-panel toggle row
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-05
 - acceptance_criteria: [F39-S06/AC-01]
 - estimate: 0.25h
-- test_file: flutter_app/test/player/auto_pause_toggle_widget_test.dart
+- test_file: player/test/auto_pause_toggle.spec.js
 - dependencies: [T-01]
-- hints: add a toggle row to the F36 settings panel: label
-  "השהיה אוטומטית בסוף שאלה" (auto-pause at end of question),
-  bound to `AutoPausePolicy`. Tooltip explains J/K shortcuts.
+- hints: append a labelled checkbox row to the F36 settings
+  panel — `<label>השהיה אוטומטית בסוף שאלה <input
+  type="checkbox"></label>` — bound to
+  `loadAutoPause` / `saveAutoPause`. `title` attribute (tooltip)
+  describes J/K shortcuts. Test: initial state reflects
+  `loadAutoPause()`; click toggles + persists.
 
 ## T-07: Phase-0 demo verification on Economy.pdf
 
-- [ ] **T-07 done**
+- [x] **T-07 done**
 - design_element: DE-01..DE-06
 - acceptance_criteria: [F39-S07/AC-01]
 - estimate: 0.5h
-- test_file: flutter_app/integration_test/economy_pdf_pause_jump_test.dart
+- test_file: player/test/economy_pdf_pause_jump.e2e.spec.js
 - dependencies: [T-03, T-04, T-05, F52-T-06 (taxonomy demo green)]
-- hints: integration test on Economy.pdf page 1 with the full
-  Phase-0 stack: F52 must produce ≥ 1 question_stem; F39 must
-  auto-pause at its end with toggle ON; pressing J from a paused
-  state must advance the marker (and audio resumes only on
-  Space). Phase 0 success criterion #3 from roadmap §E.
+- hints: vitest E2E using jsdom + a fixture `page.json` derived
+  from Economy.pdf page 1. Asserts: ≥ 1 question_stem in the
+  fixture; auto-pause fires at its block_end with toggle ON;
+  pressing `J` from a paused state advances the marker (audio
+  stays paused). Phase 0 success criterion #3 from roadmap §E.

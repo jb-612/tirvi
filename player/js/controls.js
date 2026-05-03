@@ -1,7 +1,12 @@
-// F36 — vanilla controls for the POC reader.
+// F36/F39 — vanilla controls for the POC reader.
 //
-// Spec: N04/F36 DE-01..DE-06. AC: US-01..US-03/AC-01.
-// Bounded context: bc:audio_delivery. Language: vanilla JS (ADR-023).
+// Spec: N04/F36 DE-01..DE-06, N04/F39 DE-01, DE-03. AC: US-01..US-03/AC-01.
+// Bounded context: bc:audio_delivery / bc:reading_accommodation.
+// Language: vanilla JS (ADR-023).
+
+import { loadAutoPause } from "./auto_pause_policy.js";
+import { advanceQuestion } from "./question_index.js";
+import { findActiveMark } from "./highlight.js";
 
 /**
  * @typedef {"idle"|"playing"|"paused"|"ended"} PlayerState
@@ -130,32 +135,82 @@ export function mountControls({ audio, toolbar }) {
   };
 }
 
+function _handleSpace(controls) {
+  const s = controls.getState();
+  if (s === "playing") controls.dispatch("pause");
+  else if (s === "paused") controls.dispatch("continue");
+  else controls.dispatch("play"); // idle / ended
+}
+
+function _seekToMark(context, markId) {
+  const t = context.timings.find((x) => x.mark_id === markId);
+  if (!t) return;
+  context.audio.currentTime = t.start_s;
+}
+
+// F39 T-04 — seek to neighbouring question_stem; never dispatch continue.
+function _handleJump(context, direction) {
+  if (!context) return;
+  const currentMarkId = findActiveMark(context.timings, context.audio.currentTime);
+  if (currentMarkId === null) return;
+  const result = advanceQuestion(context.blocks, currentMarkId, direction);
+  if (result.markId === null) return;
+  _seekToMark(context, result.markId);
+}
+
+function _normalizeKey(e) {
+  if (e.key === " " || e.code === "Space") return "space";
+  const k = e.key.toLowerCase();
+  return ["r", "j", "k"].includes(k) ? k : "";
+}
+
+function _routeKey(e, controls, context) {
+  const k = _normalizeKey(e);
+  if (k === "") return;
+  e.preventDefault();
+  if (k === "space") return _handleSpace(controls);
+  if (k === "r") return controls.dispatch("reset");
+  if (k === "j") return _handleJump(context, 1);
+  return _handleJump(context, -1);
+}
+
 /**
- * F36 T-05 — keyboard shortcuts. Space toggles play/pause/resume; R resets.
+ * F36 T-05 + F39 T-04 — keyboard shortcuts.
+ * Space toggles play/pause/resume; R resets;
+ * J/K (and j/k) jump to next/prev question_stem when context is provided.
  * Returns an unbind() function.
  *
  * @param {{getState: () => PlayerState, dispatch: (e: PlayerEvent) => PlayerState}} controls
  * @param {HTMLElement} [root=document]
+ * @param {{blocks: Array, timings: Array, audio: HTMLAudioElement, toolbar?: HTMLElement}} [context]
+ *        Optional. When absent, J/K are no-ops and Space/R behaviour is unchanged.
  * @returns {() => void}
  */
-export function bindKeyboard(controls, root) {
+export function bindKeyboard(controls, root, context) {
   const target = root || document;
-  const handler = (e) => {
-    if (e.key === " " || e.code === "Space") {
-      e.preventDefault();
-      const s = controls.getState();
-      if (s === "playing") controls.dispatch("pause");
-      else if (s === "paused") controls.dispatch("continue");
-      else controls.dispatch("play"); // idle / ended
-      return;
-    }
-    if (e.key === "r" || e.key === "R") {
-      e.preventDefault();
-      controls.dispatch("reset");
-    }
-  };
+  const handler = (e) => _routeKey(e, controls, context);
   target.addEventListener("keydown", handler);
+  if (context && context.toolbar) {
+    context.toolbar.setAttribute("aria-keyshortcuts", "J K");
+  }
   return () => target.removeEventListener("keydown", handler);
+}
+
+/**
+ * F39 T-03 — handle a block_end signal from the rAF highlight loop.
+ * When the finished block is question_stem AND the auto-pause policy is
+ * enabled AND the player is currently playing, dispatch "pause".
+ * No-ops for all other block kinds, policy-off, and non-playing states.
+ *
+ * @param {{block_kind: string}} block
+ * @param {{getState: () => string, dispatch: (e: string) => string}} controls
+ * @param {object} [storage] - localStorage-shaped adapter (injectable for tests)
+ */
+export function handleBlockEnd(block, controls, storage) {
+  if (block.block_kind !== "question_stem") return;
+  if (controls.getState() !== "playing") return;
+  if (!loadAutoPause(storage)) return;
+  controls.dispatch("pause");
 }
 
 /**

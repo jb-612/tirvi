@@ -66,14 +66,34 @@ player's state machine and exposes the affordances.
   cover the new keyboard shortcuts).
 - **External services**: none.
 
+### Data-pipeline note
+
+The current `page.json` schema (`docs/schemas/page.schema.json`)
+exposes only flat `words[]` + `marks_to_word_index`; it does NOT
+carry block boundaries or `block_kind`. For F39, the player needs
+`(block_kind, mark_id_range)` per block. Two compatible options:
+
+1. **Extend `page.json`** with an optional `blocks[]` field
+   (`{block_kind, mark_ids: [first, last]}`), produced by F22
+   DE-07. Preferred — keeps the player's wire surface single.
+2. **Have the player fetch `plan.json` directly** at boot. Larger
+   wire surface; revisit at MVP.
+
+Option 1 is the working assumption for T-02..T-07; the schema
+extension is tracked under F22 follow-up. T-01 (this task) is
+purely the toggle module and does not depend on either choice.
+
 ## Interfaces
+
+POC implementation: vanilla JS modules under `player/js/` per ADR-023.
+No framework. Tests with vitest under `player/test/`.
 
 | Module | Symbol | Kind | Notes |
 |--------|--------|------|-------|
-| `flutter_app/lib/components/player/auto_pause_policy.dart` | `AutoPausePolicy` | class | Holds the toggle state; default `enabled=true`. Persisted in localStorage. |
-| `flutter_app/lib/components/player/question_index.dart` | `QuestionIndex` | class | Computes `(current, total)` from `plan.json` block sequence. |
-| `flutter_app/lib/components/player/keyboard_handler.dart` | `J`/`K` bindings | function | Adds two handlers to the existing F36 keyboard router. |
-| `flutter_app/lib/components/player/progress_hint.dart` | `ProgressHint` | widget | Small "שאלה N מתוך M" counter beside the play/pause button. |
+| `player/js/auto_pause_policy.js` | `loadAutoPause`, `saveAutoPause`, `STORAGE_KEY` | functions + const | Synchronous read/write of the toggle through a `localStorage`-shaped adapter; default `true`. Quota errors swallowed (FT-278). |
+| `player/js/question_index.js` | `questionIndexFromBlocks`, `advanceQuestion` | pure functions | Computes `{current, total}` from a flat blocks array (block_kind in {`question_stem`, ...}). Pure; consumed by the rendering layer. |
+| `player/js/controls.js` (extension) | `J` / `K` keybindings | added cases in `bindKeyboard` | Extends the existing F36 keyboard handler with prev/next-question jumps. |
+| `player/js/progress_hint.js` | `mountProgressHint`, `renderProgressHint` | DOM helpers | Creates and updates a `<span aria-live="polite">שאלה N מתוך M</span>` adjacent to the controls toolbar. |
 
 ## Design Elements
 
@@ -89,8 +109,8 @@ manually OR press `J` to jump.
 
 `QuestionIndex.from_plan(plan)` walks `plan.json` blocks and emits
 the index/total of `question_stem` blocks. Updated on plan load;
-stable for the page's lifetime. Used by `ProgressHint` widget and
-by `J`/`K` keyboard handlers.
+stable for the page's lifetime. Used by the `progress_hint`
+DOM helper and by `J`/`K` keyboard handlers.
 
 ### DE-03 — `J` / `K` keyboard handlers
 
@@ -102,18 +122,22 @@ remains paused (user explicitly chose to navigate, not play).
 When already on the first/last question, `K`/`J` no-ops (or
 optionally emits a small audio cue — defer to T-04 measurement).
 
-### DE-04 — Visual progress hint widget
+### DE-04 — Visual progress hint element
 
-Small text `שאלה N מתוך M` (or English equivalent for English-
-locale UI) rendered beside the existing play/pause button.
-Updates in real time as the marker crosses block boundaries.
+Small `<span aria-live="polite">שאלה N מתוך M</span>` (or English
+equivalent for English-locale UI) rendered beside the existing
+play/pause button. Updated in real time by the F35 rAF loop as
+the marker crosses block boundaries.
 
 ### DE-05 — Toggle persistence
 
-`AutoPausePolicy.enabled` persists in localStorage (per F32
-localStorage convention) under key
-`tirvi.player.auto_pause_after_question`. Default `true`. User may
-toggle via the F36 settings panel — adds one new toggle row.
+The toggle persists in `localStorage` (per F32 localStorage
+convention) under key `tirvi.player.auto_pause_after_question`.
+Default `true` — `loadAutoPause` returns `true` when the key is
+absent or its value cannot be parsed. `saveAutoPause` writes the
+boolean as `"true"` / `"false"`. User may toggle via the F36
+settings panel — adds one new toggle row that calls
+`saveAutoPause` and re-reads via `loadAutoPause`.
 
 ### DE-06 — F38 WCAG audit pass
 

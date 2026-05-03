@@ -83,10 +83,10 @@
   in F36**. Conflict; F39's binding is reserved. Mitigation:
   F36's keyboard router test asserts no overlap with F39's
   reserved set.
-- **Recovery: localStorage corrupted / wrong type**. Riverpod
-  state initialiser catches `JSON.parse` errors; resets to
-  default `enabled=true`; logs to console. State recovers on
-  next toggle write.
+- **Recovery: localStorage corrupted / wrong type**.
+  `loadAutoPause` catches non-`"true"`/`"false"` reads (and any
+  thrown `getItem` error); returns the default `true`. State
+  recovers on next `saveAutoPause` write.
 
 ## Collaboration Breakdown
 
