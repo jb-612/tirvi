@@ -6,13 +6,18 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 
 vi.mock("../js/player.js", () => ({ bootPlayer: vi.fn() }));
-vi.mock("../js/controls.js", () => ({ mountPlayButton: vi.fn() }));
+vi.mock("../js/controls.js", () => ({
+  mountPlayButton: vi.fn(),
+  mountControls: vi.fn(() => ({ getState: vi.fn(() => "idle"), dispatch: vi.fn(), buttons: {}, destroy: vi.fn() })),
+  bindKeyboard: vi.fn(() => () => {}),
+}));
 vi.mock("../js/highlight.js", () => ({
   startHighlightLoop: vi.fn(() => vi.fn()),
+  findActiveMark: vi.fn(() => null),
 }));
 
 import { bootPlayer } from "../js/player.js";
-import { mountPlayButton } from "../js/controls.js";
+import { mountControls } from "../js/controls.js";
 import { startHighlightLoop } from "../js/highlight.js";
 import { init } from "../js/main.js";
 
@@ -72,10 +77,10 @@ describe("F35/F36 — init() orchestration", () => {
     expect(marker).not.toBeNull();
   });
 
-  it("mounts play button into toolbar", async () => {
+  it("mounts controls into toolbar", async () => {
     await init();
-    expect(mountPlayButton).toHaveBeenCalledTimes(1);
-    const [{ toolbar }] = mountPlayButton.mock.calls[0];
+    expect(mountControls).toHaveBeenCalledTimes(1);
+    const [{ toolbar }] = mountControls.mock.calls[0];
     expect(toolbar).toBe(document.getElementById("controls"));
   });
 

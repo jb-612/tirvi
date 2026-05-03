@@ -47,7 +47,7 @@ describe("F35 T-01 — bootPlayer (happy path)", () => {
     _setupDom();
     vi.stubGlobal(
       "fetch",
-      _mockFetch({ "page.json": _validPage, "audio.json": _validAudio }),
+      _mockFetch({ "/page.json": _validPage, "/audio.json": _validAudio }),
     );
   });
 
@@ -57,8 +57,8 @@ describe("F35 T-01 — bootPlayer (happy path)", () => {
 
   it("us_01_ac_01 — fetches both page.json and audio.json", async () => {
     await bootPlayer();
-    expect(fetch).toHaveBeenCalledWith("page.json");
-    expect(fetch).toHaveBeenCalledWith("audio.json");
+    expect(fetch).toHaveBeenCalledWith("/page.json");
+    expect(fetch).toHaveBeenCalledWith("/audio.json");
   });
 
   it("us_01_ac_01 — returns state with audio element + parsed projections", async () => {
@@ -78,7 +78,7 @@ describe("F35 T-01 — bootPlayer (happy path)", () => {
 describe("F35 T-01 — bootPlayer (degraded path: missing audio.json)", () => {
   beforeEach(() => {
     _setupDom();
-    vi.stubGlobal("fetch", _mockFetch({ "page.json": _validPage })); // audio.json absent
+    vi.stubGlobal("fetch", _mockFetch({ "/page.json": _validPage })); // audio.json absent
   });
 
   afterEach(() => {
@@ -105,7 +105,7 @@ describe("F35 T-01 — bootPlayer (degraded path: missing audio.json)", () => {
 describe("F35 T-01 — bootPlayer (fail-loud: missing page.json)", () => {
   beforeEach(() => {
     _setupDom();
-    vi.stubGlobal("fetch", _mockFetch({ "audio.json": _validAudio })); // page.json absent
+    vi.stubGlobal("fetch", _mockFetch({ "/audio.json": _validAudio })); // page.json absent
   });
 
   afterEach(() => {

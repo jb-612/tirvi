@@ -39,7 +39,13 @@ let state;
 beforeEach(() => {
   state = _makeState();
   document.body.appendChild(state.panel);
-  vi.unstubAllGlobals();
+  vi.stubGlobal("localStorage", {
+    getItem: vi.fn(() => null),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+    length: 0,
+  });
 });
 
 afterEach(() => {
