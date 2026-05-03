@@ -99,6 +99,7 @@ class ReadingPlan:
             "page_image_url": page_image_url,
             "words": [_word_to_schema_dict(w) for w in page.words],
             "marks_to_word_index": _build_marks_to_word_index(self.blocks),
+            "blocks": _build_blocks_for_page_json(self.blocks),
             "nlp_tokens": _nlp_tokens_to_schema(self.blocks),
             "diacritized_text": _collect_diacritized_text(self.blocks),
         }
@@ -141,6 +142,24 @@ def _collect_diacritized_text(blocks: tuple[PlanBlock, ...]) -> str:
         if token.diacritized_text
     ]
     return " ".join(parts)
+
+
+def _build_blocks_for_page_json(blocks: tuple[PlanBlock, ...]) -> list[dict]:
+    """F22 T-08 — blocks[] projection for F39 auto-pause / jump.
+
+    Each entry: {block_id, block_kind, first_mark_id, last_mark_id}.
+    Empty blocks (no tokens) emit null mark IDs.
+    """
+    result = []
+    for block in blocks:
+        ids = [t.id for t in block.tokens]
+        result.append({
+            "block_id": block.block_id,
+            "block_kind": block.block_type,
+            "first_mark_id": ids[0] if ids else None,
+            "last_mark_id": ids[-1] if ids else None,
+        })
+    return result
 
 
 def _build_marks_to_word_index(blocks: tuple[PlanBlock, ...]) -> dict[str, int]:

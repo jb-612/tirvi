@@ -43,6 +43,20 @@
         }
       }
     },
+    "blocks": {
+      "type": "array",
+      "description": "Optional. Per-block projection for F39 auto-pause and J/K jump. Each entry carries the block's kind and the first/last token mark IDs so the player can detect block boundaries. block_kind mirrors PlanBlock.block_type.",
+      "items": {
+        "type": "object",
+        "required": ["block_id", "block_kind", "first_mark_id", "last_mark_id"],
+        "properties": {
+          "block_id": {"type": "string"},
+          "block_kind": {"type": "string"},
+          "first_mark_id": {"type": ["string", "null"]},
+          "last_mark_id": {"type": ["string", "null"]}
+        }
+      }
+    },
     "marks_to_word_index": {
       "type": "object",
       "additionalProperties": {

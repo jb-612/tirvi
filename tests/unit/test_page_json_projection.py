@@ -99,3 +99,75 @@ class TestPageJsonProjection:
         )
         out = plan_with_empty.to_page_json(_ocr_result())
         assert out["marks_to_word_index"] == {"b2-0": 0}
+
+
+class TestPageJsonBlocks:
+    """F22 T-08 — blocks[] projection for F39 auto-pause / jump.
+
+    Each entry carries {block_id, block_kind, first_mark_id, last_mark_id}
+    so the player can detect question_stem block boundaries.
+    """
+
+    def test_t08_blocks_key_present(self) -> None:
+        out = _plan().to_page_json(_ocr_result())
+        assert "blocks" in out
+
+    def test_t08_blocks_length_matches_plan_blocks(self) -> None:
+        out = _plan().to_page_json(_ocr_result())
+        # _plan() has two blocks: heading + paragraph
+        assert len(out["blocks"]) == 2
+
+    def test_t08_block_kind_taken_from_block_type(self) -> None:
+        out = _plan().to_page_json(_ocr_result())
+        kinds = [b["block_kind"] for b in out["blocks"]]
+        assert kinds == ["heading", "paragraph"]
+
+    def test_t08_first_and_last_mark_id_from_tokens(self) -> None:
+        out = _plan().to_page_json(_ocr_result())
+        # b1 has tokens b1-0 and b1-1
+        b1 = out["blocks"][0]
+        assert b1["block_id"] == "b1"
+        assert b1["first_mark_id"] == "b1-0"
+        assert b1["last_mark_id"] == "b1-1"
+        # b2 has a single token b2-0
+        b2 = out["blocks"][1]
+        assert b2["block_id"] == "b2"
+        assert b2["first_mark_id"] == "b2-0"
+        assert b2["last_mark_id"] == "b2-0"
+
+    def test_t08_empty_block_has_null_mark_ids(self) -> None:
+        plan_with_empty = ReadingPlan(
+            page_id="page-1",
+            blocks=(
+                PlanBlock(block_id="b1", block_type="question_stem", tokens=()),
+                PlanBlock(
+                    block_id="b2",
+                    block_type="paragraph",
+                    tokens=(PlanToken(id="b2-0", text="א", src_word_indices=(0,)),),
+                ),
+            ),
+        )
+        out = plan_with_empty.to_page_json(_ocr_result())
+        empty = out["blocks"][0]
+        assert empty["block_kind"] == "question_stem"
+        assert empty["first_mark_id"] is None
+        assert empty["last_mark_id"] is None
+
+    def test_t08_question_stem_block_kind_preserved(self) -> None:
+        plan = ReadingPlan(
+            page_id="page-1",
+            blocks=(
+                PlanBlock(
+                    block_id="q1",
+                    block_type="question_stem",
+                    tokens=(
+                        PlanToken(id="q1-0", text="שאלה", src_word_indices=(0,)),
+                        PlanToken(id="q1-1", text="א", src_word_indices=(1,)),
+                    ),
+                ),
+            ),
+        )
+        out = plan.to_page_json(_ocr_result())
+        assert out["blocks"][0]["block_kind"] == "question_stem"
+        assert out["blocks"][0]["first_mark_id"] == "q1-0"
+        assert out["blocks"][0]["last_mark_id"] == "q1-1"

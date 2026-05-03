@@ -85,6 +85,23 @@ total_estimate_hours: 8.5
 - dependencies: [T-01, T-02]
 - hints: plan.to_page_json(ocr_result) -> dict; output validated by docs/schemas/page.schema.json; words[].bbox from ocr_result; marks_to_word_index = {token.id: first(token.src_word_indices) for block in plan.blocks for token in block.tokens}; page_image_url is caller-supplied (defaults to "page-1.png")
 
+## T-08: blocks[] projection in page.json (F39 unblock)
+
+- [x] **T-08 done**
+- design_element: DE-07
+- acceptance_criteria: [US-01/AC-01]
+- estimate: 0.5h
+- test_file: tests/unit/test_page_json_projection.py
+- dependencies: [T-07]
+- hints: extend `to_page_json` to include optional `blocks[]` array.
+  Each entry: `{block_id, block_kind, first_mark_id, last_mark_id}`.
+  `block_kind` is `PlanBlock.block_type` (same value, renamed to
+  match F39/F52 downstream terminology). Empty blocks (no tokens)
+  emit `first_mark_id=null, last_mark_id=null`. Schema:
+  `docs/schemas/page.schema.json` extended with optional `blocks`
+  array. Backward-compat — existing consumers that ignore unknown
+  keys are unaffected.
+
 ## Dependency DAG
 
 ```
