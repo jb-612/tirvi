@@ -15,7 +15,7 @@ from tirvi.ssml import build_block_ssml
 
 
 def _block(*tokens: PlanToken) -> PlanBlock:
-    return PlanBlock(block_id="b1", block_type="paragraph", tokens=tokens)
+    return PlanBlock(block_id="b1", block_kind="paragraph", tokens=tokens)
 
 
 class TestPerWordMark:

@@ -35,6 +35,9 @@ BlockType = Literal[
     "multi_choice_options",
 ]
 
+# F52 DE-01 — canonical public name; BlockType kept for back-compat.
+BlockKind = BlockType
+
 BLOCK_TYPES: tuple[BlockType, ...] = (
     "heading",
     "paragraph",
@@ -45,3 +48,9 @@ BLOCK_TYPES: tuple[BlockType, ...] = (
     "answer_blank",
     "multi_choice_options",
 )
+
+# F52 DE-01 — canonical public name; BLOCK_TYPES kept for back-compat.
+BLOCK_KINDS: tuple[BlockKind, ...] = BLOCK_TYPES
+
+# Classifier emits this when confidence falls below threshold (ADR-041 #20).
+FALLBACK_BLOCK_KIND: BlockKind = "mixed"

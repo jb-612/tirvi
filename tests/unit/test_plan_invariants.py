@@ -22,7 +22,7 @@ def _valid_plan() -> ReadingPlan:
         blocks=(
             PlanBlock(
                 block_id="b1",
-                block_type="heading",
+                block_kind="heading",
                 tokens=(
                     PlanToken(id="b1-0", text="שלום", src_word_indices=(0,)),
                     PlanToken(id="b1-1", text="עולם", src_word_indices=(1,)),
@@ -30,7 +30,7 @@ def _valid_plan() -> ReadingPlan:
             ),
             PlanBlock(
                 block_id="b2",
-                block_type="paragraph",
+                block_kind="paragraph",
                 tokens=(
                     PlanToken(id="b2-0", text="פרק", src_word_indices=(2,)),
                 ),
@@ -55,12 +55,12 @@ class TestPlanInvariants:
             blocks=(
                 PlanBlock(
                     block_id="b1",
-                    block_type="heading",
+                    block_kind="heading",
                     tokens=(PlanToken(id="dup", text="שלום", src_word_indices=(0,)),),
                 ),
                 PlanBlock(
                     block_id="b2",
-                    block_type="paragraph",
+                    block_kind="paragraph",
                     tokens=(PlanToken(id="dup", text="עולם", src_word_indices=(1,)),),
                 ),
             ),
@@ -75,8 +75,8 @@ class TestPlanInvariants:
         bad = ReadingPlan(
             page_id="page-1",
             blocks=(
-                PlanBlock(block_id="b1", block_type="heading", tokens=()),
-                PlanBlock(block_id="b1", block_type="paragraph", tokens=()),
+                PlanBlock(block_id="b1", block_kind="heading", tokens=()),
+                PlanBlock(block_id="b1", block_kind="paragraph", tokens=()),
             ),
         )
         with pytest.raises(PlanInvariantError, match="block_id"):
@@ -91,12 +91,12 @@ class TestPlanInvariants:
             blocks=(
                 PlanBlock(
                     block_id="b1",
-                    block_type="heading",
+                    block_kind="heading",
                     tokens=(PlanToken(id="b1-0", text="א", src_word_indices=(0,)),),
                 ),
                 PlanBlock(
                     block_id="b2",
-                    block_type="paragraph",
+                    block_kind="paragraph",
                     tokens=(PlanToken(id="b2-0", text="ב", src_word_indices=(0,)),),
                 ),
             ),
@@ -111,10 +111,10 @@ class TestPlanInvariants:
         plan = ReadingPlan(
             page_id="page-1",
             blocks=(
-                PlanBlock(block_id="b1", block_type="heading", tokens=()),
+                PlanBlock(block_id="b1", block_kind="heading", tokens=()),
                 PlanBlock(
                     block_id="b2",
-                    block_type="paragraph",
+                    block_kind="paragraph",
                     tokens=(PlanToken(id="b2-0", text="א", src_word_indices=(0,)),),
                 ),
             ),

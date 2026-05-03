@@ -92,9 +92,9 @@ class TestBuildPlan:
         assert len(plan.blocks) == 2
         assert all(isinstance(b, PlanBlock) for b in plan.blocks)
         assert plan.blocks[0].block_id == "b1"
-        assert plan.blocks[0].block_type == "heading"
+        assert plan.blocks[0].block_kind == "heading"
         assert plan.blocks[1].block_id == "b2"
-        assert plan.blocks[1].block_type == "paragraph"
+        assert plan.blocks[1].block_kind == "paragraph"
 
     def test_us_01_ac_01_ft_168_tokens_carry_lemma_pos_diacritized_ipa(self) -> None:
         # Given: aligned NLP + Diac + G2P inputs

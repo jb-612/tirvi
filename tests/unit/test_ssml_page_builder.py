@@ -22,12 +22,12 @@ def _two_block_plan() -> ReadingPlan:
         blocks=(
             PlanBlock(
                 block_id="b1",
-                block_type="heading",
+                block_kind="heading",
                 tokens=(PlanToken(id="b1-0", text="שלום", src_word_indices=(0,), diacritized_text="שָׁלוֹם"),),
             ),
             PlanBlock(
                 block_id="b2",
-                block_type="paragraph",
+                block_kind="paragraph",
                 tokens=(PlanToken(id="b2-0", text="עולם", src_word_indices=(1,), diacritized_text="עוֹלָם"),),
             ),
         ),
@@ -71,7 +71,7 @@ class TestBuildPageSsml:
             blocks=(
                 PlanBlock(
                     block_id="b1",
-                    block_type="heading",
+                    block_kind="heading",
                     tokens=(PlanToken(id="b1-0", text="שלום", src_word_indices=(0,)),),
                 ),
             ),

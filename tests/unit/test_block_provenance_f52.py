@@ -61,7 +61,7 @@ class TestT03PlanBlockField:
     def test_plan_block_default_transformations_is_empty_tuple(self):
         from tirvi.plan.value_objects import PlanBlock
         pb = PlanBlock(
-            block_id="b1", block_type="paragraph",
+            block_id="b1", block_kind="paragraph",
             tokens=(),
         )
         assert pb.transformations == ()
@@ -73,7 +73,7 @@ class TestT03PlanBlockField:
              "confidence": 0.85, "adr_row": "ADR-041 #20"},
         )
         pb = PlanBlock(
-            block_id="b1", block_type="instruction",
+            block_id="b1", block_kind="instruction",
             tokens=(), transformations=provenance,
         )
         assert pb.transformations == provenance

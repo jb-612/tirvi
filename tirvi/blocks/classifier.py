@@ -24,16 +24,17 @@ import re
 
 from tirvi.results import OCRWord
 
+from .cues import DATUM_PREFIXES, INSTRUCTION_PREFIXES, LETTER_CHOICE_RE
 from .taxonomy import BlockType
 from .value_objects import PageStats
 
 # Legacy F11 cue
 _QUESTION_STEM_RE = re.compile(r"^\s*שאלה[\s ]+[\d]")
 
-# F52 cues
-_INSTRUCTION_PREFIXES: tuple[str, ...] = ("הוראות", "קרא בעיון", "שים לב")
-_DATUM_PREFIXES: tuple[str, ...] = ("נתונים",)
-_LETTER_CHOICE_RE = re.compile(r"^[א-ד]\.$")  # א./ב./ג./ד.
+# Aliases for classifier-internal use (keep private names consistent)
+_INSTRUCTION_PREFIXES = INSTRUCTION_PREFIXES
+_DATUM_PREFIXES = DATUM_PREFIXES
+_LETTER_CHOICE_RE = LETTER_CHOICE_RE
 
 _HEADING_HEIGHT_RATIO = 1.5
 _LOW_CONFIDENCE_THRESHOLD = 0.6

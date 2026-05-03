@@ -37,7 +37,7 @@ def _plan() -> ReadingPlan:
         blocks=(
             PlanBlock(
                 block_id="b1",
-                block_type="heading",
+                block_kind="heading",
                 tokens=(
                     PlanToken(id="b1-0", text="שלום", src_word_indices=(0,)),
                     PlanToken(id="b1-1", text="עולם", src_word_indices=(1,)),
@@ -45,7 +45,7 @@ def _plan() -> ReadingPlan:
             ),
             PlanBlock(
                 block_id="b2",
-                block_type="paragraph",
+                block_kind="paragraph",
                 tokens=(
                     PlanToken(id="b2-0", text="פרק", src_word_indices=(2,)),
                 ),
@@ -89,10 +89,10 @@ class TestPageJsonProjection:
         plan_with_empty = ReadingPlan(
             page_id="page-1",
             blocks=(
-                PlanBlock(block_id="b1", block_type="heading", tokens=()),
+                PlanBlock(block_id="b1", block_kind="heading", tokens=()),
                 PlanBlock(
                     block_id="b2",
-                    block_type="paragraph",
+                    block_kind="paragraph",
                     tokens=(PlanToken(id="b2-0", text="א", src_word_indices=(0,)),),
                 ),
             ),
@@ -139,10 +139,10 @@ class TestPageJsonBlocks:
         plan_with_empty = ReadingPlan(
             page_id="page-1",
             blocks=(
-                PlanBlock(block_id="b1", block_type="question_stem", tokens=()),
+                PlanBlock(block_id="b1", block_kind="question_stem", tokens=()),
                 PlanBlock(
                     block_id="b2",
-                    block_type="paragraph",
+                    block_kind="paragraph",
                     tokens=(PlanToken(id="b2-0", text="א", src_word_indices=(0,)),),
                 ),
             ),
@@ -159,7 +159,7 @@ class TestPageJsonBlocks:
             blocks=(
                 PlanBlock(
                     block_id="q1",
-                    block_type="question_stem",
+                    block_kind="question_stem",
                     tokens=(
                         PlanToken(id="q1-0", text="שאלה", src_word_indices=(0,)),
                         PlanToken(id="q1-1", text="א", src_word_indices=(1,)),

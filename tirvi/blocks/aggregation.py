@@ -27,6 +27,16 @@ _PROVENANCE_KINDS: frozenset[str] = frozenset({
     "multi_choice_options", "question_stem", "heading",
 })
 
+# F52 DE-04: maps each confident kind to the heuristic cue that fired.
+_CUE_SIGNATURE: dict[str, str] = {
+    "instruction":          "instruction_prefix_cue",
+    "datum":                "datum_prefix_cue",
+    "answer_blank":         "empty_block_cue",
+    "multi_choice_options": "letter_choice_re_cue",
+    "question_stem":        "question_stem_re_cue",
+    "heading":              "heading_height_cue",
+}
+
 
 def _build_classification_provenance(
     block_type: str, confidence: float
@@ -41,6 +51,7 @@ def _build_classification_provenance(
         return ()
     return ({
         "kind": "block_kind_classification",
+        "from": _CUE_SIGNATURE[block_type],
         "to": block_type,
         "confidence": confidence,
         "adr_row": "ADR-041 #20",

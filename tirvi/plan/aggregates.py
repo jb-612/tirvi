@@ -155,7 +155,7 @@ def _build_blocks_for_page_json(blocks: tuple[PlanBlock, ...]) -> list[dict]:
         ids = [t.id for t in block.tokens]
         result.append({
             "block_id": block.block_id,
-            "block_kind": block.block_type,
+            "block_kind": block.block_kind,
             "first_mark_id": ids[0] if ids else None,
             "last_mark_id": ids[-1] if ids else None,
         })
@@ -200,7 +200,7 @@ def _build_plan_block(
     )
     return PlanBlock(
         block_id=block.block_id,
-        block_type=block.block_type,
+        block_kind=block.block_type,
         tokens=tokens,
         bbox=block.bbox,
         transformations=block.transformations,

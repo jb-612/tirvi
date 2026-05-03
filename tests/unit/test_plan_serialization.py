@@ -20,7 +20,7 @@ def _plan() -> ReadingPlan:
         blocks=(
             PlanBlock(
                 block_id="b1",
-                block_type="heading",
+                block_kind="heading",
                 tokens=(
                     PlanToken(
                         id="b1-0",

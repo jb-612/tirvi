@@ -27,7 +27,7 @@ def _two_block_plan() -> ReadingPlan:
         blocks=(
             PlanBlock(
                 block_id="b1",
-                block_type="heading",
+                block_kind="heading",
                 tokens=(
                     PlanToken(
                         id="b1-0",
@@ -39,7 +39,7 @@ def _two_block_plan() -> ReadingPlan:
             ),
             PlanBlock(
                 block_id="b2",
-                block_type="paragraph",
+                block_kind="paragraph",
                 tokens=(
                     PlanToken(
                         id="b2-0",
@@ -119,7 +119,7 @@ class TestAssertSsmlV1:
             blocks=(
                 PlanBlock(
                     block_id="b1",
-                    block_type="paragraph",
+                    block_kind="paragraph",
                     tokens=(
                         PlanToken(id="dup", text="a", src_word_indices=(0,)),
                         PlanToken(id="dup", text="b", src_word_indices=(1,)),
@@ -139,7 +139,7 @@ class TestAssertSsmlV1:
             blocks=(
                 PlanBlock(
                     block_id="b1",
-                    block_type="paragraph",
+                    block_kind="paragraph",
                     tokens=plan.blocks[0].tokens,
                     ssml="<speak>not closed",
                 ),

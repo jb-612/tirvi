@@ -9,7 +9,7 @@ phase: 0
 
 ## T-01: BlockKind enum + taxonomy module
 
-- [ ] **T-01 done**
+- [x] **T-01 done**
 - design_element: DE-01
 - acceptance_criteria: [F52-S01/AC-01]
 - estimate: 0.5h
@@ -23,7 +23,7 @@ phase: 0
 
 ## T-02: Classifier with cue patterns + confidence
 
-- [ ] **T-02 done**
+- [x] **T-02 done**
 - design_element: DE-02
 - acceptance_criteria: [F52-S01/AC-02, F52-S02/AC-01]
 - estimate: 1.5h
@@ -38,7 +38,7 @@ phase: 0
 
 ## T-03: F22 plan.json contract bump
 
-- [ ] **T-03 done**
+- [x] **T-03 done**
 - design_element: DE-03
 - acceptance_criteria: [F52-S03/AC-01]
 - estimate: 0.5h
@@ -54,7 +54,7 @@ phase: 0
 
 ## T-04: transformations[] provenance entry
 
-- [ ] **T-04 done**
+- [x] **T-04 done**
 - design_element: DE-04
 - acceptance_criteria: [F52-S04/AC-01]
 - estimate: 0.5h
@@ -70,7 +70,7 @@ phase: 0
 
 ## T-05: Fixture corpus + CI assertion ≥ 85%
 
-- [ ] **T-05 done**
+- [x] **T-05 done**
 - design_element: DE-05
 - acceptance_criteria: [F52-S05/AC-01]
 - estimate: 1h
@@ -85,7 +85,7 @@ phase: 0
 
 ## T-06: Phase-0 demo verification
 
-- [ ] **T-06 done**
+- [x] **T-06 done**
 - design_element: DE-05
 - acceptance_criteria: [F52-S06/AC-01]
 - estimate: 0.5h

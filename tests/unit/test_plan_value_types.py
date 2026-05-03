@@ -75,7 +75,7 @@ class TestPlanBlockValueType:
         # INV-PLAN-B (DE-02): frozen — value-object semantics
         block = PlanBlock(
             block_id="b1",
-            block_type="paragraph",
+            block_kind="paragraph",
             tokens=(),
         )
         with pytest.raises(FrozenInstanceError):
@@ -85,7 +85,7 @@ class TestPlanBlockValueType:
         # INV-PLAN-B-003 (D-01): ssml is empty at F22 emit time; F23 fills it
         block = PlanBlock(
             block_id="b1",
-            block_type="paragraph",
+            block_kind="paragraph",
             tokens=(),
         )
         assert block.ssml == ""
@@ -95,7 +95,7 @@ class TestPlanBlockValueType:
         token = PlanToken(id="b1-0", text="x", src_word_indices=(0,))
         block = PlanBlock(
             block_id="b1",
-            block_type="paragraph",
+            block_kind="paragraph",
             tokens=(token,),
         )
         assert isinstance(block.tokens, tuple)

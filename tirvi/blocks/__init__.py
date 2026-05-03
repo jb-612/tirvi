@@ -8,13 +8,22 @@ Spec: N01/F11. Bounded context: ``bc:extraction``.
 """
 
 from .errors import BlockTypeOutOfScope
-from .taxonomy import BLOCK_TYPES, BlockType
+from .taxonomy import (
+    BLOCK_KINDS,
+    BLOCK_TYPES,
+    FALLBACK_BLOCK_KIND,
+    BlockKind,
+    BlockType,
+)
 from .value_objects import Block, PageStats
 
 __all__ = [
+    "BLOCK_KINDS",
     "BLOCK_TYPES",
     "Block",
+    "BlockKind",
     "BlockType",
     "BlockTypeOutOfScope",
+    "FALLBACK_BLOCK_KIND",
     "PageStats",
 ]

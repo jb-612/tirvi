@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Mapping
 
+from tirvi.blocks.taxonomy import BlockKind
+
 # DE-03 (T-03, FT-171): canonical provenance keys ordered for deterministic
 # JSON serialisation. Keys without upstream input get the ``"missing"``
 # sentinel so the audit trail is total — every key is always present.
@@ -67,7 +69,7 @@ class PlanBlock:
     """
 
     block_id: str
-    block_type: str
+    block_kind: BlockKind
     tokens: tuple[PlanToken, ...]
     ssml: str = ""
     bbox: tuple[int, int, int, int] | None = None

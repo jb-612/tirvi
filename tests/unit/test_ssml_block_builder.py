@@ -16,7 +16,7 @@ from tirvi.ssml import build_block_ssml
 def _block() -> PlanBlock:
     return PlanBlock(
         block_id="b1",
-        block_type="heading",
+        block_kind="heading",
         tokens=(
             PlanToken(
                 id="b1-0",
@@ -66,7 +66,7 @@ class TestSSMLBlockBuilder:
     def test_us_01_ac_01_falls_back_to_raw_text_when_diacritized_missing(self) -> None:
         block = PlanBlock(
             block_id="b9",
-            block_type="paragraph",
+            block_kind="paragraph",
             tokens=(
                 PlanToken(id="b9-0", text="abc", src_word_indices=(0,)),  # no diacritized
             ),
@@ -76,6 +76,6 @@ class TestSSMLBlockBuilder:
 
     def test_us_01_ac_01_empty_block_produces_minimal_speak(self) -> None:
         # An empty block (DE-05 path) still produces a well-formed <speak>
-        empty = PlanBlock(block_id="b1", block_type="heading", tokens=())
+        empty = PlanBlock(block_id="b1", block_kind="heading", tokens=())
         out = build_block_ssml(empty)
         assert out == '<speak xml:lang="he-IL"></speak>'

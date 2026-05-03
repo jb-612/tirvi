@@ -24,7 +24,7 @@ def _t(text: str, idx: int = 0, pos: str | None = None) -> PlanToken:
 
 def _short_block() -> PlanBlock:
     return PlanBlock(
-        block_id="b1", block_type="paragraph",
+        block_id="b1", block_kind="paragraph",
         tokens=tuple(_t(f"w{i}", i) for i in range(10)),
     )
 
@@ -37,14 +37,14 @@ def _long_block_with_period() -> PlanBlock:
         + tuple(_t(f"w{i}", i) for i in range(16, 30))
     )
     return PlanBlock(
-        block_id="b1", block_type="paragraph", tokens=tokens,
+        block_id="b1", block_kind="paragraph", tokens=tokens,
     )
 
 
 def _long_block_no_boundary() -> PlanBlock:
     """30-token block with no punctuation, no SCONJ — chunker skips."""
     return PlanBlock(
-        block_id="b1", block_type="paragraph",
+        block_id="b1", block_kind="paragraph",
         tokens=tuple(_t(f"word{i}", i) for i in range(30)),
     )
 
