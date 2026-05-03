@@ -13,6 +13,15 @@ import { findActiveMark } from "./highlight.js";
  * @typedef {"play"|"pause"|"continue"|"reset"|"audio_ended"} PlayerEvent
  */
 
+/** @type {Record<string, (state: PlayerState) => PlayerState>} */
+const _TRANSITIONS = {
+  reset:       ()      => "idle",
+  audio_ended: (state) => state === "playing" ? "ended" : state,
+  play:        (state) => (state === "idle" || state === "ended") ? "playing" : state,
+  pause:       (state) => state === "playing" ? "paused" : state,
+  continue:    (state) => state === "paused" ? "playing" : state,
+};
+
 /**
  * F36 T-02 — pure state-machine transition function.
  * Invalid transitions return the current state unchanged (no throw).
@@ -22,14 +31,8 @@ import { findActiveMark } from "./highlight.js";
  * @returns {PlayerState}
  */
 export function nextState(state, event) {
-  if (event === "reset") return "idle";
-  if (event === "audio_ended") return state === "playing" ? "ended" : state;
-  if (event === "play") {
-    return state === "idle" || state === "ended" ? "playing" : state;
-  }
-  if (event === "pause") return state === "playing" ? "paused" : state;
-  if (event === "continue") return state === "paused" ? "playing" : state;
-  return state;
+  const fn = _TRANSITIONS[event];
+  return fn ? fn(state) : state;
 }
 
 /**
@@ -58,6 +61,14 @@ const BUTTON_SPEC = [
   { id: "btn-continue", event: "continue", label: "Continue / המשך", keys: "Space" },
   { id: "btn-reset", event: "reset", label: "Reset / אפס", keys: "R" },
 ];
+
+function _isStartingPlayback(prev, next) {
+  return next === "playing" && prev !== "playing";
+}
+
+function _isPausing(prev, next) {
+  return next === "paused" && prev === "playing";
+}
 
 /**
  * F36 T-01 + T-03 — Controls component. Owns the four buttons, the
@@ -103,9 +114,9 @@ export function mountControls({ audio, toolbar }) {
   }
 
   function applyAudio(prev, next, event) {
-    if (next === "playing" && prev !== "playing") {
+    if (_isStartingPlayback(prev, next)) {
       Promise.resolve(audio.play()).catch(() => {});
-    } else if (next === "paused" && prev === "playing") {
+    } else if (_isPausing(prev, next)) {
       audio.pause();
     } else if (event === "reset") {
       audio.pause();
