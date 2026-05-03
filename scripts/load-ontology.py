@@ -110,84 +110,108 @@ def _bc_id(bc_name: str) -> str:
     return f"bc:{bc_name}"
 
 
-def _load_business_domains(path: Path, schema) -> tuple[list, list]:
-    nodes, edges = [], []
-    data = yaml.safe_load(path.read_text())
+def _bo_class(bo_type: str, schema):
+    if bo_type == "aggregate_root":
+        return schema.Aggregate
+    if bo_type == "domain_event":
+        return schema.DomainEvent
+    return schema.Entity
 
-    for domain in data.get("domains", []):
-        dom_id = f"domain:tirvi/{domain['id'].lower()}"
-        dom_node = schema.Phase(
-            id=dom_id,
-            name=domain["name"],
-            description=f"Domain {domain['id']}: {domain['name']}",
-            layer=schema.Layer.FEATURES,
-        )
-        nodes.append(dom_node)
 
-        for sd in domain.get("subdomains", []):
-            sd_id = f"subdomain:tirvi/{sd['id'].lower()}"
-            sd_node = schema.Capability(
-                id=sd_id,
-                name=sd["name"],
-                description=f"Subdomain {sd['id']} ({sd.get('type', '')}): {sd['name']}",
-                layer=schema.Layer.FEATURES,
-                domain=domain["name"],
-            )
-            nodes.append(sd_node)
-            edges.append(_make_edge(schema, dom_id, sd_id, "CONTAINS"))
+def _load_subdomain(sd: dict, dom_id: str, schema) -> tuple[list, list]:
+    sd_id = f"subdomain:tirvi/{sd['id'].lower()}"
+    nodes = [schema.Capability(
+        id=sd_id,
+        name=sd["name"],
+        description=f"Subdomain {sd['id']} ({sd.get('type', '')}): {sd['name']}",
+        layer=schema.Layer.FEATURES,
+        domain=sd.get("domain_name", ""),
+    )]
+    edges = [_make_edge(schema, dom_id, sd_id, "CONTAINS")]
+    for bc in sd.get("bounded_contexts", []):
+        bc_id = _bc_id(bc["name"])
+        nodes.append(schema.BoundedContext(
+            id=bc_id,
+            name=bc["name"],
+            description=f"Bounded context {bc['id']}: {bc['name']}",
+            layer=schema.Layer.DESIGN,
+        ))
+        edges.append(_make_edge(schema, sd_id, bc_id, "CONTAINS"))
+    return nodes, edges
 
-            for bc in sd.get("bounded_contexts", []):
-                bc_id = _bc_id(bc["name"])
-                bc_node = schema.BoundedContext(
-                    id=bc_id,
-                    name=bc["name"],
-                    description=f"Bounded context {bc['id']}: {bc['name']}",
-                    layer=schema.Layer.DESIGN,
-                )
-                nodes.append(bc_node)
-                edges.append(_make_edge(schema, sd_id, bc_id, "CONTAINS"))
 
+def _load_domain(domain: dict, schema) -> tuple[list, list]:
+    dom_id = f"domain:tirvi/{domain['id'].lower()}"
+    nodes = [schema.Phase(
+        id=dom_id,
+        name=domain["name"],
+        description=f"Domain {domain['id']}: {domain['name']}",
+        layer=schema.Layer.FEATURES,
+    )]
+    edges: list = []
+    for sd in domain.get("subdomains", []):
+        sd["domain_name"] = domain["name"]
+        n, e = _load_subdomain(sd, dom_id, schema)
+        nodes.extend(n)
+        edges.extend(e)
+    return nodes, edges
+
+
+def _load_personas(data: dict, schema) -> list:
+    nodes = []
     for persona in data.get("personas", []):
         p_id = f"persona:tirvi/{persona['id'].lower()}"
-        p_node = schema.Entity(
+        nodes.append(schema.Entity(
             id=p_id,
             name=persona["name"],
             description=f"{persona['name']} — {persona.get('role', '')}",
             layer=schema.Layer.DESIGN,
-        )
-        nodes.append(p_node)
+        ))
+    return nodes
 
+
+def _load_business_objects(data: dict, schema) -> tuple[list, list]:
+    nodes, edges = [], []
     for bo in data.get("business_objects", []):
         bo_id = f"bo:tirvi/{bo['id'].lower()}"
-        bo_type = bo.get("type", "entity")
-        if bo_type == "aggregate_root":
-            cls = schema.Aggregate
-        elif bo_type == "domain_event":
-            cls = schema.DomainEvent
-        else:
-            cls = schema.Entity
-        bo_node = cls(
+        cls = _bo_class(bo.get("type", "entity"), schema)
+        nodes.append(cls(
             id=bo_id,
             name=bo["name"],
             description=bo.get("description", bo["name"]),
             layer=schema.Layer.DESIGN,
-        )
-        nodes.append(bo_node)
+        ))
         if bc_name := bo.get("owned_by_context"):
             edges.append(_make_edge(schema, _bc_id(bc_name), bo_id, "OWNS"))
+    return nodes, edges
 
+
+def _load_epics(data: dict, schema) -> tuple[list, list]:
+    nodes, edges = [], []
     for epic in data.get("epics", []):
         ep_id = f"epic:tirvi/{epic['id'].lower()}"
-        ep_node = schema.Epic(
+        nodes.append(schema.Epic(
             id=ep_id,
             name=epic["name"],
             description=epic.get("description", epic["name"]),
             layer=schema.Layer.FEATURES,
-        )
-        nodes.append(ep_node)
+        ))
         if bc_name := epic.get("bounded_context"):
             edges.append(_make_edge(schema, ep_id, _bc_id(bc_name), "TRACED_TO"))
+    return nodes, edges
 
+
+def _load_business_domains(path: Path, schema) -> tuple[list, list]:
+    nodes, edges = [], []
+    data = yaml.safe_load(path.read_text())
+    for domain in data.get("domains", []):
+        n, e = _load_domain(domain, schema)
+        nodes.extend(n); edges.extend(e)
+    nodes.extend(_load_personas(data, schema))
+    n, e = _load_business_objects(data, schema)
+    nodes.extend(n); edges.extend(e)
+    n, e = _load_epics(data, schema)
+    nodes.extend(n); edges.extend(e)
     return nodes, edges
 
 
@@ -397,6 +421,29 @@ def _build_workitem_bridges(root: Path, schema, backend) -> int:
 # ---------------------------------------------------------------------------
 # Bridge step 2: E-format dep stubs → canonical F-format features
 # ---------------------------------------------------------------------------
+def _plan_feature_ids(row: dict) -> list[str]:
+    return [f"feature:{pf.lower()}" for pf in row.get("plan_features", [])]
+
+
+def _skill_feature_ids(row: dict) -> list[str]:
+    return [f"feature:{sf.lower()}" for sf in row.get("skill_features", [])]
+
+
+def _add_crosswalk_edges(e_id: str, plan_feats: list, schema, backend) -> int:
+    added = 0
+    for f_id in plan_feats:
+        try:
+            backend.add_edge(schema.GraphEdge(
+                source_id=e_id,
+                target_id=f_id,
+                edge_type=schema.EdgeType.TRACED_TO,
+            ))
+            added += 1
+        except Exception:
+            pass
+    return added
+
+
 def _build_crosswalk_bridges(root: Path, schema, backend) -> int:
     """Add TRACED_TO edges from E-format dep stubs to F-format plan features.
 
@@ -406,23 +453,12 @@ def _build_crosswalk_bridges(root: Path, schema, backend) -> int:
     biz_path = root / "ontology" / "business-domains.yaml"
     if not biz_path.exists():
         return 0
-
     data = yaml.safe_load(biz_path.read_text())
     added = 0
     for row in data.get("plan_md_cross_walk", []):
-        plan_feats = [f"feature:{pf.lower()}" for pf in row.get("plan_features", [])]
-        skill_feats = [f"feature:{sf.lower()}" for sf in row.get("skill_features", [])]
-        for e_id in skill_feats:
-            for f_id in plan_feats:
-                try:
-                    backend.add_edge(schema.GraphEdge(
-                        source_id=e_id,
-                        target_id=f_id,
-                        edge_type=schema.EdgeType.TRACED_TO,
-                    ))
-                    added += 1
-                except Exception:
-                    pass
+        plan_feats = _plan_feature_ids(row)
+        for e_id in _skill_feature_ids(row):
+            added += _add_crosswalk_edges(e_id, plan_feats, schema, backend)
     log.info("Crosswalk bridge edges added: %d", added)
     return added
 
@@ -467,6 +503,37 @@ def _collect_all(root: Path, schema) -> tuple[list, list]:
     return all_nodes, all_edges
 
 
+def _dedup_nodes(all_nodes: list) -> list:
+    seen: dict[str, object] = {}
+    for node in all_nodes:
+        seen[node.id] = node
+    return list(seen.values())
+
+
+def _upsert_all_nodes(unique_nodes: list, backend) -> tuple[int, int]:
+    upserted, failed = 0, 0
+    for node in unique_nodes:
+        try:
+            backend.upsert_node(node)
+            upserted += 1
+        except Exception as exc:
+            log.debug("Node upsert failed %s: %s", node.id, exc)
+            failed += 1
+    return upserted, failed
+
+
+def _add_all_edges(all_edges: list, backend) -> tuple[int, int]:
+    added, failed = 0, 0
+    for edge in all_edges:
+        try:
+            backend.add_edge(edge)
+            added += 1
+        except Exception as exc:
+            log.debug("Edge add failed %s→%s: %s", edge.source_id, edge.target_id, exc)
+            failed += 1
+    return added, failed
+
+
 def main() -> None:
     args = _parse_args()
     root = Path(args.root).resolve()
@@ -482,13 +549,7 @@ def main() -> None:
 
     log.info("Collecting nodes + edges from %s …", root)
     all_nodes, all_edges = _collect_all(root, schema)
-
-    # Deduplicate nodes by ID (last write wins — upsert semantics)
-    seen: dict[str, object] = {}
-    for node in all_nodes:
-        seen[node.id] = node
-    unique_nodes = list(seen.values())
-
+    unique_nodes = _dedup_nodes(all_nodes)
     log.info("Total unique nodes: %d  edges: %d", len(unique_nodes), len(all_edges))
 
     if args.dry_run:
@@ -498,24 +559,8 @@ def main() -> None:
     config = ProjectConfig.from_env(project_name="tirvi")
     backend = create_backend(config)
 
-    upserted, failed_nodes = 0, 0
-    for node in unique_nodes:
-        try:
-            backend.upsert_node(node)
-            upserted += 1
-        except Exception as exc:
-            log.debug("Node upsert failed %s: %s", node.id, exc)
-            failed_nodes += 1
-
-    added, failed_edges = 0, 0
-    for edge in all_edges:
-        try:
-            backend.add_edge(edge)
-            added += 1
-        except Exception as exc:
-            log.debug("Edge add failed %s→%s: %s", edge.source_id, edge.target_id, exc)
-            failed_edges += 1
-
+    upserted, failed_nodes = _upsert_all_nodes(unique_nodes, backend)
+    added, failed_edges = _add_all_edges(all_edges, backend)
     log.info(
         "Done — upserted %d nodes (%d failed), added %d edges (%d failed)",
         upserted, failed_nodes, added, failed_edges,
