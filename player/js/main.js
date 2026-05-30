@@ -129,6 +129,11 @@ async function _onSwitch(sha, state) {
   loadInspector(pageJson, audioJson);
   switchNotesSha(sha);
 
+  if (pageJson) {
+    const img = document.getElementById("page-image");
+    if (img) img.src = `/${sha}/${pageJson.page_image_url}`;
+  }
+
   if (audioJson) {
     state.audio.src = `/${sha}/audio.mp3`;
     state.audio.load();

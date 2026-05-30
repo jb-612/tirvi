@@ -15,10 +15,12 @@ vi.mock("../js/highlight.js", () => ({
   startHighlightLoop: vi.fn(() => vi.fn()),
   findActiveMark: vi.fn(() => null),
 }));
+vi.mock("../js/version-nav.js", () => ({ initVersionNav: vi.fn() }));
 
 import { bootPlayer } from "../js/player.js";
 import { mountControls } from "../js/controls.js";
 import { startHighlightLoop } from "../js/highlight.js";
+import { initVersionNav } from "../js/version-nav.js";
 import { init } from "../js/main.js";
 
 const _validPage = {
@@ -104,5 +106,59 @@ describe("F35/F36 — init() orchestration", () => {
   it("does not throw when bootPlayer rejects (logs error)", async () => {
     bootPlayer.mockRejectedValueOnce(new Error("page.json missing"));
     await expect(init()).resolves.toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Version switch — page image src update (regression guard)
+// ---------------------------------------------------------------------------
+
+describe("version switch", () => {
+  const _newSha = "abc123newrun";
+  const _newPage = { page_image_url: "new-page.png", words: [], marks_to_word_index: {} };
+
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div id="error-banner" hidden></div>
+      <figure id="page-figure"></figure>
+      <div id="controls" role="toolbar"></div>
+      <audio id="audio-element"></audio>
+    `;
+    vi.clearAllMocks();
+
+    bootPlayer.mockResolvedValue({
+      audio: document.getElementById("audio-element"),
+      pageProjection: _validPage,
+      timings: [{ mark_id: "b1-0", start_s: 0.0, end_s: 0.5 }],
+      audioError: null,
+    });
+
+    // Stub fetch: /api/current returns empty sha; switch calls return new data
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({ ok: false })                                              // /api/current fails → sha=""
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(_newPage) })        // /_newSha/page.json
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ timings: [] }) });// /_newSha/audio.json
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    delete global.fetch;
+  });
+
+  it("updates #page-image src when user switches run", async () => {
+    // Capture the onSwitch callback wired by init()
+    let capturedOnSwitch;
+    initVersionNav.mockImplementation(({ onSwitch }) => {
+      capturedOnSwitch = onSwitch;
+    });
+
+    await init();
+
+    // Simulate the user clicking a different run in the sidebar
+    await capturedOnSwitch(_newSha);
+
+    const img = document.getElementById("page-image");
+    expect(img).not.toBeNull();
+    expect(img.src).toContain(`/${_newSha}/new-page.png`);
   });
 });
