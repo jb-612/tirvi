@@ -69,6 +69,7 @@ def _import_helpers():
         {
             "tirvi": mock.MagicMock(),
             "tirvi.pipeline": mock.MagicMock(),
+            "tirvi.progress": mock.MagicMock(),
         },
     ):
         # Force reimport in case a prior test already patched it differently.
@@ -253,3 +254,164 @@ class TestReviewEndpoints:
 
         tmp_files = list((tmp_path / "003" / "feedback").glob("*.tmp"))
         assert tmp_files == [], f"Leftover .tmp files: {tmp_files}"
+
+
+# ---------------------------------------------------------------------------
+# TestMainServerStart — verifies _NoCacheHandler class def does not NameError
+# ---------------------------------------------------------------------------
+
+
+class TestMainServerStart:
+    """Test that main() in stub mode reaches the HTTP server without NameError."""
+
+    def test_main_stub_mode_no_name_error(self, tmp_path, monkeypatch):
+        """main(--stubs) must define _NoCacheHandler without NameError.
+
+        Regression guard for the Python class-body scoping bug where
+        `_player_dir = _player_dir` failed because the class body cannot
+        read the enclosing function's local variable when the same name is
+        being locally bound in the class body.
+        """
+        import sys
+        import io
+        from pathlib import Path
+
+        # Ensure the module is freshly imported with mocked pipeline.
+        mod_name = "scripts.run_demo"
+        if mod_name in sys.modules:
+            del sys.modules[mod_name]
+
+        fake_drafts = tmp_path / "drafts"
+        fake_drafts.mkdir()
+        fake_sha_dir = fake_drafts / "abc123"
+        fake_sha_dir.mkdir()
+        (fake_sha_dir / "page.json").write_text("{}")
+
+        # Minimal fake player dir with index.html
+        fake_player = tmp_path / "player"
+        fake_player.mkdir()
+        (fake_player / "index.html").write_bytes(b"<html/>")
+        (fake_player / "player.css").write_bytes(b"")
+
+        fake_run_result = {
+            "sha": "abc123",
+            "drafts_dir": fake_sha_dir,
+        }
+
+        import unittest.mock as mock
+
+        fake_pipeline = mock.MagicMock()
+        fake_pipeline.make_stub_deps.return_value = object()
+        fake_pipeline.run_pipeline.return_value = fake_run_result
+
+        fake_progress = mock.MagicMock()
+        fake_progress.RichProgressReporter.return_value.__enter__ = lambda s: s
+        fake_progress.RichProgressReporter.return_value.__exit__ = mock.Mock(return_value=False)
+
+        with mock.patch.dict(
+            sys.modules,
+            {
+                "tirvi": mock.MagicMock(),
+                "tirvi.pipeline": fake_pipeline,
+                "tirvi.progress": fake_progress,
+            },
+        ):
+            import scripts.run_demo as mod  # noqa: PLC0415
+
+        # Patch internals so main() doesn't touch the filesystem or open a browser.
+        monkeypatch.setattr(mod, "_PDF", tmp_path / "Economy.pdf")
+        (tmp_path / "Economy.pdf").write_bytes(b"%PDF stub")
+        monkeypatch.setattr(mod, "_PLAYER", Path("player"))
+        monkeypatch.setattr(mod, "_DRAFTS", Path("drafts"))
+
+        fake_pipeline.run_pipeline.return_value = fake_run_result
+        fake_progress.RichProgressReporter.return_value.summarize = mock.Mock()
+
+        # HTTPServer instantiation will raise KeyboardInterrupt immediately so
+        # the server loop exits cleanly — we only care that class definition succeeds.
+        real_http_server = mod.http.server.HTTPServer
+
+        def _instant_exit(*args, **kwargs):
+            raise KeyboardInterrupt
+
+        monkeypatch.setattr(mod.http.server, "HTTPServer", _instant_exit)
+        monkeypatch.setattr(mod.webbrowser, "open", lambda url: None)
+        monkeypatch.setattr(sys, "argv", ["run_demo.py", "--stubs", "--port", "19999"])
+
+        # Must NOT raise NameError — that is the regression being tested.
+        monkeypatch.chdir(tmp_path)
+        try:
+            mod.main()
+        except (KeyboardInterrupt, SystemExit):
+            pass  # expected — server raises KeyboardInterrupt or argparse exits
+
+
+# ---------------------------------------------------------------------------
+# TestShaFlag — --sha skips pipeline and serves existing draft
+# ---------------------------------------------------------------------------
+
+
+class TestShaFlag:
+    """--sha <existing-sha> must skip run_pipeline entirely."""
+
+    def test_sha_flag_skips_pipeline(self, tmp_path, monkeypatch):
+        """main(--sha <sha>) must NOT call run_pipeline; uses the draft dir directly."""
+        import sys
+        import unittest.mock as mock
+        from pathlib import Path
+
+        mod_name = "scripts.run_demo"
+        if mod_name in sys.modules:
+            del sys.modules[mod_name]
+
+        existing_sha = "realrun123"
+        fake_drafts = tmp_path / "drafts"
+        fake_drafts.mkdir()
+        fake_sha_dir = fake_drafts / existing_sha
+        fake_sha_dir.mkdir()
+        (fake_sha_dir / "page.json").write_text('{"page_image_url":"page-1.png","words":[]}')
+        (fake_sha_dir / "audio.json").write_text("{}")
+
+        fake_player = tmp_path / "player"
+        fake_player.mkdir()
+        (fake_player / "index.html").write_bytes(b"<html/>")
+        (fake_player / "player.css").write_bytes(b"")
+
+        fake_pipeline = mock.MagicMock()
+        fake_pipeline.run_pipeline.return_value = {}  # must NOT be called
+        fake_progress = mock.MagicMock()
+
+        with mock.patch.dict(
+            sys.modules,
+            {
+                "tirvi": mock.MagicMock(),
+                "tirvi.pipeline": fake_pipeline,
+                "tirvi.progress": fake_progress,
+            },
+        ):
+            import scripts.run_demo as mod  # noqa: PLC0415
+
+        monkeypatch.setattr(mod, "_PDF", tmp_path / "Economy.pdf")
+        (tmp_path / "Economy.pdf").write_bytes(b"%PDF stub")
+        monkeypatch.setattr(mod, "_PLAYER", Path("player"))
+        monkeypatch.setattr(mod, "_DRAFTS", Path("drafts"))
+        server_started = []
+
+        def _fake_server(addr, handler):
+            server_started.append(addr)
+            raise KeyboardInterrupt  # stop the serve_forever loop immediately
+
+        monkeypatch.setattr(mod.http.server, "HTTPServer", _fake_server)
+        monkeypatch.setattr(mod.webbrowser, "open", lambda url: None)
+        monkeypatch.setattr(sys, "argv", ["run_demo.py", "--sha", existing_sha, "--port", "19998"])
+        monkeypatch.chdir(tmp_path)
+
+        try:
+            mod.main()
+        except (KeyboardInterrupt, SystemExit):
+            pass
+
+        # run_pipeline must NOT have been called
+        fake_pipeline.run_pipeline.assert_not_called()
+        # The HTTP server must have started (proves --sha was handled, not just argparse fail)
+        assert server_started, "HTTPServer was never started — --sha flag not implemented"

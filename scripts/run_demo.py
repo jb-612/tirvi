@@ -77,6 +77,11 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use in-memory stubs instead of real ML adapters (no Docker needed)",
     )
+    p.add_argument(
+        "--sha",
+        default=None,
+        help="Serve an existing draft by SHA without running the pipeline",
+    )
     # Real demo owns :8000; stub runs default to :8765 so they never collide.
     p.add_argument("--port", type=int, default=None, help="HTTP server port (default: 8000 real, 8765 stubs)")
     args = p.parse_args()
@@ -246,28 +251,36 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     args = _parse_args()
 
-    if not _PDF.exists():
-        _LOG.error("PDF not found at %s — is the working directory the repo root?", _PDF)
-        sys.exit(1)
-
-    if not args.stubs:
-        _start_yap_if_available()
-
-    if args.stubs:
-        deps = make_stub_deps()
-        _LOG.info("Running pipeline in STUBS mode (no ML packages needed)")
+    if args.sha:
+        drafts_dir = _DRAFTS / args.sha
+        if not drafts_dir.exists():
+            _LOG.error("Draft SHA not found: %s (looked in %s)", args.sha, _DRAFTS)
+            sys.exit(1)
+        result = {"sha": args.sha, "drafts_dir": drafts_dir}
+        _LOG.info("Serving existing draft %s from %s", args.sha, drafts_dir)
     else:
-        deps = make_poc_deps()
-        _LOG.info("Running pipeline in POC mode (Tesseract OCR + Wavenet TTS)")
-    _LOG.info("Running pipeline on %s …", _PDF)
-    pdf_bytes = _PDF.read_bytes()
-    reporter = RichProgressReporter()
-    try:
-        result = run_pipeline(pdf_bytes, _DRAFTS, deps, reporter=reporter)
-    finally:
-        reporter.summarize()
-    drafts_dir: Path = result["drafts_dir"]
-    _LOG.info("Artefacts written to %s (sha=%s)", drafts_dir, result["sha"])
+        if not _PDF.exists():
+            _LOG.error("PDF not found at %s — is the working directory the repo root?", _PDF)
+            sys.exit(1)
+
+        if not args.stubs:
+            _start_yap_if_available()
+
+        if args.stubs:
+            deps = make_stub_deps()
+            _LOG.info("Running pipeline in STUBS mode (no ML packages needed)")
+        else:
+            deps = make_poc_deps()
+            _LOG.info("Running pipeline in POC mode (Tesseract OCR + Wavenet TTS)")
+        _LOG.info("Running pipeline on %s …", _PDF)
+        pdf_bytes = _PDF.read_bytes()
+        reporter = RichProgressReporter()
+        try:
+            result = run_pipeline(pdf_bytes, _DRAFTS, deps, reporter=reporter)
+        finally:
+            reporter.summarize()
+        drafts_dir = result["drafts_dir"]
+        _LOG.info("Artefacts written to %s (sha=%s)", drafts_dir, result["sha"])
 
     # Serve from repo root so player/ assets and all drafts/<sha>/ are reachable.
     # URL layout:
@@ -287,10 +300,15 @@ def main() -> None:
     _LOG.info("Starting HTTP server at %s — press Ctrl-C to stop", url)
     webbrowser.open(url)
 
+    # Capture before the class body so the self-referential assignment
+    # `_player_dir = _player_dir` doesn't hit Python's class-scope lookup bug
+    # (class bodies don't inherit the enclosing function's local scope when
+    # the same name is locally bound on the left-hand side).
+    _player_dir_ref = _player_dir
     # AUTH_GATE TODO: add auth check before serving output/ over network
     class _NoCacheHandler(http.server.BaseHTTPRequestHandler):
         # AUTH_GATE TODO: class-level auth hook point for review portal (DE-06)
-        _player_dir = _player_dir  # referenced by module-level _serve_review
+        _player_dir = _player_dir_ref  # referenced by module-level _serve_review
 
         def end_headers(self) -> None:
             self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
