@@ -236,7 +236,7 @@ def _handle_feedback_post(handler: object, output_base: Path) -> None:
         _send_json_response(handler, 400, {"error": "invalid run"})
         return
 
-    ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S%f")
+    ts = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%S%f")
     out_path = output_base / str(run) / "feedback" / f"{mark_id}-{ts}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
